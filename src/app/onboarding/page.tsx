@@ -11,6 +11,8 @@ import {
 } from "@/lib/supabase-auth";
 import {
   dashboardQueryFromAccount,
+  isPalcoAccountConfigured,
+  loadPalcoAccount,
   type PendingPalcoAccount,
   savePalcoAccount,
   stashPendingAccount,
@@ -246,6 +248,27 @@ export default function OnboardingPage() {
     if (p.get("mail")) setEmail(p.get("mail")!);
     setPaso("entidades");
   }, []);
+
+  // Usuario logueado con cuenta lista → tablero (salvo modo edición).
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("edit") === "1") return;
+    if (!authEnabled) return;
+
+    let alive = true;
+    (async () => {
+      const session = await getSession();
+      if (!session || !alive) return;
+      const acc = await loadPalcoAccount();
+      if (!alive || !isPalcoAccountConfigured(acc)) return;
+      const q = dashboardQueryFromAccount(acc!);
+      router.replace(q ? `/dashboard?${q}` : "/dashboard");
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [router]);
 
   function volverAlTablero() {
     const p = new URLSearchParams(window.location.search);

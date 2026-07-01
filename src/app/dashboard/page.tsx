@@ -8,7 +8,7 @@ import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { fetchDataset } from "@/lib/supabase";
-import { loadPalcoAccount, savePalcoAccount } from "@/lib/palco-account";
+import { loadPalcoAccount, savePalcoAccount, isPalcoAccountConfigured } from "@/lib/palco-account";
 
 /* ---------- tipos ---------- */
 type Card = {
@@ -370,6 +370,7 @@ export default function PalcoPage() {
   const [email, setEmail] = useState("");
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
   const [isDemo, setIsDemo] = useState(false);
+  const [accountReady, setAccountReady] = useState(false);
 
   // Lee URL (?demo, ?e=…) o la cuenta guardada en Supabase.
   useEffect(() => {
@@ -385,6 +386,7 @@ export default function PalcoPage() {
         setWatch([e[0]]);
         setSlug(e[0]);
       }
+      setAccountReady(true);
       return;
     }
 
@@ -393,6 +395,11 @@ export default function PalcoPage() {
     (async () => {
       const acc = await loadPalcoAccount();
       if (!alive) return;
+
+      if (acc && !isPalcoAccountConfigured(acc)) {
+        router.replace("/onboarding");
+        return;
+      }
 
       if (acc?.watchlist?.length) {
         const slugs = acc.watchlist.map((w) => w.slug).filter((s) => D.radars[s]);
@@ -406,6 +413,7 @@ export default function PalcoPage() {
         setSoloNegativo(!!a.solo_negativo);
         if (a.frecuencia) setFrecuencia(a.frecuencia);
         setEmail(a.email_contacto || acc.email || "");
+        setAccountReady(true);
         return;
       }
 
@@ -424,12 +432,13 @@ export default function PalcoPage() {
       const f = p.get("freq");
       if (f === "al-toque" || f === "diario" || f === "semanal") setFrecuencia(f);
       if (p.get("mail")) setEmail(p.get("mail")!);
+      setAccountReady(true);
     })();
 
     return () => {
       alive = false;
     };
-  }, [D]);
+  }, [D, router]);
 
   useEffect(() => {
     setCruceShow({});
@@ -562,6 +571,14 @@ export default function PalcoPage() {
       .sort((a, b) => b.cruces_total - a.cruces_total)
       .slice(0, 4);
   }, [D, slug]);
+
+  if (!accountReady) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9]">
+        <p className="text-sm text-slate-500">Cargando tu panel…</p>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-slate-900">

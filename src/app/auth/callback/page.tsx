@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { flushPendingAccount } from "@/lib/palco-account";
+import { flushPendingAccount, resolvePostAuthPath } from "@/lib/palco-account";
 import { authEnabled, getSupabase } from "@/lib/supabase-auth";
 
 function AuthCallbackInner() {
   const router = useRouter();
-  const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,7 +26,8 @@ function AuthCallbackInner() {
     async function finish(sessionOk: boolean) {
       if (!sessionOk || !alive) return;
       await flushPendingAccount();
-      router.replace(next);
+      const dest = await resolvePostAuthPath();
+      if (alive) router.replace(dest);
     }
 
     (async () => {
@@ -67,7 +66,7 @@ function AuthCallbackInner() {
     return () => {
       alive = false;
     };
-  }, [next, router]);
+  }, [router]);
 
   if (error) {
     return (

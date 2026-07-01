@@ -84,6 +84,21 @@ export async function flushPendingAccount(): Promise<{ ok: boolean; error?: stri
   return savePalcoAccount(pending);
 }
 
+/** Cuenta lista para usar el tablero (completó onboarding). */
+export function isPalcoAccountConfigured(acc: PalcoAccount | null | undefined): boolean {
+  return Boolean(acc?.watchlist?.length && acc.plan);
+}
+
+/** Tras login: tablero si ya configuró, onboarding si no. */
+export async function resolvePostAuthPath(): Promise<string> {
+  const acc = await loadPalcoAccount();
+  if (isPalcoAccountConfigured(acc)) {
+    const q = dashboardQueryFromAccount(acc!);
+    return q ? `/dashboard?${q}` : "/dashboard";
+  }
+  return "/onboarding";
+}
+
 export async function loadPalcoAccount(): Promise<PalcoAccount | null> {
   const sb = getSupabase();
   if (!sb) return null;
