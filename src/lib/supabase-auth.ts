@@ -27,7 +27,7 @@ export async function sendMagicLink(email: string): Promise<{ ok: boolean; error
   const { error } = await sb.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${origin}/auth/callback`,
     },
   });
   return error ? { ok: false, error: error.message } : { ok: true };
