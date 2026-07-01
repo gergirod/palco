@@ -48,12 +48,11 @@ export default function Landing() {
           <div>
             <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
             <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.08]">
-              Palco te dice cuándo y cómo se habla de las{" "}
-              <span className="text-signal">personas y empresas</span> que te importan
-              en el streaming en vivo.
+              Enterate cuándo y cómo hablan de las{" "}
+              <span className="text-signal">personas y empresas</span> que te importan.
             </h1>
             <p className="mt-5 text-lg text-ink font-medium">
-              Es el monitoreo de medios, pero para el streaming en vivo.
+              Palco escucha {CANALES.length} canales del streaming en vivo argentino.
             </p>
             <p className="mt-3 text-lg text-muted">
               Los equipos de prensa y comunicación ya siguen diarios, radio y TV. Pero
