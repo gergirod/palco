@@ -14,7 +14,7 @@ import { displayAlias, matchesQuery } from "@/lib/palco-watchlist";
    Path inicial: /palco/onboarding
 ============================================================================ */
 
-const BRAND = "#2f5fe0";
+const BRAND = "#b45309";
 
 type IndexRow = {
   slug: string;
@@ -131,9 +131,9 @@ const CATS = ["Todas", "Político", "Deporte", "Música"] as const;
 function MiniSent({ r }: { r: IndexRow }) {
   const t = r.neg + r.neu + r.pos || 1;
   return (
-    <div className="flex h-1.5 overflow-hidden rounded-full bg-stone-100">
+    <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-100">
       <div className="bg-red-500" style={{ width: `${(r.neg / t) * 100}%` }} />
-      <div className="bg-stone-400" style={{ width: `${(r.neu / t) * 100}%` }} />
+      <div className="bg-slate-400" style={{ width: `${(r.neu / t) * 100}%` }} />
       <div className="bg-emerald-500" style={{ width: `${(r.pos / t) * 100}%` }} />
     </div>
   );
@@ -332,18 +332,18 @@ export default function OnboardingPage() {
     .filter(Boolean) as IndexRow[];
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] text-stone-900">
+    <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
       {/* barra superior */}
-      <div className="border-b border-stone-200 bg-white">
+      <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1000px] items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
             {isEdit ? (
               <>
-                <span className="text-[13px] font-medium text-stone-600">Editar watchlist</span>
+                <span className="text-[13px] font-medium text-slate-600">Editar watchlist</span>
                 <button
                   type="button"
                   onClick={volverAlTablero}
-                  className="text-[13px] font-medium text-stone-500 hover:text-stone-800"
+                  className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
                 >
                   ← Volver al tablero
                 </button>
@@ -367,7 +367,7 @@ export default function OnboardingPage() {
               <div key={p.id} className="flex items-center gap-2">
                 <div
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${
-                    i <= pasoIdx ? "text-white" : "bg-stone-100 text-stone-400"
+                    i <= pasoIdx ? "text-white" : "bg-slate-100 text-slate-400"
                   }`}
                   style={i <= pasoIdx ? { backgroundColor: BRAND } : undefined}
                 >
@@ -376,7 +376,7 @@ export default function OnboardingPage() {
                 {i < pasosUi.length - 1 && (
                   <div
                     className={`hidden h-px w-6 sm:block ${
-                      i < pasoIdx ? "" : "bg-stone-200"
+                      i < pasoIdx ? "" : "bg-slate-200"
                     }`}
                     style={i < pasoIdx ? { backgroundColor: BRAND } : undefined}
                   />
@@ -391,13 +391,13 @@ export default function OnboardingPage() {
         {/* ---------------- BIENVENIDA ---------------- */}
         {!isEdit && paso === "bienvenida" && (
           <section className="mx-auto max-w-[680px] text-center">
-            <p className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
               Bienvenido a Palco
             </p>
             <h1 className="mt-2 text-4xl font-bold leading-tight">
               Enterate de todo lo que se dice en el streaming, sin escuchar horas de vivo.
             </h1>
-            <p className="mt-4 text-[16px] leading-relaxed text-stone-600">
+            <p className="mt-4 text-[16px] leading-relaxed text-slate-600">
               Palco escucha los programas en vivo de Argentina las 24 horas. Cada vez
               que nombran a alguien que te importa, lo anotamos: qué dijeron, cuánta
               gente lo estaba escuchando y cómo reaccionó la gente en el chat.
@@ -420,10 +420,10 @@ export default function OnboardingPage() {
               ].map((c) => (
                 <div
                   key={c.t}
-                  className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
                 >
                   <p className="text-[14px] font-semibold">{c.t}</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-stone-500">{c.d}</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-slate-500">{c.d}</p>
                 </div>
               ))}
             </div>
@@ -435,7 +435,7 @@ export default function OnboardingPage() {
             >
               Empezar →
             </button>
-            <p className="mt-3 text-[12px] text-stone-400">
+            <p className="mt-3 text-[12px] text-slate-400">
               Toma 1 minuto · sin tarjeta
             </p>
           </section>
@@ -446,7 +446,7 @@ export default function OnboardingPage() {
           <section>
             <div className="text-center">
               <h1 className="text-3xl font-bold">Elegí tu plan</h1>
-              <p className="mt-2 text-[15px] text-stone-600">
+              <p className="mt-2 text-[15px] text-slate-600">
                 Pagás por <b>cuántos nombres o temas</b> querés seguir. Un nombre es
                 una persona, marca o tema. Sumás más cuando quieras — sin sorpresas.
               </p>
@@ -461,10 +461,10 @@ export default function OnboardingPage() {
                     onClick={() => setPlanId(p.id)}
                     className={`relative flex flex-col rounded-2xl border p-5 text-left shadow-sm transition ${
                       active
-                        ? "border-[#2f5fe0] ring-2 ring-blue-100"
-                        : "border-stone-200 bg-white hover:border-stone-400"
+                        ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                        : "border-slate-200 bg-white hover:border-slate-400"
                     }`}
-                    style={active ? { backgroundColor: "#f5f8ff" } : { backgroundColor: "#fff" }}
+                    style={active ? { backgroundColor: "#fbebd6" } : { backgroundColor: "#fff" }}
                   >
                     {p.destacado && (
                       <span
@@ -474,7 +474,7 @@ export default function OnboardingPage() {
                         MÁS ELEGIDO
                       </span>
                     )}
-                    <p className="text-[13px] font-semibold uppercase tracking-wide text-stone-400">
+                    <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
                       {p.para}
                     </p>
                     <p className="mt-1 text-2xl font-bold">{p.nombre}</p>
@@ -486,12 +486,12 @@ export default function OnboardingPage() {
                         : `Hasta ${p.limite} nombres`}{" "}
                       · {p.precio}
                     </p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-stone-500">
+                    <p className="mt-2 text-[13px] leading-relaxed text-slate-500">
                       {p.bajada}
                     </p>
                     <ul className="mt-3 space-y-1.5">
                       {p.incluye.map((f) => (
-                        <li key={f} className="flex gap-2 text-[13px] text-stone-700">
+                        <li key={f} className="flex gap-2 text-[13px] text-slate-700">
                           <span style={{ color: BRAND }}>✓</span>
                           <span>{f}</span>
                         </li>
@@ -499,7 +499,7 @@ export default function OnboardingPage() {
                     </ul>
                     <div
                       className={`mt-4 rounded-lg py-2 text-center text-[13px] font-semibold ${
-                        active ? "text-white" : "bg-stone-100 text-stone-600"
+                        active ? "text-white" : "bg-slate-100 text-slate-600"
                       }`}
                       style={active ? { backgroundColor: BRAND } : undefined}
                     >
@@ -510,14 +510,14 @@ export default function OnboardingPage() {
               })}
             </div>
 
-            <p className="mt-4 text-center text-[13px] text-stone-500">
+            <p className="mt-4 text-center text-[13px] text-slate-500">
               Un nombre es una persona, marca o tema. Sumás o sacás cuando quieras.
             </p>
 
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={() => setPaso("bienvenida")}
-                className="text-[14px] text-stone-500 hover:text-stone-800"
+                className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Volver
               </button>
@@ -538,7 +538,7 @@ export default function OnboardingPage() {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h1 className="text-3xl font-bold">¿A quién querés seguir?</h1>
-                <p className="mt-2 text-[15px] text-stone-600">
+                <p className="mt-2 text-[15px] text-slate-600">
                   {plan.aMedida ? (
                     <>
                       Con <b>{plan.nombre}</b> elegís los nombres que quieras.
@@ -556,13 +556,13 @@ export default function OnboardingPage() {
                   otro nombre o tema.
                 </p>
               </div>
-              <div className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-right shadow-sm">
-                <p className="text-[11px] uppercase tracking-wide text-stone-400">
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-right shadow-sm">
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">
                   Elegiste
                 </p>
                 <p className="text-lg font-bold tabular-nums">
                   {sel.length}
-                  <span className="ml-1 text-[13px] font-medium text-stone-400">
+                  <span className="ml-1 text-[13px] font-medium text-slate-400">
                     {plan.aMedida ? "nombres" : `/ ${plan.limite}`}
                   </span>
                 </p>
@@ -575,15 +575,15 @@ export default function OnboardingPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar por nombre o apodo…"
-                className="min-w-[200px] flex-1 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#2f5fe0] focus:ring-2 focus:ring-blue-100"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
               />
-              <div className="flex gap-1 rounded-lg border border-stone-200 bg-white p-0.5 text-[13px]">
+              <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
                 {CATS.map((c) => (
                   <button
                     key={c}
                     onClick={() => setCat(c)}
                     className={`rounded-md px-3 py-1.5 ${
-                      cat === c ? "text-white" : "text-stone-500 hover:text-stone-800"
+                      cat === c ? "text-white" : "text-slate-500 hover:text-slate-800"
                     }`}
                     style={cat === c ? { backgroundColor: BRAND } : undefined}
                   >
@@ -594,8 +594,8 @@ export default function OnboardingPage() {
             </div>
 
             {lleno && (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-[13px]">
-                <span className="text-stone-700">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#f0c99a] bg-[#fbebd6] px-4 py-2.5 text-[13px]">
+                <span className="text-slate-700">
                   Llegaste al tope de tu plan {plan.nombre} ({plan.limite}{" "}
                   {plan.limite === 1 ? "nombre" : "nombres"}).
                 </span>
@@ -623,12 +623,12 @@ export default function OnboardingPage() {
                     disabled={bloq}
                     className={`flex flex-col rounded-xl border p-4 text-left shadow-sm transition ${
                       on
-                        ? "border-[#2f5fe0] ring-2 ring-blue-100"
+                        ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
                         : bloq
-                        ? "border-stone-200 bg-white opacity-40"
-                        : "border-stone-200 bg-white hover:border-stone-400"
+                        ? "border-slate-200 bg-white opacity-40"
+                        : "border-slate-200 bg-white hover:border-slate-400"
                     }`}
-                    style={on ? { backgroundColor: "#f5f8ff" } : undefined}
+                    style={on ? { backgroundColor: "#fbebd6" } : undefined}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -640,31 +640,31 @@ export default function OnboardingPage() {
                             Radar listo
                           </span>
                         </div>
-                        <p className="text-[12px] text-stone-400">{r.type}</p>
+                        <p className="text-[12px] text-slate-400">{r.type}</p>
                         {aliasHint && (
-                          <p className="mt-1 text-[11px] text-stone-500">
+                          <p className="mt-1 text-[11px] text-slate-500">
                             también: {aliasHint}
                           </p>
                         )}
                       </div>
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] ${
-                          on ? "border-transparent text-white" : "border-stone-300 text-transparent"
+                          on ? "border-transparent text-white" : "border-slate-300 text-transparent"
                         }`}
                         style={on ? { backgroundColor: BRAND } : undefined}
                       >
                         ✓
                       </span>
                     </div>
-                    <div className="mt-3 flex gap-4 text-[12px] text-stone-500">
+                    <div className="mt-3 flex gap-4 text-[12px] text-slate-500">
                       <span>
-                        <b className="tabular-nums text-stone-800">
+                        <b className="tabular-nums text-slate-800">
                           {compact(r.mentions)}
                         </b>{" "}
                         veces nombrado
                       </span>
                       <span>
-                        <b className="tabular-nums text-stone-800">{r.channels}</b>{" "}
+                        <b className="tabular-nums text-slate-800">{r.channels}</b>{" "}
                         canales
                       </span>
                     </div>
@@ -678,7 +678,7 @@ export default function OnboardingPage() {
 
             {candidateHits.length > 0 && (
               <div className="mt-6">
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                   Detectado en el corpus
                 </p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -690,7 +690,7 @@ export default function OnboardingPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="text-[14px] font-semibold">{c.canonical_guess}</p>
-                          <p className="text-[11px] text-stone-500">
+                          <p className="text-[11px] text-slate-500">
                             {c.kind} · {compact(c.mentions)} menc. · {c.programs} programas
                           </p>
                         </div>
@@ -698,7 +698,7 @@ export default function OnboardingPage() {
                           {c.confidence === "alta" ? "Detectado" : "Candidata"}
                         </span>
                       </div>
-                      <p className="mt-2 text-[12px] text-stone-600">
+                      <p className="mt-2 text-[12px] text-slate-600">
                         Todavía sin radar completo. En tu cuenta lo activamos con un retro-scan.
                       </p>
                     </div>
@@ -708,7 +708,7 @@ export default function OnboardingPage() {
             )}
 
             {filtered.length === 0 && candidateHits.length === 0 && (
-              <p className="mt-6 rounded-xl border border-stone-200 bg-white p-6 text-center text-[14px] text-stone-500">
+              <p className="mt-6 rounded-xl border border-slate-200 bg-white p-6 text-center text-[14px] text-slate-500">
                 No encontramos ese nombre en el demo. En tu cuenta escribís cualquiera
                 y lo empezamos a seguir desde ese momento.
               </p>
@@ -717,7 +717,7 @@ export default function OnboardingPage() {
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={() => (isEdit ? volverAlTablero() : setPaso("plan"))}
-                className="text-[14px] text-stone-500 hover:text-stone-800"
+                className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 {isEdit ? "← Cancelar" : "← Volver"}
               </button>
@@ -738,7 +738,7 @@ export default function OnboardingPage() {
           <section className="mx-auto max-w-[720px]">
             <div className="text-center">
               <h1 className="text-3xl font-bold">¿Cómo lo dicen en la tele?</h1>
-              <p className="mt-2 text-[15px] text-stone-600">
+              <p className="mt-2 text-[15px] text-slate-600">
                 En streaming casi nadie dice el nombre completo. Agregá apodos y apellidos —
                 Palco busca <b>todas</b> las formas, pero cuenta como <b>una sola</b> entidad.
               </p>
@@ -754,26 +754,26 @@ export default function OnboardingPage() {
                 return (
                   <div
                     key={slug}
-                    className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm"
+                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                       Nombre en el tablero
                     </p>
                     <p className="mt-1 text-[18px] font-bold">{row.name}</p>
-                    <p className="mt-4 text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+                    <p className="mt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                       También buscar como
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {shown.map((a) => (
                         <span
                           key={a}
-                          className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[13px] text-stone-700"
+                          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[13px] text-slate-700"
                         >
                           {a}
                           <button
                             type="button"
                             onClick={() => removeAlias(slug, a)}
-                            className="ml-0.5 text-stone-400 hover:text-stone-700"
+                            className="ml-0.5 text-slate-400 hover:text-slate-700"
                             aria-label={`Quitar ${a}`}
                           >
                             ×
@@ -793,18 +793,18 @@ export default function OnboardingPage() {
                             }
                           }}
                           placeholder="agregar…"
-                          className="w-28 rounded-full border border-stone-200 px-3 py-1 text-[13px] outline-none focus:border-[#2f5fe0]"
+                          className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[13px] outline-none focus:border-[#b45309]"
                         />
                         <button
                           type="button"
                           onClick={() => addAlias(slug)}
-                          className="rounded-full border border-stone-200 px-2 py-1 text-[12px] text-stone-600 hover:border-stone-400"
+                          className="rounded-full border border-slate-200 px-2 py-1 text-[12px] text-slate-600 hover:border-slate-400"
                         >
                           +
                         </button>
                       </div>
                     </div>
-                    <p className="mt-4 rounded-lg bg-blue-50 px-3 py-2 text-[13px] text-stone-700">
+                    <p className="mt-4 rounded-lg bg-[#fbebd6] px-3 py-2 text-[13px] text-slate-700">
                       Con estos términos: <b className="tabular-nums">{compact(row.mentions)}</b>{" "}
                       menciones en el corpus capturado.
                     </p>
@@ -814,15 +814,15 @@ export default function OnboardingPage() {
             </div>
 
             {planId === "profesional" && comencionesSel.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                   Nombrados juntos al aire (Pro)
                 </p>
                 <div className="mt-3 space-y-2">
                   {comencionesSel.map((p) => (
-                    <p key={p.par.join("-")} className="text-[14px] text-stone-700">
+                    <p key={p.par.join("-")} className="text-[14px] text-slate-700">
                       <b>{p.nombres[0]}</b> × <b>{p.nombres[1]}</b>
-                      <span className="ml-2 text-[13px] text-stone-500">
+                      <span className="ml-2 text-[13px] text-slate-500">
                         {p.cruces_total} cruces
                       </span>
                     </p>
@@ -831,14 +831,14 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            <p className="mt-4 text-center text-[12px] text-stone-400">
+            <p className="mt-4 text-center text-[12px] text-slate-400">
               En el piloto, estos términos los confirma el operador en tu cuenta.
             </p>
 
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={() => setPaso("entidades")}
-                className="text-[14px] text-stone-500 hover:text-stone-800"
+                className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Volver
               </button>
@@ -858,7 +858,7 @@ export default function OnboardingPage() {
           <section className="mx-auto max-w-[720px]">
             <div className="text-center">
               <h1 className="text-3xl font-bold">¿Cuándo querés que te avisemos?</h1>
-              <p className="mt-2 text-[15px] text-stone-600">
+              <p className="mt-2 text-[15px] text-slate-600">
                 Vos decidís cuánto te molestamos. Podés cambiar todo esto cuando
                 quieras desde tu tablero.
               </p>
@@ -866,7 +866,7 @@ export default function OnboardingPage() {
 
             {/* sensibilidad */}
             <div className="mt-8">
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
                 Cuánto avisar
               </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -878,10 +878,10 @@ export default function OnboardingPage() {
                       onClick={() => setSensibilidad(s.id)}
                       className={`relative flex flex-col rounded-2xl border p-4 text-left shadow-sm transition ${
                         active
-                          ? "border-[#2f5fe0] ring-2 ring-blue-100"
-                          : "border-stone-200 bg-white hover:border-stone-400"
+                          ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                          : "border-slate-200 bg-white hover:border-slate-400"
                       }`}
-                      style={active ? { backgroundColor: "#f5f8ff" } : undefined}
+                      style={active ? { backgroundColor: "#fbebd6" } : undefined}
                     >
                       {s.reco && (
                         <span
@@ -892,7 +892,7 @@ export default function OnboardingPage() {
                         </span>
                       )}
                       <p className="text-[15px] font-semibold">{s.titulo}</p>
-                      <p className="mt-1 text-[13px] leading-relaxed text-stone-500">
+                      <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
                         {s.bajada}
                       </p>
                     </button>
@@ -903,28 +903,28 @@ export default function OnboardingPage() {
 
             {/* solo negativo */}
             <div className="mt-6">
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
                 Qué avisar
               </p>
               <button
                 onClick={() => setSoloNegativo((v) => !v)}
                 className={`mt-3 flex w-full items-center justify-between rounded-2xl border p-4 text-left shadow-sm transition ${
                   soloNegativo
-                    ? "border-[#2f5fe0] ring-2 ring-blue-100"
-                    : "border-stone-200 bg-white hover:border-stone-400"
+                    ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                    : "border-slate-200 bg-white hover:border-slate-400"
                 }`}
-                style={soloNegativo ? { backgroundColor: "#f5f8ff" } : undefined}
+                style={soloNegativo ? { backgroundColor: "#fbebd6" } : undefined}
               >
                 <div>
                   <p className="text-[15px] font-semibold">Avisame solo lo negativo</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-stone-500">
+                  <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
                     Ideal para modo crisis: te llegan solo las malas menciones. Si lo
                     dejás apagado, te avisamos también lo bueno y lo neutro.
                   </p>
                 </div>
                 <span
                   className={`ml-4 flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
-                    soloNegativo ? "" : "bg-stone-200"
+                    soloNegativo ? "" : "bg-slate-200"
                   }`}
                   style={soloNegativo ? { backgroundColor: BRAND } : undefined}
                 >
@@ -939,7 +939,7 @@ export default function OnboardingPage() {
 
             {/* frecuencia / cómo */}
             <div className="mt-6">
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
                 Cómo querés recibirlo
               </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -951,20 +951,20 @@ export default function OnboardingPage() {
                       onClick={() => setFrecuencia(f.id)}
                       className={`flex flex-col rounded-2xl border p-4 text-left shadow-sm transition ${
                         active
-                          ? "border-[#2f5fe0] ring-2 ring-blue-100"
-                          : "border-stone-200 bg-white hover:border-stone-400"
+                          ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                          : "border-slate-200 bg-white hover:border-slate-400"
                       }`}
-                      style={active ? { backgroundColor: "#f5f8ff" } : undefined}
+                      style={active ? { backgroundColor: "#fbebd6" } : undefined}
                     >
                       <p className="text-[15px] font-semibold">{f.titulo}</p>
-                      <p className="mt-1 text-[13px] leading-relaxed text-stone-500">
+                      <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
                         {f.bajada}
                       </p>
                     </button>
                   );
                 })}
               </div>
-              <p className="mt-3 text-[12px] text-stone-400">
+              <p className="mt-3 text-[12px] text-slate-400">
                 Los avisos de crisis los mandamos en cuanto los detectamos, sin
                 importar esta elección. Esto define el ritmo del resto.
               </p>
@@ -972,7 +972,7 @@ export default function OnboardingPage() {
 
             {/* a dónde */}
             <div className="mt-6">
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
                 A dónde te lo mandamos
               </p>
               <input
@@ -980,9 +980,9 @@ export default function OnboardingPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="mt-3 w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#2f5fe0] focus:ring-2 focus:ring-blue-100"
+                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
               />
-              <p className="mt-2 text-[12px] text-stone-400">
+              <p className="mt-2 text-[12px] text-slate-400">
                 Ahí te llegan los avisos y el{" "}
                 {FRECUENCIAS.find((f) => f.id === frecuencia)!.titulo.toLowerCase()}.
               </p>
@@ -991,7 +991,7 @@ export default function OnboardingPage() {
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={() => setPaso("alias")}
-                className="text-[14px] text-stone-500 hover:text-stone-800"
+                className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Volver
               </button>
@@ -1018,14 +1018,14 @@ export default function OnboardingPage() {
                 ✓
               </div>
               <h1 className="mt-4 text-3xl font-bold">Todo listo, {plan.nombre}.</h1>
-              <p className="mt-2 text-[15px] text-stone-600">
+              <p className="mt-2 text-[15px] text-slate-600">
                 Ya estamos escuchando por vos. Así te queda configurado:
               </p>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-                <span className="text-[13px] text-stone-500">Plan</span>
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span className="text-[13px] text-slate-500">Plan</span>
                 <span className="text-[14px] font-semibold">
                   {plan.nombre} ·{" "}
                   {plan.aMedida
@@ -1035,7 +1035,7 @@ export default function OnboardingPage() {
                     : `hasta ${plan.limite} nombres`}
                 </span>
               </div>
-              <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                 Tu watchlist ({selRows.length})
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -1047,12 +1047,12 @@ export default function OnboardingPage() {
                   return (
                     <div
                       key={r.slug}
-                      className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-[13px]"
+                      className="rounded-xl border border-[#f0c99a] bg-[#fbebd6] px-3 py-2 text-[13px]"
                       style={{ color: BRAND }}
                     >
                       <p className="font-semibold">{r.name}</p>
                       {alias.length > 0 && (
-                        <p className="mt-0.5 text-[11px] text-stone-500">
+                        <p className="mt-0.5 text-[11px] text-slate-500">
                           buscando: {alias.join(" · ")}
                         </p>
                       )}
@@ -1060,10 +1060,10 @@ export default function OnboardingPage() {
                   );
                 })}
               </div>
-              <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+              <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                 Tus avisos
               </p>
-              <div className="mt-2 grid gap-2 text-[13px] text-stone-600">
+              <div className="mt-2 grid gap-2 text-[13px] text-slate-600">
                 <p className="flex gap-2">
                   <span style={{ color: BRAND }}>✓</span>{" "}
                   {SENSIBILIDADES.find((s) => s.id === sensibilidad)!.titulo} ·{" "}
@@ -1072,7 +1072,7 @@ export default function OnboardingPage() {
                 <p className="flex gap-2">
                   <span style={{ color: BRAND }}>✓</span>{" "}
                   {FRECUENCIAS.find((f) => f.id === frecuencia)!.titulo} a{" "}
-                  <b className="text-stone-700">{email.trim()}</b>
+                  <b className="text-slate-700">{email.trim()}</b>
                 </p>
                 <p className="flex gap-2">
                   <span style={{ color: BRAND }}>✓</span> Avisos de crisis apenas los detectamos
@@ -1083,7 +1083,7 @@ export default function OnboardingPage() {
                   </p>
                 )}
               </div>
-              <p className="mt-3 text-[12px] text-stone-400">
+              <p className="mt-3 text-[12px] text-slate-400">
                 Todo esto lo cambiás cuando quieras desde <b>Avisos</b> en tu tablero.
               </p>
             </div>
@@ -1091,7 +1091,7 @@ export default function OnboardingPage() {
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={() => setPaso("avisos")}
-                className="text-[14px] text-stone-500 hover:text-stone-800"
+                className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Ajustar
               </button>

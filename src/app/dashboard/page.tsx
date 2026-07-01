@@ -134,17 +134,17 @@ const CATALOG_BY_SLUG = new Map(CATALOG.curated.map((c) => [c.slug, c]));
 
 /* ---------- design system ----------
    Palco · capa de inteligencia de la atención.
-   Light mode editorial: papel cálido, tinta, azul de marca, rojo crisis, verde positivo.
+   Marca ámbar sobre neutrales fríos. Ver Palco/design-system.md y tailwind.config.ts.
    Tokens:
-     bg      #faf9f7  papel
+     bg      #f6f7f9  surface (fondo de app)
      surface #ffffff  tarjeta
-     border  stone-200
-     ink     stone-900 / muted stone-500
-     brand   #2f5fe0  (acento, chat, links)
-     crisis  #dc2626
+     border  slate-200 / line #e5e7eb
+     ink     slate-900 / muted slate-500
+     brand   #b45309  (ámbar: acento, chat, links, fills)
+     crisis  #e11d48  (carmín)
      pos     emerald-600
 */
-const BRAND = "#2f5fe0";
+const BRAND = "#b45309";
 
 /* ---------- helpers ---------- */
 function compact(n: number | null | undefined): string {
@@ -231,8 +231,8 @@ function OrigenBadge({ origen }: { origen: "aire" | "chat" | "hablado" | "ambos"
     <span
       className={`mt-0.5 flex w-11 shrink-0 flex-col items-center justify-center rounded-lg border py-1.5 ${
         esChat || esAmbos
-          ? "border-blue-200 bg-blue-50 text-[#2f5fe0]"
-          : "border-stone-200 bg-stone-50 text-stone-600"
+          ? "border-[#f0c99a] bg-[#fbebd6] text-[#b45309]"
+          : "border-slate-200 bg-slate-50 text-slate-600"
       }`}
     >
       <span className="flex items-center gap-0.5">
@@ -267,7 +267,7 @@ function OrigenPill({
 
 const SENT = {
   neg: { label: "negativo", dot: "🔴", cls: "text-red-700 bg-red-50 border-red-200" },
-  neu: { label: "neutro", dot: "⚪", cls: "text-stone-600 bg-stone-100 border-stone-200" },
+  neu: { label: "neutro", dot: "⚪", cls: "text-slate-600 bg-slate-100 border-slate-200" },
   pos: { label: "positivo", dot: "🟢", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
 } as const;
 
@@ -288,39 +288,39 @@ function ToneThermo({
   const total = s.neg + s.neu + s.pos;
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-[11px] uppercase tracking-wide text-stone-400">{title}</p>
-        <p className="text-[11px] text-stone-400">{total ? baseLabel : "sin datos aún"}</p>
+        <p className="text-[11px] uppercase tracking-wide text-slate-400">{title}</p>
+        <p className="text-[11px] text-slate-400">{total ? baseLabel : "sin datos aún"}</p>
       </div>
-      <p className="mt-0.5 text-[12px] text-stone-500">{sub}</p>
+      <p className="mt-0.5 text-[12px] text-slate-500">{sub}</p>
       {total ? (
         <>
-          <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-stone-100">
+          <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-slate-100">
             <div className="bg-red-500" style={{ width: `${pct(s.neg)}%` }} />
-            <div className="bg-stone-400" style={{ width: `${pct(s.neu)}%` }} />
+            <div className="bg-slate-400" style={{ width: `${pct(s.neu)}%` }} />
             <div className="bg-emerald-500" style={{ width: `${pct(s.pos)}%` }} />
           </div>
-          <div className="mt-3 flex justify-between text-[12px] text-stone-500">
-            <span>🔴 {pct(s.neg)}% <span className="text-stone-400">({s.neg})</span></span>
-            <span>⚪ {pct(s.neu)}% <span className="text-stone-400">({s.neu})</span></span>
-            <span>🟢 {pct(s.pos)}% <span className="text-stone-400">({s.pos})</span></span>
+          <div className="mt-3 flex justify-between text-[12px] text-slate-500">
+            <span>🔴 {pct(s.neg)}% <span className="text-slate-400">({s.neg})</span></span>
+            <span>⚪ {pct(s.neu)}% <span className="text-slate-400">({s.neu})</span></span>
+            <span>🟢 {pct(s.pos)}% <span className="text-slate-400">({s.pos})</span></span>
           </div>
         </>
       ) : (
-        <p className="mt-3 text-[13px] text-stone-400">
+        <p className="mt-3 text-[13px] text-slate-400">
           Todavía sin mensajes clasificados para esta entidad.
         </p>
       )}
-      <p className="mt-2 text-[11px] text-stone-400">{note}</p>
+      <p className="mt-2 text-[11px] text-slate-400">{note}</p>
     </div>
   );
 }
 
 const ORIGEN: Record<string, { label: string; cls: string; origen: "hablado" | "ambos" | "chat" }> = {
-  hablado: { label: "dicho al aire", cls: "text-stone-700 bg-stone-100 border-stone-200", origen: "hablado" },
-  ambos: { label: "aire y sala", cls: "text-[#2f5fe0] bg-blue-50 border-blue-200", origen: "ambos" },
-  chat: { label: "solo la sala", cls: "text-[#2f5fe0] bg-blue-50 border-blue-200", origen: "chat" },
+  hablado: { label: "dicho al aire", cls: "text-slate-700 bg-slate-100 border-slate-200", origen: "hablado" },
+  ambos: { label: "aire y sala", cls: "text-[#b45309] bg-[#fbebd6] border-[#f0c99a]", origen: "ambos" },
+  chat: { label: "solo la sala", cls: "text-[#b45309] bg-[#fbebd6] border-[#f0c99a]", origen: "chat" },
 };
 
 /* ---------- página ---------- */
@@ -496,9 +496,9 @@ export default function PalcoPage() {
   }, [D, slug]);
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] text-stone-900">
+    <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
       {/* nav superior */}
-      <div className="border-b border-stone-200 bg-white">
+      <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1100px] items-center justify-between px-5 py-3">
           <div
             className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.2em]"
@@ -512,13 +512,13 @@ export default function PalcoPage() {
           </div>
           <div className="flex items-center gap-3 text-[13px]">
             {plan && (
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 font-medium" style={{ color: BRAND }}>
+              <span className="rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
                 Plan {PLAN_LABEL[plan] || plan}
               </span>
             )}
             <button
               onClick={() => setShowAvisos(true)}
-              className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 font-medium text-stone-600 hover:border-stone-400"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
             >
               ⚙ Avisos
             </button>
@@ -529,7 +529,7 @@ export default function PalcoPage() {
                 p.set("edit", "1");
                 router.push(`/onboarding?${p.toString()}`);
               }}
-              className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 font-medium text-stone-600 hover:border-stone-400"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
             >
               Editar watchlist
             </button>
@@ -540,21 +540,21 @@ export default function PalcoPage() {
       {/* ---------- panel de Avisos (gobernanza / settings) ---------- */}
       {showAvisos && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-stone-900/30"
+          className="fixed inset-0 z-50 flex justify-end bg-slate-900/30"
           onClick={() => setShowAvisos(false)}
         >
           <div
-            className="h-full w-full max-w-[440px] overflow-y-auto bg-[#faf9f7] shadow-2xl"
+            className="h-full w-full max-w-[440px] overflow-y-auto bg-[#f6f7f9] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-stone-200 bg-white px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
               <div>
                 <h2 className="text-[16px] font-bold">Avisos</h2>
-                <p className="text-[12px] text-stone-500">Vos decidís cuándo te molestamos.</p>
+                <p className="text-[12px] text-slate-500">Vos decidís cuándo te molestamos.</p>
               </div>
               <button
                 onClick={() => setShowAvisos(false)}
-                className="rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-[13px] text-stone-500 hover:border-stone-400"
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[13px] text-slate-500 hover:border-slate-400"
               >
                 ✕
               </button>
@@ -563,7 +563,7 @@ export default function PalcoPage() {
             <div className="space-y-6 p-5">
               {/* cuánto */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                   Cuánto avisar
                 </p>
                 <div className="mt-2 space-y-2">
@@ -575,8 +575,8 @@ export default function PalcoPage() {
                         onClick={() => setSensibilidad(s.id)}
                         className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition ${
                           active
-                            ? "border-[#2f5fe0] bg-blue-50 ring-2 ring-blue-100"
-                            : "border-stone-200 bg-white hover:border-stone-400"
+                            ? "border-[#b45309] bg-[#fbebd6] ring-2 ring-[#f5d9b0]"
+                            : "border-slate-200 bg-white hover:border-slate-400"
                         }`}
                       >
                         <div>
@@ -591,7 +591,7 @@ export default function PalcoPage() {
                               </span>
                             )}
                           </p>
-                          <p className="mt-0.5 text-[12px] text-stone-500">{s.bajada}</p>
+                          <p className="mt-0.5 text-[12px] text-slate-500">{s.bajada}</p>
                         </div>
                         {active && <span style={{ color: BRAND }}>✓</span>}
                       </button>
@@ -602,26 +602,26 @@ export default function PalcoPage() {
 
               {/* qué */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                   Qué avisar
                 </p>
                 <button
                   onClick={() => setSoloNegativo((v) => !v)}
                   className={`mt-2 flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition ${
                     soloNegativo
-                      ? "border-[#2f5fe0] bg-blue-50 ring-2 ring-blue-100"
-                      : "border-stone-200 bg-white hover:border-stone-400"
+                      ? "border-[#b45309] bg-[#fbebd6] ring-2 ring-[#f5d9b0]"
+                      : "border-slate-200 bg-white hover:border-slate-400"
                   }`}
                 >
                   <div>
                     <p className="text-[14px] font-semibold">Solo lo negativo</p>
-                    <p className="mt-0.5 text-[12px] text-stone-500">
+                    <p className="mt-0.5 text-[12px] text-slate-500">
                       Modo crisis: solo malas menciones. Apagado = también lo bueno y neutro.
                     </p>
                   </div>
                   <span
                     className={`ml-2 flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
-                      soloNegativo ? "" : "bg-stone-200"
+                      soloNegativo ? "" : "bg-slate-200"
                     }`}
                     style={soloNegativo ? { backgroundColor: BRAND } : undefined}
                   >
@@ -636,7 +636,7 @@ export default function PalcoPage() {
 
               {/* cómo */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                   Cómo recibirlo
                 </p>
                 <div className="mt-2 space-y-2">
@@ -648,27 +648,27 @@ export default function PalcoPage() {
                         onClick={() => setFrecuencia(f.id)}
                         className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition ${
                           active
-                            ? "border-[#2f5fe0] bg-blue-50 ring-2 ring-blue-100"
-                            : "border-stone-200 bg-white hover:border-stone-400"
+                            ? "border-[#b45309] bg-[#fbebd6] ring-2 ring-[#f5d9b0]"
+                            : "border-slate-200 bg-white hover:border-slate-400"
                         }`}
                       >
                         <div>
                           <p className="text-[14px] font-semibold">{f.titulo}</p>
-                          <p className="mt-0.5 text-[12px] text-stone-500">{f.bajada}</p>
+                          <p className="mt-0.5 text-[12px] text-slate-500">{f.bajada}</p>
                         </div>
                         {active && <span style={{ color: BRAND }}>✓</span>}
                       </button>
                     );
                   })}
                 </div>
-                <p className="mt-2 text-[11px] text-stone-400">
+                <p className="mt-2 text-[11px] text-slate-400">
                   Los avisos de crisis los mandamos en cuanto los detectamos, sin importar esto.
                 </p>
               </div>
 
               {/* a dónde */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                   A dónde te lo mandamos
                 </p>
                 <input
@@ -676,7 +676,7 @@ export default function PalcoPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#2f5fe0] focus:ring-2 focus:ring-blue-100"
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
                 />
               </div>
 
@@ -696,7 +696,7 @@ export default function PalcoPage() {
         {/* rail de watchlist (viene del onboarding) */}
         {watch.length > 0 && (
           <div className="mb-5 flex flex-wrap items-center gap-2">
-            <span className="text-[12px] font-medium text-stone-400">Tu watchlist:</span>
+            <span className="text-[12px] font-medium text-slate-400">Tu watchlist:</span>
             {watch.map((s) => {
               const row = D.index.find((r) => r.slug === s);
               const active = s === slug;
@@ -710,8 +710,8 @@ export default function PalcoPage() {
                   }}
                   className={`rounded-full border px-3 py-1 text-[12px] transition ${
                     active
-                      ? "border-[#2f5fe0] bg-blue-50 text-[#2f5fe0]"
-                      : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+                      ? "border-[#b45309] bg-[#fbebd6] text-[#b45309]"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                   }`}
                 >
                   {row.name}
@@ -729,7 +729,7 @@ export default function PalcoPage() {
               <h2 className="text-[13px] font-semibold uppercase tracking-wide text-red-600">
                 🚨 Alertas activas ({alertas.length})
               </h2>
-              <span className="text-[12px] text-stone-400">necesitan tu atención</span>
+              <span className="text-[12px] text-slate-400">necesitan tu atención</span>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {alertas.map((rr) => (
@@ -742,10 +742,10 @@ export default function PalcoPage() {
                   className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-left hover:border-red-300"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold text-stone-800">
+                    <p className="truncate text-[13px] font-semibold text-slate-800">
                       {rr.entity}
                     </p>
-                    <p className="truncate text-[12px] text-stone-500">
+                    <p className="truncate text-[12px] text-slate-500">
                       {rr.crisis!.channel} · {fmtDay(rr.crisis!.date)}
                     </p>
                   </div>
@@ -766,15 +766,15 @@ export default function PalcoPage() {
         )}
 
         {/* selector de entidad */}
-        <section className="mt-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-          <label className="text-[12px] font-medium text-stone-500">
+        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <label className="text-[12px] font-medium text-slate-500">
             ¿A quién querés monitorear?
           </label>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Escribí un nombre — persona, marca, tema…"
-            className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-[15px] text-stone-900 placeholder-stone-400 outline-none focus:border-[#2f5fe0] focus:ring-2 focus:ring-blue-100"
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[15px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
           />
           {cats.length > 1 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -786,8 +786,8 @@ export default function PalcoPage() {
                     onClick={() => setCat(c)}
                     className={`rounded-full border px-3 py-1 text-[12px] transition ${
                       on
-                        ? "border-stone-800 bg-stone-800 text-white"
-                        : "border-stone-200 bg-white text-stone-500 hover:border-stone-400"
+                        ? "border-slate-800 bg-slate-800 text-white"
+                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-400"
                     }`}
                   >
                     {c === "todas" ? "Todas" : c}
@@ -799,7 +799,7 @@ export default function PalcoPage() {
           {notFound ? (
             catalogMatches.length > 0 ? (
               <div className="mt-3">
-                <p className="text-[12px] text-stone-500">
+                <p className="text-[12px] text-slate-500">
                   No tiene radar todavía, pero <b>ya lo detectamos en la conversación</b>.
                   Activá el seguimiento y armamos el análisis completo:
                 </p>
@@ -809,12 +809,12 @@ export default function PalcoPage() {
                     return (
                       <div
                         key={c.slug_guess}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3"
+                        className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3"
                       >
                         <div className="min-w-0">
-                          <p className="text-[14px] font-semibold text-stone-800">
+                          <p className="text-[14px] font-semibold text-slate-800">
                             {c.canonical_guess}
-                            <span className="ml-2 rounded-full border border-stone-200 bg-stone-100 px-2 py-0.5 text-[10.5px] font-normal text-stone-500">
+                            <span className="ml-2 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10.5px] font-normal text-slate-500">
                               {c.kind === "persona"
                                 ? "persona"
                                 : c.kind === "empresa"
@@ -822,9 +822,9 @@ export default function PalcoPage() {
                                 : "persona/marca"}
                             </span>
                           </p>
-                          <p className="mt-0.5 text-[12px] text-stone-500">
-                            Lo nombraron <b className="text-stone-700">{compact(c.mentions)}</b> veces
-                            en <b className="text-stone-700">{c.programs}</b> programas ·{" "}
+                          <p className="mt-0.5 text-[12px] text-slate-500">
+                            Lo nombraron <b className="text-slate-700">{compact(c.mentions)}</b> veces
+                            en <b className="text-slate-700">{c.programs}</b> programas ·{" "}
                             {c.channels} canales
                           </p>
                         </div>
@@ -848,7 +848,7 @@ export default function PalcoPage() {
                   })}
                 </div>
                 {solicitadas.length > 0 && (
-                  <p className="mt-2 text-[11px] text-stone-400">
+                  <p className="mt-2 text-[11px] text-slate-400">
                     Armamos el radar completo en la próxima corrida del pipeline y te
                     avisamos cuando esté listo.
                   </p>
@@ -877,12 +877,12 @@ export default function PalcoPage() {
                     }}
                     className={`rounded-full border px-3 py-1.5 text-left text-[12px] transition ${
                       active
-                        ? "border-[#2f5fe0] bg-blue-50 text-[#2f5fe0]"
-                        : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+                        ? "border-[#b45309] bg-[#fbebd6] text-[#b45309]"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                     }`}
                   >
                     <span className="font-medium">{r.name}</span>
-                    <span className="ml-2 text-stone-400">
+                    <span className="ml-2 text-slate-400">
                       {r.type} · {compact(r.mentions)} menc.
                     </span>
                   </button>
@@ -893,18 +893,18 @@ export default function PalcoPage() {
         </section>
 
         {/* header entidad */}
-        <header className="mt-6 flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-6">
+        <header className="mt-6 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
-            <p className="text-[12px] uppercase tracking-wide text-stone-400">{R.type}</p>
+            <p className="text-[12px] uppercase tracking-wide text-slate-400">{R.type}</p>
             <h1 className="mt-1 text-3xl font-bold leading-tight">
               Radar de {R.entity} en el streaming
             </h1>
-            <p className="mt-1 text-[14px] text-stone-500">
+            <p className="mt-1 text-[14px] text-slate-500">
               Qué se dice · cuánta gente lo escucha en vivo · cómo reacciona la sala
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] uppercase tracking-wide text-stone-400">Watchlist activa</p>
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Watchlist activa</p>
             <div className="mt-1">
               <WatchlistTerms radar={R} />
             </div>
@@ -919,21 +919,21 @@ export default function PalcoPage() {
             { k: "Programas", v: String(R.totals.programs_with_mentions), s: "lo nombraron" },
             { k: "Canales", v: String(R.totals.channels), s: "cobertura" },
           ].map((kpi) => (
-            <div key={kpi.k} className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-              <p className="text-[11px] uppercase tracking-wide text-stone-400">{kpi.k}</p>
+            <div key={kpi.k} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] uppercase tracking-wide text-slate-400">{kpi.k}</p>
               <p className="mt-1 text-3xl font-bold tabular-nums">{kpi.v}</p>
-              <p className="text-[12px] text-stone-400">{kpi.s}</p>
+              <p className="text-[12px] text-slate-400">{kpi.s}</p>
             </div>
           ))}
         </section>
 
         {/* resumen visual: dónde y cuándo (solo aire) */}
         <section className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-stone-500">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
               Dónde más se habla · por canal
             </h2>
-            <p className="mt-1 text-[12px] text-stone-400">
+            <p className="mt-1 text-[12px] text-slate-400">
               Solo lo dicho al aire (transcript de conductores). No suma la sala — el chat
               {R.totals.chat_mentions > 0
                 ? ` (${compact(R.totals.chat_mentions)} menciones) va aparte en el detalle.`
@@ -942,14 +942,14 @@ export default function PalcoPage() {
             <div className="mt-4 space-y-2">
               {R.share_of_voice.slice(0, 8).map((s) => (
                 <div key={s.channel} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 truncate text-[12px] text-stone-600">{s.channel}</span>
-                  <div className="h-4 flex-1 overflow-hidden rounded bg-stone-100">
+                  <span className="w-24 shrink-0 truncate text-[12px] text-slate-600">{s.channel}</span>
+                  <div className="h-4 flex-1 overflow-hidden rounded bg-slate-100">
                     <div
                       className="h-full rounded"
                       style={{ width: `${(s.mentions / maxSov) * 100}%`, backgroundColor: BRAND }}
                     />
                   </div>
-                  <span className="w-8 shrink-0 text-right text-[12px] tabular-nums text-stone-500">
+                  <span className="w-8 shrink-0 text-right text-[12px] tabular-nums text-slate-500">
                     {s.mentions}
                   </span>
                 </div>
@@ -957,11 +957,11 @@ export default function PalcoPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-stone-500">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
               Menciones por día
             </h2>
-            <p className="mt-1 text-[12px] text-stone-400">
+            <p className="mt-1 text-[12px] text-slate-400">
               Misma base: menciones habladas al aire por día (sin chat).
             </p>
             <div className="mt-6 flex h-44 gap-1.5">
@@ -969,7 +969,7 @@ export default function PalcoPage() {
                 const pct = d.mentions / maxDay;
                 return (
                   <div key={d.day} className="flex min-w-0 flex-1 flex-col h-full">
-                    <span className="shrink-0 text-center text-[10px] tabular-nums text-stone-400">
+                    <span className="shrink-0 text-center text-[10px] tabular-nums text-slate-400">
                       {d.mentions}
                     </span>
                     <div className="flex min-h-0 flex-1 items-end pt-1">
@@ -978,12 +978,12 @@ export default function PalcoPage() {
                         style={{
                           height: `${Math.max(pct * 100, d.mentions > 0 ? 6 : 0)}%`,
                           minHeight: d.mentions > 0 ? 4 : 0,
-                          background: `linear-gradient(to top, ${BRAND}, #7aa0f0)`,
+                          background: `linear-gradient(to top, ${BRAND}, #f0a44e)`,
                         }}
                         title={`${fmtDay(d.day)}: ${d.mentions} menciones`}
                       />
                     </div>
-                    <span className="shrink-0 pt-1 text-center text-[9px] text-stone-400">
+                    <span className="shrink-0 pt-1 text-center text-[9px] text-slate-400">
                       {fmtDay(d.day)}
                     </span>
                   </div>
@@ -1013,8 +1013,8 @@ export default function PalcoPage() {
 
         {/* reacción de la sala: intensidad (cuánto, no qué tono) */}
         <section className="mt-3">
-          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-[11px] uppercase tracking-wide text-stone-400">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">
               Reacción de la sala · intensidad{" "}
               <span style={{ color: BRAND }}>(único de Palco)</span>
             </p>
@@ -1022,17 +1022,17 @@ export default function PalcoPage() {
               <div className="mt-3 flex items-end gap-8">
                 <div>
                   <p className="text-3xl font-bold tabular-nums">{compact(pico.conc_at)}</p>
-                  <p className="text-[12px] text-stone-400">mirando en vivo · {pico.channel}</p>
+                  <p className="text-[12px] text-slate-400">mirando en vivo · {pico.channel}</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold tabular-nums" style={{ color: BRAND }}>
                     ×{pico.chat_ratio}
                   </p>
-                  <p className="text-[12px] text-stone-400">chat vs. su ritmo normal</p>
+                  <p className="text-[12px] text-slate-400">chat vs. su ritmo normal</p>
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-[13px] text-stone-400">
+              <p className="mt-3 text-[13px] text-slate-400">
                 Todavía no hay chat en vivo capturado para esta entidad. La reacción de
                 la sala aparece cuando el programa donde se la nombra tiene chat activo.
               </p>
@@ -1043,10 +1043,10 @@ export default function PalcoPage() {
         {/* cruces con otras entidades (co-mención) */}
         {crucesPairs.length > 0 && (
           <section className="mt-6">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-stone-500">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
               Cruces · nombrados juntos al aire
             </h2>
-            <p className="mt-1 text-[12px] text-stone-400">
+            <p className="mt-1 text-[12px] text-slate-400">
               Mismo programa, ventana de ~10 minutos. Cada cruce muestra qué dijeron de cada uno
               en ese bloque.
             </p>
@@ -1061,44 +1061,44 @@ export default function PalcoPage() {
                 return (
                   <div
                     key={parKey}
-                    className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+                    className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="text-[14px] font-semibold text-stone-800">
+                      <p className="text-[14px] font-semibold text-slate-800">
                         {R.entity} × {otro}
                       </p>
-                      <p className="text-[12px] text-stone-400">
+                      <p className="text-[12px] text-slate-400">
                         {p.cruces_total} cruces · {p.programas} programas
                         {p.cruces_total > enDataset && (
-                          <span className="text-stone-300"> · top {enDataset} en tablero</span>
+                          <span className="text-slate-300"> · top {enDataset} en tablero</span>
                         )}
                       </p>
                     </div>
-                    <div className="mt-3 space-y-4 border-t border-stone-100 pt-3">
+                    <div className="mt-3 space-y-4 border-t border-slate-100 pt-3">
                       {p.cruces.slice(0, visible).map((cruce, i) => (
                         <div
                           key={cruce.id}
-                          className={i > 0 ? "border-t border-stone-100 pt-4" : ""}
+                          className={i > 0 ? "border-t border-slate-100 pt-4" : ""}
                         >
-                          <p className="text-[12px] font-medium text-stone-500">
+                          <p className="text-[12px] font-medium text-slate-500">
                             {cruce.channel} · {fmtDay(cruce.date)} · {cruce.ventana?.label}
                             {cruce.program && (
-                              <span className="font-normal text-stone-400"> · {cruce.program}</span>
+                              <span className="font-normal text-slate-400"> · {cruce.program}</span>
                             )}
                           </p>
                           <div className="mt-2 space-y-2">
                             {cruce.entidades.map((e) => (
-                              <p key={`${cruce.id}-${e.slug}`} className="text-[13px] text-stone-700">
-                                <span className="font-semibold text-stone-600">
+                              <p key={`${cruce.id}-${e.slug}`} className="text-[13px] text-slate-700">
+                                <span className="font-semibold text-slate-600">
                                   {e.nombre || e.slug}
                                 </span>
-                                <span className="text-stone-400"> ({e.t_label})</span>
-                                <span className="text-stone-500"> — </span>
+                                <span className="text-slate-400"> ({e.t_label})</span>
+                                <span className="text-slate-500"> — </span>
                                 <span className="italic">&ldquo;{e.quote}&rdquo;</span>
                               </p>
                             ))}
                           </div>
-                          <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-stone-500">
+                          <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-slate-500">
                             {cruce.conc_at != null && (
                               <span className="inline-flex items-center gap-1">
                                 <IconEye className="h-3.5 w-3.5" />
@@ -1126,7 +1126,7 @@ export default function PalcoPage() {
                       ))}
                     </div>
                     {(enDataset > 1 || visible > 1) && (
-                      <div className="mt-3 flex flex-wrap gap-2 border-t border-stone-100 pt-3">
+                      <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
                         {puedeMas && (
                           <button
                             type="button"
@@ -1136,7 +1136,7 @@ export default function PalcoPage() {
                                 [parKey]: Math.min(visible + 5, enDataset),
                               }))
                             }
-                            className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-[12px] font-medium text-stone-700 hover:border-stone-400"
+                            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-medium text-slate-700 hover:border-slate-400"
                           >
                             Ver más cruces ({Math.min(visible + 5, enDataset)} de {enDataset})
                           </button>
@@ -1147,7 +1147,7 @@ export default function PalcoPage() {
                             onClick={() =>
                               setCruceShow((s) => ({ ...s, [parKey]: enDataset }))
                             }
-                            className="rounded-lg border border-stone-200 px-3 py-1.5 text-[12px] font-medium text-stone-600 hover:border-stone-400"
+                            className="rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-medium text-slate-600 hover:border-slate-400"
                           >
                             Ver los {enDataset} del tablero
                           </button>
@@ -1158,7 +1158,7 @@ export default function PalcoPage() {
                             onClick={() =>
                               setCruceShow((s) => ({ ...s, [parKey]: 1 }))
                             }
-                            className="rounded-lg px-3 py-1.5 text-[12px] text-stone-500 hover:text-stone-800"
+                            className="rounded-lg px-3 py-1.5 text-[12px] text-slate-500 hover:text-slate-800"
                           >
                             Colapsar
                           </button>
@@ -1185,7 +1185,7 @@ export default function PalcoPage() {
               </div>
               <div className="p-5">
                 <p className="text-[15px] font-semibold">
-                  {R.crisis.channel} · <span className="text-stone-500">{R.crisis.program}</span>
+                  {R.crisis.channel} · <span className="text-slate-500">{R.crisis.program}</span>
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {R.crisis.origen && ORIGEN[R.crisis.origen] && (
@@ -1196,18 +1196,18 @@ export default function PalcoPage() {
                     />
                   )}
                   {R.crisis.formato && (
-                    <span className="rounded-full border border-stone-200 bg-stone-100 px-2 py-0.5 text-[11px] text-stone-600">
+                    <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
                       {R.crisis.formato}
                     </span>
                   )}
                 </div>
-                <p className="mt-3 border-l-2 border-red-400 pl-3 text-[15px] italic text-stone-700">
+                <p className="mt-3 border-l-2 border-red-400 pl-3 text-[15px] italic text-slate-700">
                   &ldquo;{R.crisis.quote}&rdquo;
                 </p>
-                <div className="mt-4 flex flex-wrap gap-4 text-[13px] text-stone-600">
+                <div className="mt-4 flex flex-wrap gap-4 text-[13px] text-slate-600">
                   <span className="inline-flex items-center gap-1">
                     <IconEye className="h-3.5 w-3.5" />
-                    <b className="tabular-nums text-stone-900">{compact(R.crisis.conc_at)}</b> en vivo
+                    <b className="tabular-nums text-slate-900">{compact(R.crisis.conc_at)}</b> en vivo
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <IconChat className="h-3.5 w-3.5" />
@@ -1219,8 +1219,8 @@ export default function PalcoPage() {
                   <span>🕐 {R.crisis.t_label}</span>
                   <span className="text-red-600">🔴 tono negativo</span>
                 </div>
-                <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-[12px] text-stone-500">
-                  <b className="text-stone-700">Por qué es crisis:</b> mención + audiencia alta + chat
+                <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-[12px] text-slate-500">
+                  <b className="text-slate-700">Por qué es crisis:</b> mención + audiencia alta + chat
                   disparado + tono negativo, todo al mismo tiempo. Nadie más puede computar este cruce.
                 </p>
                 <a
@@ -1242,10 +1242,10 @@ export default function PalcoPage() {
         <section className="mt-8">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-stone-500">
+              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                 Destacados por programa
               </h2>
-              <p className="mt-1 max-w-xl text-[12px] text-stone-400">
+              <p className="mt-1 max-w-xl text-[12px] text-slate-400">
                 Una cita al aire por programa donde apareció, ordenada por audiencia en vivo.
                 No es el listado completo — eso está en{" "}
                 <a href="#detalle-menciones" className="font-medium hover:underline" style={{ color: BRAND }}>
@@ -1254,7 +1254,7 @@ export default function PalcoPage() {
                 . El chat solo se muestra si el canal tiene sala capturada (Luzu, por ejemplo, no).
               </p>
             </div>
-            <div className="flex gap-1 rounded-lg border border-stone-200 bg-white p-0.5 text-[12px]">
+            <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
               {(["todas", "neg"] as const).map((t) => (
                 <button
                   key={t}
@@ -1264,8 +1264,8 @@ export default function PalcoPage() {
                   }}
                   className={`rounded-md px-3 py-1 ${
                     tab === t
-                      ? "bg-stone-900 text-white"
-                      : "text-stone-500 hover:text-stone-800"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   {t === "todas" ? "Todas" : "Solo negativas"}
@@ -1275,7 +1275,7 @@ export default function PalcoPage() {
           </div>
 
           {feedVisible.length === 0 ? (
-            <p className="rounded-xl border border-stone-200 bg-white p-6 text-center text-[13px] text-stone-400">
+            <p className="rounded-xl border border-slate-200 bg-white p-6 text-center text-[13px] text-slate-400">
               Sin menciones negativas en el período.
             </p>
           ) : (
@@ -1287,39 +1287,39 @@ export default function PalcoPage() {
                 return (
                   <article
                     key={c.video_id + c.t_seconds}
-                    className="flex flex-col rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+                    className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-stone-800">{c.channel}</span>
+                      <span className="text-[13px] font-semibold text-slate-800">{c.channel}</span>
                       <span className={`rounded-full border px-2 py-0.5 text-[11px] ${s.cls}`}>
                         {s.dot} {s.label}
                       </span>
                     </div>
-                    <p className="mt-1 text-[12px] text-stone-400 line-clamp-1">{c.program}</p>
+                    <p className="mt-1 text-[12px] text-slate-400 line-clamp-1">{c.program}</p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {o && (
                         <OrigenPill origen={o.origen} cls={o.cls} label={o.label} />
                       )}
                       {c.formato && (
-                        <span className="rounded-full border border-stone-200 bg-stone-100 px-2 py-0.5 text-[10.5px] text-stone-500">
+                        <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10.5px] text-slate-500">
                           {c.formato}
                         </span>
                       )}
                     </div>
-                    <p className="mt-2 flex-1 text-[13.5px] italic leading-relaxed text-stone-700 line-clamp-3">
+                    <p className="mt-2 flex-1 text-[13.5px] italic leading-relaxed text-slate-700 line-clamp-3">
                       &ldquo;{c.quote}&rdquo;
                     </p>
                     {c.chat_ex?.[0] && (
-                      <p className="mt-2 flex items-start gap-1.5 rounded-md bg-stone-50 px-2.5 py-1.5 text-[12px] text-stone-500">
+                      <p className="mt-2 flex items-start gap-1.5 rounded-md bg-slate-50 px-2.5 py-1.5 text-[12px] text-slate-500">
                         <IconChat className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                         <span>la sala: «{c.chat_ex[0]}»</span>
                       </p>
                     )}
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-stone-500">
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-slate-500">
                       <span className="inline-flex items-center gap-1">
                         <IconEye className="h-3.5 w-3.5" />
-                        <b className="tabular-nums text-stone-800">{compact(c.conc_at)}</b>
-                        <span className="text-stone-400">en vivo</span>
+                        <b className="tabular-nums text-slate-800">{compact(c.conc_at)}</b>
+                        <span className="text-slate-400">en vivo</span>
                       </span>
                       {conChat ? (
                         <span className="inline-flex items-center gap-1">
@@ -1327,10 +1327,10 @@ export default function PalcoPage() {
                           <b className="tabular-nums" style={{ color: BRAND }}>
                             ×{c.chat_ratio}
                           </b>
-                          <span className="text-stone-400">chat</span>
+                          <span className="text-slate-400">chat</span>
                         </span>
                       ) : (
-                        <span className="text-[11px] text-stone-300">sin chat en este canal</span>
+                        <span className="text-[11px] text-slate-300">sin chat en este canal</span>
                       )}
                       <span>{fmtDay(c.date)} · {c.t_label}</span>
                       <a
@@ -1354,7 +1354,7 @@ export default function PalcoPage() {
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => setFeedShow((n) => n + 6)}
-                className="rounded-lg border border-stone-300 bg-white px-5 py-2 text-[13px] font-medium text-stone-700 hover:border-stone-400"
+                className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-[13px] font-medium text-slate-700 hover:border-slate-400"
               >
                 Ver más programas ({feed.length - feedShow} restantes)
               </button>
@@ -1373,24 +1373,24 @@ export default function PalcoPage() {
         <section id="detalle-menciones" className="mt-8 scroll-mt-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-[15px] font-semibold text-stone-800">
+              <h2 className="text-[15px] font-semibold text-slate-800">
                 Todo lo que se dijo
               </h2>
-              <p className="mt-0.5 text-[13px] text-stone-500">
+              <p className="mt-0.5 text-[13px] text-slate-500">
                 Cada mención, textual, del más nuevo al más viejo — al aire y en el chat.
                 A diferencia de los destacados de arriba, acá no hay una sola cita por programa:
                 aparece todo, una por una.
                 {R.menciones_total && (
                   <>
                     {" "}
-                    <span className="text-stone-400">
+                    <span className="text-slate-400">
                       ({R.menciones_total.aire} al aire · {R.menciones_total.chat} en el chat)
                     </span>
                   </>
                 )}
               </p>
             </div>
-            <div className="flex rounded-lg border border-stone-200 bg-white p-0.5 text-[12px]">
+            <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
               {(["todas", "aire", "chat"] as const).map((o) => (
                 <button
                   key={o}
@@ -1400,8 +1400,8 @@ export default function PalcoPage() {
                   }}
                   className={`rounded-md px-3 py-1 ${
                     logOrigen === o
-                      ? "bg-stone-900 text-white"
-                      : "text-stone-500 hover:text-stone-800"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   {o === "todas" ? (
@@ -1421,7 +1421,7 @@ export default function PalcoPage() {
           </div>
 
           {logVisible.length === 0 ? (
-            <p className="mt-4 rounded-xl border border-stone-200 bg-white p-6 text-center text-[13px] text-stone-400">
+            <p className="mt-4 rounded-xl border border-slate-200 bg-white p-6 text-center text-[13px] text-slate-400">
               No hay menciones para mostrar en este filtro.
             </p>
           ) : (
@@ -1432,19 +1432,19 @@ export default function PalcoPage() {
                 return (
                   <li
                     key={m.video_id + m.origen + m.t_seconds + i}
-                    className="flex gap-3 rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 shadow-sm"
+                    className="flex gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-sm"
                   >
                     <OrigenBadge origen={esChat ? "chat" : "aire"} />
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`text-[13.5px] leading-relaxed text-stone-700 ${
+                        className={`text-[13.5px] leading-relaxed text-slate-700 ${
                           esChat ? "" : "italic"
                         }`}
                       >
                         {esChat ? m.text : <>&ldquo;{m.quote}&rdquo;</>}
                       </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] text-stone-400">
-                        <span className="font-medium text-stone-500">{m.channel}</span>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] text-slate-400">
+                        <span className="font-medium text-slate-500">{m.channel}</span>
                         <span className="truncate max-w-[220px]">{m.program}</span>
                         <span className="tabular-nums">
                           {fmtDay(m.date)} · {m.t_label}
@@ -1484,7 +1484,7 @@ export default function PalcoPage() {
             <div className="mt-4 text-center">
               <button
                 onClick={() => setLogShow((n) => n + 40)}
-                className="rounded-lg border border-stone-300 bg-white px-5 py-2 text-[13px] font-medium text-stone-700 hover:border-stone-400"
+                className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-[13px] font-medium text-slate-700 hover:border-slate-400"
               >
                 Ver más ({logFiltered.length - logShow} restantes)
               </button>
@@ -1492,7 +1492,7 @@ export default function PalcoPage() {
           )}
         </section>
 
-        <footer className="mt-10 border-t border-stone-200 pt-4 text-[11px] text-stone-400">
+        <footer className="mt-10 border-t border-slate-200 pt-4 text-[11px] text-slate-400">
           Palco · demo sobre corpus real · datos capturados del streaming argentino en vivo ·
           elegí otra entidad arriba para cambiar el radar
         </footer>

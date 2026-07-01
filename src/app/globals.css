@@ -2,14 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   PALCO — Design System (tokens)
+   Marca: ámbar. Base: neutrales fríos. Estados: crisis (carmín) / up (esmeralda).
+   Editar acá para cambiar el color de todo el producto.
+   ============================================================ */
 :root {
-  --ink: #14141b;
-  --paper: #faf8f5;
-  --signal: #5a3cff;
-  --signal-soft: #ece9ff;
-  --crisis: #e5484d;
-  --up: #12a150;
-  --line: #e7e3dc;
+  /* Neutrales (fríos) */
+  --ink: #16181d;        /* texto principal */
+  --paper: #ffffff;      /* fondo de página */
+  --surface: #f6f7f9;    /* secciones alternas / fondo de app */
+  --line: #e5e7eb;       /* bordes y divisores */
+  --muted: #565d6b;      /* texto secundario */
+
+  /* Marca — ámbar */
+  --signal: #b45309;         /* color de marca: fills (texto blanco), links y acentos */
+  --signal-bright: #e8820c;  /* ámbar brillante: solo acentos decorativos grandes */
+  --signal-soft: #fbebd6;    /* tinte de fondo (chips, hover, seleccionado) */
+  --signal-line: #f0c99a;    /* bordes suaves sobre estado seleccionado */
+  --signal-ring: #f5d9b0;    /* anillo de foco */
+
+  /* Estados */
+  --crisis: #e11d48;      /* alerta / sentimiento negativo (carmín, se separa del ámbar) */
+  --crisis-soft: #fce7ef;
+  --up: #059669;          /* positivo / sentimiento a favor (esmeralda) */
+  --up-soft: #d1fae5;
 }
 
 html,
