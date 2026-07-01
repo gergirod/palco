@@ -8,6 +8,7 @@ import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { fetchDataset } from "@/lib/supabase";
+import { loadPalcoAccount, savePalcoAccount } from "@/lib/palco-account";
 
 /* ---------- tipos ---------- */
 type Card = {
@@ -370,28 +371,65 @@ export default function PalcoPage() {
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
   const [isDemo, setIsDemo] = useState(false);
 
-  // Lee la watchlist elegida en el onboarding (?e=slug1,slug2&plan=pro)
-  // o el panel de ejemplo desde la landing (?demo=1&e=slug).
+  // Lee URL (?demo, ?e=…) o la cuenta guardada en Supabase.
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const demo = p.get("demo") === "1";
     setIsDemo(demo);
-    const e = (p.get("e") || "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => D.radars[s]);
-    if (e.length) {
-      setWatch(demo ? [e[0]] : e);
-      setSlug(e[0]);
+    if (demo) {
+      const e = (p.get("e") || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => D.radars[s]);
+      if (e.length) {
+        setWatch([e[0]]);
+        setSlug(e[0]);
+      }
+      return;
     }
-    if (p.get("plan")) setPlan(p.get("plan")!);
-    const s = p.get("sens");
-    if (s === "menos" || s === "equilibrado" || s === "mas") setSensibilidad(s);
-    if (p.get("neg") === "1") setSoloNegativo(true);
-    const f = p.get("freq");
-    if (f === "al-toque" || f === "diario" || f === "semanal") setFrecuencia(f);
-    if (p.get("mail")) setEmail(p.get("mail")!);
-  }, []);
+
+    let alive = true;
+
+    (async () => {
+      const acc = await loadPalcoAccount();
+      if (!alive) return;
+
+      if (acc?.watchlist?.length) {
+        const slugs = acc.watchlist.map((w) => w.slug).filter((s) => D.radars[s]);
+        if (slugs.length) {
+          setWatch(slugs);
+          setSlug(slugs[0]);
+        }
+        if (acc.plan) setPlan(acc.plan);
+        const a = acc.avisos;
+        if (a.sensibilidad) setSensibilidad(a.sensibilidad);
+        setSoloNegativo(!!a.solo_negativo);
+        if (a.frecuencia) setFrecuencia(a.frecuencia);
+        setEmail(a.email_contacto || acc.email || "");
+        return;
+      }
+
+      const e = (p.get("e") || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => D.radars[s]);
+      if (e.length) {
+        setWatch(e);
+        setSlug(e[0]);
+      }
+      if (p.get("plan")) setPlan(p.get("plan")!);
+      const s = p.get("sens");
+      if (s === "menos" || s === "equilibrado" || s === "mas") setSensibilidad(s);
+      if (p.get("neg") === "1") setSoloNegativo(true);
+      const f = p.get("freq");
+      if (f === "al-toque" || f === "diario" || f === "semanal") setFrecuencia(f);
+      if (p.get("mail")) setEmail(p.get("mail")!);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [D]);
 
   useEffect(() => {
     setCruceShow({});
@@ -469,6 +507,32 @@ export default function PalcoPage() {
   }, [query, notFound, D]);
 
   const maxSov = Math.max(...R.share_of_voice.map((s) => s.mentions), 1);
+
+  async function guardarAvisos() {
+    const existing = await loadPalcoAccount();
+    if (existing) {
+      const slugs =
+        existing.watchlist.length > 0
+          ? existing.watchlist
+          : watch.map((slug) => ({
+              slug,
+              nombre: D.radars[slug]?.entity ?? slug,
+              alias: D.radars[slug]?.watchlist_display?.alias ?? [],
+            }));
+      await savePalcoAccount({
+        plan: (existing.plan ?? plan) || "profesional",
+        watchlist: slugs,
+        avisos: {
+          sensibilidad,
+          solo_negativo: soloNegativo,
+          frecuencia,
+          email_contacto: email.trim(),
+        },
+      });
+    }
+    setShowAvisos(false);
+  }
+
   const maxDay = Math.max(...R.by_day.map((s) => s.mentions), 1);
   const airProgs = R.sentiment.neg + R.sentiment.neu + R.sentiment.pos;
   const chatScored = R.chat_scored ?? 0;
@@ -703,7 +767,8 @@ export default function PalcoPage() {
               </div>
 
               <button
-                onClick={() => setShowAvisos(false)}
+                type="button"
+                onClick={() => void guardarAvisos()}
                 className="w-full rounded-lg px-4 py-2.5 text-[14px] font-semibold text-white hover:opacity-90"
                 style={{ backgroundColor: BRAND }}
               >

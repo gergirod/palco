@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { flushPendingAccount } from "@/lib/palco-account";
 import { authEnabled, getSupabase } from "@/lib/supabase-auth";
 
 function AuthCallbackInner() {
@@ -24,12 +25,17 @@ function AuthCallbackInner() {
 
     let alive = true;
 
+    async function finish(sessionOk: boolean) {
+      if (!sessionOk || !alive) return;
+      await flushPendingAccount();
+      router.replace(next);
+    }
+
     (async () => {
-      // Magic link / PKCE: detectSessionInUrl procesa el hash o ?code= de la URL.
       const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
         if (!alive) return;
         if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
-          router.replace(next);
+          void finish(true);
         }
       });
 
@@ -42,16 +48,15 @@ function AuthCallbackInner() {
         return;
       }
       if (data.session) {
-        router.replace(next);
+        await finish(true);
         return;
       }
 
-      // Algunos links tardan un tick en hidratar la sesión desde la URL.
       window.setTimeout(async () => {
         if (!alive) return;
         const { data: retry } = await sb.auth.getSession();
         if (retry.session) {
-          router.replace(next);
+          await finish(true);
         } else {
           setError("El link expiró o ya fue usado. Pedí uno nuevo.");
         }

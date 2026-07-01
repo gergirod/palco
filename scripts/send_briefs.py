@@ -54,7 +54,8 @@ def resolve_jobs(kind: str) -> list[dict]:
     for acc in fetch_accounts():
         if not wants_brief(acc.get("avisos") or {}, kind):
             continue
-        email = (acc.get("email") or "").strip()
+        avisos = acc.get("avisos") or {}
+        email = (avisos.get("email_contacto") or acc.get("email") or "").strip()
         slugs = parse_slugs(acc.get("watchlist"))
         if email and slugs:
             jobs.append({"email": email, "slugs": slugs})

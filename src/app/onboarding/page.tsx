@@ -4,6 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import data from "@/data/palco_entities.json";
 import catalogData from "@/data/palco_catalog.json";
+import {
+  authEnabled,
+  getSession,
+  sendMagicLink,
+} from "@/lib/supabase-auth";
+import {
+  dashboardQueryFromAccount,
+  type PendingPalcoAccount,
+  savePalcoAccount,
+  stashPendingAccount,
+} from "@/lib/palco-account";
 import { displayAlias, matchesQuery } from "@/lib/palco-watchlist";
 
 /* ============================================================================
@@ -208,6 +219,8 @@ export default function OnboardingPage() {
   // alias editables por entidad (mock local; en producción → palco_watchlist.yaml)
   const [aliasCfg, setAliasCfg] = useState<Record<string, string[]>>({});
   const [aliasDraft, setAliasDraft] = useState<Record<string, string>>({});
+  const [authPending, setAuthPending] = useState(false);
+  const [entrarLoading, setEntrarLoading] = useState(false);
 
   const plan = PLANES.find((p) => p.id === planId)!;
   const pasosUi = isEdit ? PASOS_EDIT : PASOS;
@@ -314,17 +327,60 @@ export default function OnboardingPage() {
     }));
   }
 
-  function entrar() {
-    const e = sel.join(",");
-    const q = new URLSearchParams({
-      e,
+  function buildPending(): PendingPalcoAccount {
+    return {
       plan: planId,
-      sens: sensibilidad,
-      neg: soloNegativo ? "1" : "0",
-      freq: frecuencia,
-      mail: email.trim(),
+      watchlist: selRows.map((r) => ({
+        slug: r.slug,
+        nombre: r.name,
+        alias: aliasCfg[r.slug] ?? CATALOG_BY_SLUG.get(r.slug)?.alias ?? [],
+      })),
+      avisos: {
+        sensibilidad,
+        solo_negativo: soloNegativo,
+        frecuencia,
+        email_contacto: email.trim(),
+      },
+    };
+  }
+
+  async function entrar() {
+    const pending = buildPending();
+    const q = dashboardQueryFromAccount({
+      user_id: "",
+      email: email.trim(),
+      plan: pending.plan,
+      watchlist: pending.watchlist,
+      avisos: pending.avisos,
     });
-    router.push(`/dashboard?${q.toString()}`);
+
+    if (!authEnabled) {
+      router.push(`/dashboard?${q}`);
+      return;
+    }
+
+    setEntrarLoading(true);
+    stashPendingAccount(pending);
+
+    const session = await getSession();
+    if (session) {
+      const saved = await savePalcoAccount(pending);
+      setEntrarLoading(false);
+      if (!saved.ok) {
+        window.alert(saved.error ?? "No se pudo guardar tu cuenta.");
+        return;
+      }
+      router.push(`/dashboard?${q}`);
+      return;
+    }
+
+    const sent = await sendMagicLink(email.trim());
+    setEntrarLoading(false);
+    if (!sent.ok) {
+      window.alert(sent.error ?? "No se pudo enviar el link.");
+      return;
+    }
+    setAuthPending(true);
   }
 
   const selRows = sel
@@ -1095,13 +1151,26 @@ export default function OnboardingPage() {
               >
                 ← Ajustar
               </button>
-              <button
-                onClick={entrar}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
-                style={{ backgroundColor: BRAND }}
-              >
-                Entrar a mi tablero →
-              </button>
+              {authPending ? (
+                <div className="max-w-sm rounded-xl border border-[#f0c99a] bg-[#fbebd6] px-5 py-4 text-left text-[14px] text-slate-700">
+                  Te mandamos un link a <b>{email.trim()}</b>. Abrilo para entrar al
+                  tablero — ahí guardamos tu watchlist y tus avisos.
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void entrar()}
+                  disabled={entrarLoading}
+                  className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                  style={{ backgroundColor: BRAND }}
+                >
+                  {entrarLoading
+                    ? "Guardando…"
+                    : authEnabled
+                      ? "Entrar a mi tablero →"
+                      : "Ver mi tablero →"}
+                </button>
+              )}
             </div>
           </section>
         )}
