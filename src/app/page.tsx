@@ -48,18 +48,17 @@ export default function Landing() {
           <div>
             <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
             <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.08]">
-              Enterate cuándo y cómo se habla de las{" "}
+              Enterate cuándo, cómo y dónde se habla de las{" "}
               <span className="text-signal">personas y empresas</span> que te importan.
             </h1>
             <p className="mt-5 text-lg text-ink font-medium">
               Palco escucha {CANALES.length} canales del streaming en vivo argentino.
             </p>
             <p className="mt-3 text-lg text-muted">
-              Los equipos de prensa y comunicación ya siguen diarios, radio y TV. Pero
-              hoy la agenda también se arma en el streaming — y nadie lo escucha. Palco
-              escucha todos los programas y te muestra cada vez que nombran a las
-              personas y empresas que gestionás: en qué programa, qué se dijo, con qué
-              tono y cómo reaccionó la gente que estaba mirando.
+              Cada día, durante horas, en el streaming en vivo se habla de todo — y es
+              imposible seguirlo a mano. Palco lo escucha por vos y te muestra cada vez
+              que nombran a una persona o empresa que te importa: en qué programa, qué se
+              dijo, con qué tono y cómo lo tomó la audiencia.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/onboarding" className="btn-signal">
