@@ -394,7 +394,7 @@ export default function OnboardingPage() {
             <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
               Bienvenido a Palco
             </p>
-            <h1 className="mt-2 text-4xl font-bold leading-tight">
+            <h1 className="mt-2 text-3xl sm:text-4xl font-bold leading-tight">
               Enterate de todo lo que se dice en el streaming, sin escuchar horas de vivo.
             </h1>
             <p className="mt-4 text-[16px] leading-relaxed text-slate-600">

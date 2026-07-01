@@ -32,7 +32,7 @@ export default function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center px-6 pb-24">
         <div className="w-full max-w-md">
-          <div className="card p-8">
+          <div className="card p-6 sm:p-8">
             <p className="eyebrow mb-3">Ingresar</p>
             <h1 className="font-display text-3xl font-semibold tracking-tight mb-2">
               Entrá a tu panel

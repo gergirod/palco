@@ -47,7 +47,7 @@ export default function Landing() {
           {/* texto */}
           <div>
             <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
-            <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.08]">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] sm:leading-[1.08]">
               Enterate cuándo, cómo y dónde se habla de las{" "}
               <span className="text-signal">personas y empresas</span> que te importan.
             </h1>

@@ -510,9 +510,9 @@ export default function PalcoPage() {
             />
             PALCO
           </div>
-          <div className="flex items-center gap-3 text-[13px]">
+          <div className="flex items-center gap-2 sm:gap-3 text-[13px]">
             {plan && (
-              <span className="rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
+              <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
                 Plan {PLAN_LABEL[plan] || plan}
               </span>
             )}
@@ -531,7 +531,8 @@ export default function PalcoPage() {
               }}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
             >
-              Editar watchlist
+              <span className="sm:hidden">Editar</span>
+              <span className="hidden sm:inline">Editar watchlist</span>
             </button>
           </div>
         </div>
