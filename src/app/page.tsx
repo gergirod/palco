@@ -6,6 +6,17 @@ const CANALES = [
   "El Destape", "Futurock", "Bravo TV", "Carnaval",
 ];
 
+/** Mención real de Lionel Messi (palco_entities → lionel-messi → feed[0]). */
+const EJEMPLO = {
+  slug: "lionel-messi",
+  nombre: "Lionel Messi",
+  canal: "Luzu",
+  programa: "Nadie dice nada",
+  audiencia: "238k",
+  fecha: "23/06",
+  cita: "…una figura de Messi muy típica de Argentina. Para mí es Julián.",
+};
+
 const PUNTOS = [
   {
     t: "Personas y empresas que te importan",
@@ -64,7 +75,7 @@ export default function Landing() {
               <Link href="/onboarding" className="btn-signal">
                 Pedir una demo con tus nombres
               </Link>
-              <Link href="/dashboard" className="btn-ghost">
+              <Link href={`/dashboard?e=${EJEMPLO.slug}`} className="btn-ghost">
                 Ver un panel de ejemplo
               </Link>
             </div>
@@ -73,26 +84,26 @@ export default function Landing() {
             </p>
           </div>
 
-          {/* ejemplo concreto — mención neutra */}
+          {/* ejemplo real — Lionel Messi */}
           <div className="card p-6 md:justify-self-end w-full max-w-sm">
             <div className="flex items-center justify-between text-xs">
               <span className="inline-flex items-center gap-2 font-medium text-signal">
                 <span className="inline-block h-2 w-2 rounded-full bg-signal-bright" />
-                Mención detectada
+                <span>Mención detectada</span>
               </span>
-              <span className="text-muted">programa de hoy</span>
+              <span className="text-muted">{EJEMPLO.fecha}</span>
             </div>
-            <p className="mt-4 text-sm font-medium">Ciclo de streaming · política</p>
-            <p className="text-xs text-muted">8.900 mirando en ese momento</p>
-            <p className="mt-4 border-l-2 border-line pl-3 text-sm leading-relaxed">
-              &laquo;&hellip;lo nombraron al pasar cuando hablaban del acto de ayer&hellip;&raquo;
+            <p className="mt-4 font-display text-lg font-semibold tracking-tight">{EJEMPLO.nombre}</p>
+            <p className="mt-1 text-sm font-medium">
+              {EJEMPLO.canal} · {EJEMPLO.programa}
             </p>
-            <div className="mt-4 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full bg-signal-soft px-2.5 py-1 font-medium text-signal">
+            <p className="text-xs text-muted">{EJEMPLO.audiencia} mirando en ese momento</p>
+            <p className="mt-4 border-l-2 border-line pl-3 text-sm leading-relaxed">
+              &laquo;{EJEMPLO.cita}&raquo;
+            </p>
+            <div className="mt-4">
+              <span className="rounded-full bg-signal-soft px-2.5 py-1 text-xs font-medium text-signal">
                 Tono: neutro
-              </span>
-              <span className="rounded-full bg-surface px-2.5 py-1 text-muted">
-                Contexto: agenda política
               </span>
             </div>
           </div>
