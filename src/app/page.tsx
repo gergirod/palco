@@ -4,33 +4,22 @@ const CANALES = [
   "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana", "Neura", "Vorterix",
 ];
 
-const PLANES = [
+const ENTREGABLES = [
   {
-    id: "esencial",
-    nombre: "Esencial",
-    precio: "USD 90",
-    detalle: "/mes",
-    linea: "Para cuidar un nombre.",
-    incluye: ["1 nombre monitoreado", "Brief diario por mail", "Alertas de crisis", "Panel en vivo"],
-    destacado: false,
+    t: "Alerta en tiempo real",
+    d: "Apenas se menciona un nombre de tu watchlist con audiencia y chat que lo justifican, te llega — con la cita, el programa y el minuto.",
   },
   {
-    id: "profesional",
-    nombre: "Profesional",
-    precio: "USD 250",
-    detalle: "/mes",
-    linea: "Para una marca o figura con exposición.",
-    incluye: ["Hasta 3 nombres", "Brief diario + reporte semanal", "Alertas y crisis en tiempo real", "Co-menciones y contexto", "Share of voice"],
-    destacado: true,
+    t: "Brief diario",
+    d: "Cada mañana a tu mail: qué se dijo ayer sobre los nombres que seguís, en qué canales y con qué clima.",
   },
   {
-    id: "enterprise",
-    nombre: "A medida",
-    precio: "Hablemos",
-    detalle: "",
-    linea: "Agencias, prensa y equipos.",
-    incluye: ["Nombres ilimitados", "Múltiples destinatarios", "Certificados de emisión", "Onboarding dedicado"],
-    destacado: false,
+    t: "Reporte semanal",
+    d: "La narrativa de la semana con share of voice y sentimiento por nombre. Lo que un monitor serio te daría — más la sala.",
+  },
+  {
+    t: "Flag de crisis",
+    d: "Mención + audiencia alta + chat disparado en negativo, al mismo tiempo. Te enterás tres minutos después de que se dijo, no cuando ya explotó.",
   },
 ];
 
@@ -38,17 +27,17 @@ const PASOS = [
   {
     n: "01",
     t: "Escuchamos el aire",
-    d: "Capturamos, transcribimos y entendemos cada minuto de streaming en vivo — no solo lo que se dijo, también cuánta gente estaba mirando.",
+    d: "Capturamos y transcribimos cada minuto de streaming en vivo — y medimos cuánta gente estaba mirando y cómo se movía el chat en ese momento.",
   },
   {
     n: "02",
-    t: "Detectamos cada mención",
-    d: "Detectamos cada mención de las figuras, marcas o temas que seguís, distinguimos pauta de orgánico y la ubicamos en su contexto real de conversación.",
+    t: "Rastreamos tus nombres",
+    d: "Escribís cualquier nombre —tu candidato, los rivales, una marca, un tema— y Palco lo busca hacia atrás en todo lo capturado y hacia adelante en vivo.",
   },
   {
     n: "03",
     t: "Te avisamos primero",
-    d: "Brief diario a tu mail, alerta apenas algo escala y panel en vivo para entrar cuando quieras. Enterate antes de que sea tendencia.",
+    d: "Cada aparición se vuelve una ficha: canal, programa, minuto, cita textual, audiencia en vivo, reacción del chat y tono. Enterate antes de que sea tendencia.",
   },
 ];
 
@@ -66,7 +55,7 @@ export default function Landing() {
               Ingresar
             </Link>
             <Link href="/onboarding" className="btn-signal">
-              Empezar
+              Pedir una demo
             </Link>
           </nav>
         </div>
@@ -74,20 +63,20 @@ export default function Landing() {
 
       {/* hero */}
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-16 md:pt-28 md:pb-24">
-        <p className="eyebrow mb-5">Inteligencia de reputación · streaming en vivo</p>
+        <p className="eyebrow mb-5">Monitoreo de streaming en vivo · comunicación política</p>
         <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05] max-w-3xl">
-          Seguí los nombres que te importan{" "}
-          <span className="text-signal">antes que nadie</span>.
+          El radar sobre los nombres que{" "}
+          <span className="text-signal">gestionás</span>.
         </h1>
         <p className="mt-6 text-lg text-muted max-w-2xl">
-          Palco escucha el streaming argentino en vivo — Olga, Luzu, Bondi y más — y
-          te dice cuándo, dónde y en qué tono mencionan las figuras, marcas o temas
-          que elegís seguir. Como un Bloomberg de la atención, pero para política,
-          reputación y cultura.
+          El streaming en vivo arma el clima antes que la tele y las redes — y hoy
+          nadie lo mira. Palco escucha Olga, Luzu, Bondi y más, y te dice cuándo,
+          dónde y en qué tono se habla de tu candidato, tus rivales o el tema que
+          estás manejando — y cómo reacciona la audiencia en el minuto exacto.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link href="/onboarding" className="btn-signal">
-            Configurar mi monitoreo
+            Pedir una demo con tus nombres
           </Link>
           <Link href="/dashboard" className="btn-ghost">
             Ver un panel de ejemplo
@@ -98,88 +87,132 @@ export default function Landing() {
         </p>
       </section>
 
-      {/* valor */}
+      {/* dos termómetros */}
       <section className="border-y border-line bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-16 grid md:grid-cols-3 gap-8">
-          {[
-            {
-              t: "No medimos publicidad. Medimos atención.",
-              d: "Cada mención se pesa por cuánta gente estaba mirando en ese minuto. Sabés el impacto real, no un número inflado.",
-            },
-            {
-              t: "Pauta vs. orgánico, separado.",
-              d: "Distinguimos lo que se dijo porque pagaron de lo que surgió solo. Dos historias muy distintas sobre la misma figura o marca.",
-            },
-            {
-              t: "La prueba textual, siempre.",
-              d: "Cada alerta trae la cita exacta, el programa, el minuto y el link. Nada de 'confiá en nosotros'.",
-            },
-          ].map((c) => (
-            <div key={c.t}>
-              <h3 className="font-display text-xl font-semibold tracking-tight mb-2">{c.t}</h3>
-              <p className="text-sm text-muted leading-relaxed">{c.d}</p>
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <p className="eyebrow mb-3">Dos termómetros a la vez</p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+            No contamos menciones. Medimos la atención que tuvieron.
+          </h2>
+          <div className="mt-12 grid md:grid-cols-2 gap-8">
+            <div className="card p-8">
+              <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
+                El termómetro de cobertura
+              </h3>
+              <p className="text-sm text-muted leading-relaxed">
+                Qué se dice, en qué canales y con qué tono. Share of voice y
+                sentimiento por cada nombre — lo que hace un monitor de medios serio,
+                pero sobre lo hablado en vivo, que hasta ahora quedaba en un punto ciego.
+              </p>
             </div>
-          ))}
+            <div className="card p-8">
+              <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
+                El termómetro de la sala
+              </h3>
+              <p className="text-sm text-muted leading-relaxed">
+                Cuánta gente estaba mirando y cómo reaccionó el chat en el minuto de la
+                mención. Una frase en un programa de 200 personas no es lo mismo que una
+                en Olga con 41.000 mirando y el chat explotando. Esto no lo hace nadie más.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* flag de crisis — killer feature */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="card p-8 md:p-12 border-l-4" style={{ borderLeftColor: "var(--crisis)" }}>
+          <p className="eyebrow mb-3" style={{ color: "var(--crisis)" }}>
+            La señal que nadie más puede computar
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-3xl">
+            Flag de crisis: mención + audiencia alta + chat en negativo, al mismo tiempo.
+          </h2>
+          <p className="mt-6 text-lg text-muted max-w-2xl">
+            Cruzamos las tres capas en el mismo minuto. Nadie más las tiene juntas, así
+            que nadie más lo puede calcular. Es la diferencia entre enterarte de una
+            crisis cuando ya es tendencia y enterarte tres minutos después de que se dijo
+            la frase — cuando todavía podés hacer algo.
+          </p>
         </div>
       </section>
 
       {/* cómo funciona */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <p className="eyebrow mb-3">Cómo funciona</p>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-          De horas de streaming a una sola frase que te importa.
-        </h2>
-        <div className="mt-12 grid md:grid-cols-3 gap-10">
-          {PASOS.map((p) => (
-            <div key={p.n}>
-              <div className="font-display text-signal text-2xl font-semibold mb-3">{p.n}</div>
-              <h3 className="font-display text-xl font-semibold tracking-tight mb-2">{p.t}</h3>
-              <p className="text-sm text-muted leading-relaxed">{p.d}</p>
-            </div>
-          ))}
+      <section className="border-t border-line bg-white">
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <p className="eyebrow mb-3">Cómo funciona</p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+            De horas de streaming a la sola frase que te importa.
+          </h2>
+          <div className="mt-12 grid md:grid-cols-3 gap-10">
+            {PASOS.map((p) => (
+              <div key={p.n}>
+                <div className="font-display text-signal text-2xl font-semibold mb-3">{p.n}</div>
+                <h3 className="font-display text-xl font-semibold tracking-tight mb-2">{p.t}</h3>
+                <p className="text-sm text-muted leading-relaxed">{p.d}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* planes */}
+      {/* para quién */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <p className="eyebrow mb-3">Para quién</p>
+        <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+          No monitoreás tu propio nombre. Monitoreás el mapa que tenés que gestionar.
+        </h2>
+        <div className="mt-12 grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
+              Comunicación política
+            </h3>
+            <p className="text-sm text-muted leading-relaxed">
+              Consultores, jefes de prensa de campaña y equipos de imagen. Seguís a tu
+              candidato, a los rivales y a los temas calientes al mismo tiempo — de cara
+              al ciclo 2027 y a cualquier episodio reputacional en curso.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
+              Asuntos corporativos
+            </h3>
+            <p className="text-sm text-muted leading-relaxed">
+              Energía, bancos, prepagas, aerolíneas, telcos. Sectores donde una frase al
+              aire mueve la percepción de la marca — y donde querés enterarte cuando pasa,
+              no en el resumen del día siguiente.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* concierge / entregables */}
       <section className="border-t border-line bg-white">
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="eyebrow mb-3">Planes</p>
+          <p className="eyebrow mb-3">Cómo empezás</p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-            Pagás por nombre cuidado. Simple.
+            Nos das tus nombres. Nosotros operamos el radar. Vos recibís lo que importa.
           </h2>
-          <div className="mt-12 grid md:grid-cols-3 gap-6">
-            {PLANES.map((pl) => (
-              <div
-                key={pl.id}
-                className={`card p-7 flex flex-col ${
-                  pl.destacado ? "ring-2 ring-signal" : ""
-                }`}
-              >
-                {pl.destacado && (
-                  <span className="eyebrow mb-3">Más elegido</span>
-                )}
-                <h3 className="font-display text-2xl font-semibold tracking-tight">{pl.nombre}</h3>
-                <p className="text-sm text-muted mt-1 mb-5">{pl.linea}</p>
-                <div className="mb-6">
-                  <span className="font-display text-3xl font-semibold">{pl.precio}</span>
-                  <span className="text-sm text-muted">{pl.detalle}</span>
-                </div>
-                <ul className="space-y-2 text-sm mb-7 flex-1">
-                  {pl.incluye.map((f) => (
-                    <li key={f} className="flex gap-2">
-                      <span className="text-signal">·</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/onboarding"
-                  className={pl.destacado ? "btn-signal w-full" : "btn-ghost w-full"}
-                >
-                  {pl.id === "enterprise" ? "Hablemos" : "Empezar"}
-                </Link>
+          <p className="mt-5 text-muted max-w-2xl">
+            Palco arranca como servicio gestionado: definís tu watchlist y recibís cuatro
+            entregables sobre ella. Se paga por nombre en seguimiento, no por "tu
+            reputación".
+          </p>
+          <div className="mt-12 grid sm:grid-cols-2 gap-6">
+            {ENTREGABLES.map((e) => (
+              <div key={e.t} className="card p-7">
+                <h3 className="font-display text-xl font-semibold tracking-tight mb-2">{e.t}</h3>
+                <p className="text-sm text-muted leading-relaxed">{e.d}</p>
               </div>
             ))}
+          </div>
+          <div className="mt-10">
+            <Link href="/onboarding" className="btn-signal">
+              Pedir una demo con tus nombres
+            </Link>
+            <p className="mt-3 text-sm text-muted">
+              La demo es el producto funcionando con datos reales. Ves tu propio mapa, no un pitch.
+            </p>
           </div>
         </div>
       </section>
@@ -187,11 +220,11 @@ export default function Landing() {
       {/* cta */}
       <section className="mx-auto max-w-6xl px-6 py-24 text-center">
         <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight max-w-3xl mx-auto">
-          Lo que seguís ya está sonando en el aire. La pregunta es si te estás enterando.
+          Lo que gestionás ya está sonando en el aire. La pregunta es si te estás enterando.
         </h2>
         <div className="mt-8">
           <Link href="/onboarding" className="btn-signal">
-            Configurar mi monitoreo
+            Pedir una demo con tus nombres
           </Link>
         </div>
       </section>
@@ -202,7 +235,7 @@ export default function Landing() {
           <span className="font-display text-ink font-semibold">
             Palco<span className="text-signal">.</span>
           </span>
-          <span>Inteligencia de reputación sobre el streaming en vivo · Argentina</span>
+          <span>El radar de reputación sobre el streaming en vivo · Argentina</span>
           <Link href="/login" className="text-signal font-medium">
             Ingresar
           </Link>
