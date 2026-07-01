@@ -1,0 +1,634 @@
+{
+  "generated_at": "2026-07-01T02:14:37.516898Z",
+  "entity": "Manuel Adorni",
+  "watchlist": [
+    "Manuel Adorni",
+    "Adorni",
+    "Jefe de Gabinete"
+  ],
+  "totals": {
+    "transcript_mentions": 717,
+    "chat_mentions": 4148,
+    "programs_with_mentions": 51,
+    "channels": 12
+  },
+  "sentiment": {
+    "neg": 21,
+    "neu": 26,
+    "pos": 4
+  },
+  "share_of_voice": [
+    {
+      "channel": "GELATINA",
+      "mentions": 229,
+      "pct": 31.9
+    },
+    {
+      "channel": "OLGA",
+      "mentions": 111,
+      "pct": 15.5
+    },
+    {
+      "channel": "BLENDER",
+      "mentions": 99,
+      "pct": 13.8
+    },
+    {
+      "channel": "AHORA PLAY",
+      "mentions": 82,
+      "pct": 11.4
+    },
+    {
+      "channel": "Vorterix",
+      "mentions": 52,
+      "pct": 7.3
+    },
+    {
+      "channel": "A U R A",
+      "mentions": 37,
+      "pct": 5.2
+    },
+    {
+      "channel": "Neura Media",
+      "mentions": 30,
+      "pct": 4.2
+    },
+    {
+      "channel": "Cenital",
+      "mentions": 29,
+      "pct": 4.0
+    },
+    {
+      "channel": "BorderPeriodismo",
+      "mentions": 26,
+      "pct": 3.6
+    },
+    {
+      "channel": "LUZU TV",
+      "mentions": 14,
+      "pct": 2.0
+    },
+    {
+      "channel": "El Cronista",
+      "mentions": 7,
+      "pct": 1.0
+    },
+    {
+      "channel": "Bondi Live",
+      "mentions": 1,
+      "pct": 0.1
+    }
+  ],
+  "by_day": [
+    {
+      "day": "20260610",
+      "mentions": 1
+    },
+    {
+      "day": "20260611",
+      "mentions": 5
+    },
+    {
+      "day": "20260623",
+      "mentions": 33
+    },
+    {
+      "day": "20260624",
+      "mentions": 17
+    },
+    {
+      "day": "20260625",
+      "mentions": 6
+    },
+    {
+      "day": "20260626",
+      "mentions": 84
+    },
+    {
+      "day": "20260629",
+      "mentions": 415
+    },
+    {
+      "day": "20260630",
+      "mentions": 156
+    }
+  ],
+  "crisis": {
+    "video_id": "vlNZMMmBbLw",
+    "channel": "GELATINA",
+    "program": "¿Por qué ADORNI SE FUE RECIÉN AHORA? | DEMASIADA PRESIÓN con Flor HALFON y Gaby VULCANO",
+    "date": "20260629",
+    "views": 7813,
+    "was_live": true,
+    "t_seconds": 5572,
+    "t_label": "01:32:52",
+    "quote": "Porque, por ejemplo, ¿cuál fue la reacción de la vicepresidenta de la nación ante la renuncia de Manuel Adorni. Burlarse, dijo, acá está en la mía.",
+    "conc_at": 1856,
+    "chat_msgs": 27,
+    "chat_ratio": 3.83,
+    "chat_ex": [
+      "está bueno no hablar de Adorni pero...."
+    ],
+    "sentiment": "neg",
+    "mentions_in_program": 61,
+    "yt_url": "https://www.youtube.com/watch?v=vlNZMMmBbLw&t=5572s"
+  },
+  "feed": [
+    {
+      "video_id": "WNe6QLgDfyM",
+      "channel": "OLGA",
+      "program": "PAULA y PEDRO TOMAN EL CONTROL DE #SeríaIncreíble 29/6",
+      "date": "20260629",
+      "views": 74025,
+      "was_live": true,
+      "t_seconds": 12766,
+      "t_label": "03:32:46",
+      "quote": "Arrastrar Adorni ¿Sabés tocar algún instrumento?",
+      "conc_at": 41080,
+      "chat_msgs": 423,
+      "chat_ratio": 7.18,
+      "chat_ex": [
+        "LA SALIDA DE LA PATO LA RENUNCIA DE ADORNI TODO PLANEADO POR MACRI. Y ESTK ES CAMPAÑA",
+        "UN DIA CON ADORNI QUIERO!"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 32,
+      "yt_url": "https://www.youtube.com/watch?v=WNe6QLgDfyM&t=12766s"
+    },
+    {
+      "video_id": "NHt6oqHZYd0",
+      "channel": "GELATINA",
+      "program": "Chau Adorni: TE RECORDAREMOS | TUGO con Nico Guthmann",
+      "date": "20260629",
+      "views": 12026,
+      "was_live": true,
+      "t_seconds": 2340,
+      "t_label": "00:39:00",
+      "quote": "Calma, pueblo, que aquí estoy yo. Sí, la verdad es que para un tipo que sostuvo durante tres meses a Adorni, es una salida bastante fría, ¿no?",
+      "conc_at": 4996,
+      "chat_msgs": 445,
+      "chat_ratio": 6.39,
+      "chat_ex": [
+        "yo lo ignore a Adorni",
+        "CHAU ADORNI",
+        "carta natal de adorni"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 88,
+      "yt_url": "https://www.youtube.com/watch?v=NHt6oqHZYd0&t=2340s"
+    },
+    {
+      "video_id": "3QJmfDvuxIk",
+      "channel": "OLGA",
+      "program": "PAULA CHAVES VS 10 FANS: ¿QUIÉN SABE MÁS? | #TapadosDeLaburo 26/6",
+      "date": "20260626",
+      "views": 40199,
+      "was_live": true,
+      "t_seconds": 4141,
+      "t_label": "01:09:01",
+      "quote": "Arrastrar Adorni ¿Se me ha tocado algún instrumento?",
+      "conc_at": 28366,
+      "chat_msgs": 367,
+      "chat_ratio": 5.04,
+      "chat_ex": [
+        "ADORNI",
+        "ADORNI",
+        "AAAAJAJAJAJAJAAJAJA ADORNI"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 1,
+      "yt_url": "https://www.youtube.com/watch?v=3QJmfDvuxIk&t=4141s"
+    },
+    {
+      "video_id": "vlNZMMmBbLw",
+      "channel": "GELATINA",
+      "program": "¿Por qué ADORNI SE FUE RECIÉN AHORA? | DEMASIADA PRESIÓN con Flor HALFON y Gaby VULCANO",
+      "date": "20260629",
+      "views": 7813,
+      "was_live": true,
+      "t_seconds": 5572,
+      "t_label": "01:32:52",
+      "quote": "Porque, por ejemplo, ¿cuál fue la reacción de la vicepresidenta de la nación ante la renuncia de Manuel Adorni. Burlarse, dijo, acá está en la mía.",
+      "conc_at": 1856,
+      "chat_msgs": 27,
+      "chat_ratio": 3.83,
+      "chat_ex": [
+        "está bueno no hablar de Adorni pero...."
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 61,
+      "yt_url": "https://www.youtube.com/watch?v=vlNZMMmBbLw&t=5572s"
+    },
+    {
+      "video_id": "pL9wgMQaBp4",
+      "channel": "GELATINA",
+      "program": "PARAGUAY y los DEDOS MARCADOS de ADORNI | DEMASIADA PRESIÓN con Flor HALFON, VULCANO y GEDDES",
+      "date": "20260630",
+      "views": 5782,
+      "was_live": true,
+      "t_seconds": 7448,
+      "t_label": "02:04:08",
+      "quote": "¿Se habla de Adorni allá? Se habla de Adorni, se habla del Colo Santilli Se habla de",
+      "conc_at": 2136,
+      "chat_msgs": 35,
+      "chat_ratio": 3.77,
+      "chat_ex": [
+        "le conto el secreto adorni"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 22,
+      "yt_url": "https://www.youtube.com/watch?v=pL9wgMQaBp4&t=7448s"
+    },
+    {
+      "video_id": "TR97_gAGOWE",
+      "channel": "Cenital",
+      "program": "EN VIVO | Jorge Liotti en El señor de los pasillos con Iván Schargrodsky",
+      "date": "20260629",
+      "views": 5169,
+      "was_live": true,
+      "t_seconds": 1730,
+      "t_label": "00:28:50",
+      "quote": "hoy. Tenemos la alegría de que nos visite Jorge Lioti en el programa de hoy, que tiene que ver con un desenlace. Nosotros venimos hablando de la situación de Manuel Adorni durante todas estas semanas, pero hubo algo que fue un desenlace",
+      "conc_at": 750,
+      "chat_msgs": 23,
+      "chat_ratio": 3.26,
+      "chat_ex": [
+        "a Rebord le crecio el pelo como a Adorni"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 29,
+      "yt_url": "https://www.youtube.com/watch?v=TR97_gAGOWE&t=1730s"
+    },
+    {
+      "video_id": "tlhTO7YtTJ0",
+      "channel": "GELATINA",
+      "program": "LUCAS UPSTEIN en CIRCO FREAK con Mati COLOMBATTI",
+      "date": "20260626",
+      "views": 5955,
+      "was_live": true,
+      "t_seconds": 2972,
+      "t_label": "00:49:32",
+      "quote": "Y el del que vote el que salga hoy Uy, Adorni ya es payaso de dos meses De los tres que tenemos",
+      "conc_at": 1567,
+      "chat_msgs": 53,
+      "chat_ratio": 3.17,
+      "chat_ex": [
+        "1595mirando, 615 likes, 980 ADORNIS MIRANDO"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 24,
+      "yt_url": "https://www.youtube.com/watch?v=tlhTO7YtTJ0&t=2972s"
+    },
+    {
+      "video_id": "JNLpggdieek",
+      "channel": "Vorterix",
+      "program": "EL FIN DE ADORNI Y FUIMOS A UNA FIESTA SADO | #YQUE COMPLETO 29/6 | VORTERIX",
+      "date": "20260629",
+      "views": 29488,
+      "was_live": true,
+      "t_seconds": 5784,
+      "t_label": "01:36:24",
+      "quote": "Lo veo re raro. Patricia Woolrich, que tal vez fue un poquito de la arquitecta de la caída de Adorni, o por lo menos siempre tiró ahí, tiró como, no, no, está todo mal con este flaco,",
+      "conc_at": 8762,
+      "chat_msgs": 386,
+      "chat_ratio": 2.54,
+      "chat_ex": [
+        "NO SE VA, ADORNI NO SE VA :musical_note:",
+        "LECHUGA ADORNI",
+        "NO SE VA, ADORNI NO SE VA:musical_note:"
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 17,
+      "yt_url": "https://www.youtube.com/watch?v=JNLpggdieek&t=5784s"
+    },
+    {
+      "video_id": "04q2g0UfdyA",
+      "channel": "Neura Media",
+      "program": "Multiverso Neura",
+      "date": "20260629",
+      "views": 2244,
+      "was_live": true,
+      "t_seconds": 3803,
+      "t_label": "01:03:23",
+      "quote": "51% Le pagan 94 palos, pero no lo digo por adornilio Lo digo por cualquiera",
+      "conc_at": 687,
+      "chat_msgs": 42,
+      "chat_ratio": 2.12,
+      "chat_ex": [
+        "loco basta de fútbol. hablen de adorniiiii... sangreeeee",
+        "@iralonetto9684 DEJA DE ROMPER CON ADORNI ME TIENE LOS HUVOS AL PLATO ADORNI YA RENUNCIO D",
+        "@iralonetto9684 artoosss de adorniii"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 11,
+      "yt_url": "https://www.youtube.com/watch?v=04q2g0UfdyA&t=3803s"
+    },
+    {
+      "video_id": "C6BZb4k8gF0",
+      "channel": "BLENDER",
+      "program": "GUILLERMO MORENO SIN FILTRO, LOS PROCESADOS EN LA CAUSA PROPOFOL y EL CUMPLE DE MESSI | QUÉ DÍA",
+      "date": "20260624",
+      "views": 4326,
+      "was_live": true,
+      "t_seconds": 4000,
+      "t_label": "01:06:40",
+      "quote": "volvamos a lo que vos decías El problema de Adorni, un pibe con cierta formación económica, contador, y se enamoró de lo que dice la hermana de Millet,",
+      "conc_at": 6287,
+      "chat_msgs": 63,
+      "chat_ratio": 1.92,
+      "chat_ex": [
+        "Gracias a la grieta entre Cris y Axel ganan Milei Karina y Adorni 6 Presidencias en hilo j",
+        "adorni es una rata ..estos son una mafia S.A:face-blue-smiling:",
+        "Guarden esta captura: Milei 2027 Karina 2031 Adorni 2035..."
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 8,
+      "yt_url": "https://www.youtube.com/watch?v=C6BZb4k8gF0&t=4000s"
+    },
+    {
+      "video_id": "tAUTd2FsMxA",
+      "channel": "Bondi Live",
+      "program": "▶️ PROGRAMACIÓN COMPLETA 26/06 | BONDI LIVE",
+      "date": "20260624",
+      "views": 37783,
+      "was_live": true,
+      "t_seconds": 11176,
+      "t_label": "03:06:16",
+      "quote": "Por si alguien no se dio cuenta todavía Adorni, Okiato Mariana Bray",
+      "conc_at": 36687,
+      "chat_msgs": 84,
+      "chat_ratio": 1.8,
+      "chat_ex": [
+        "Los kukas siempre tienen una explicacion y sino tiran lo de Adorni y los que somos apoliti"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 1,
+      "yt_url": "https://www.youtube.com/watch?v=tAUTd2FsMxA&t=11176s"
+    },
+    {
+      "video_id": "btHFJgjSlls",
+      "channel": "AHORA PLAY",
+      "program": "SEGUNDO SEMESTRE FINANCIERO: VELOCIDAD CRUCERO | Martín Genero #MercadoFresh",
+      "date": "20260629",
+      "views": 1589,
+      "was_live": true,
+      "t_seconds": 842,
+      "t_label": "00:14:02",
+      "quote": "No es tanto que renunció a Dorni Porque la verdad que si vos mirás el Merval y los buenos argentinos y el peso y las variables de todos estos tres meses del quilombo Adorni, le fue bien al mercado argentino. Es decir, no veo que Adorni con su quilombo haya hecho caer los activos.",
+      "conc_at": 395,
+      "chat_msgs": 6,
+      "chat_ratio": 1.72,
+      "chat_ex": [
+        "Martín, qué opinas de Adorni? Y... el merval está subiendo...:face_with_tears_of_joy:",
+        "la buena noticia no es adorni"
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 9,
+      "yt_url": "https://www.youtube.com/watch?v=btHFJgjSlls&t=842s"
+    },
+    {
+      "video_id": "zpbJ8ju9xmk",
+      "channel": "Vorterix",
+      "program": "EQUIPO COMPLETO Y SOMOS MÁS PARAGUAYOS QUE NUNCA | #YQUE COMPLETO 30/6 | VORTERIX",
+      "date": "20260630",
+      "views": 30958,
+      "was_live": true,
+      "t_seconds": 5676,
+      "t_label": "01:34:36",
+      "quote": "si es culpable o no de lo que se lo acusa pero creo que Manuel Adorni al final de todo tuvo el gesto de grandeza",
+      "conc_at": 18730,
+      "chat_msgs": 396,
+      "chat_ratio": 1.62,
+      "chat_ex": [
+        "adorni todo culpa tuya"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 18,
+      "yt_url": "https://www.youtube.com/watch?v=zpbJ8ju9xmk&t=5676s"
+    },
+    {
+      "video_id": "NZnTfvrPb0E",
+      "channel": "A U R A",
+      "program": "🟠 ¿CÓMO QUEDARON LOS CRUCES DEL  MUNDIAL 2026? l HOY COMO SIEMPRE",
+      "date": "20260626",
+      "views": 841,
+      "was_live": true,
+      "t_seconds": 6214,
+      "t_label": "01:43:34",
+      "quote": "Con el fanatismo Walter dice que Adorni se quiso camuflar Atrás del mundial",
+      "conc_at": 327,
+      "chat_msgs": 76,
+      "chat_ratio": 1.61,
+      "chat_ex": [
+        "Adornii se quiso camuflar atrás del mundial..."
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 32,
+      "yt_url": "https://www.youtube.com/watch?v=NZnTfvrPb0E&t=6214s"
+    },
+    {
+      "video_id": "AUSgxGQirlM",
+      "channel": "A U R A",
+      "program": "LA CIENCIA DE LOS CODIGOS QR con EZE MARTÍNEZ l #deacá - 29/06/26",
+      "date": "20260626",
+      "views": 783,
+      "was_live": true,
+      "t_seconds": 1043,
+      "t_label": "00:17:23",
+      "quote": "A ver, bueno, la noticia principal, sin lugar a dudas, tiene que ver con la salida de Adorni finalmente. Se dio, renunció Adorni, en realidad lo apartaron, básicamente,",
+      "conc_at": 379,
+      "chat_msgs": 84,
+      "chat_ratio": 1.39,
+      "chat_ex": [],
+      "sentiment": "neu",
+      "mentions_in_program": 5,
+      "yt_url": "https://www.youtube.com/watch?v=AUSgxGQirlM&t=1043s"
+    },
+    {
+      "video_id": "e3av_6yqgHg",
+      "channel": "OLGA",
+      "program": "NOS SOMETEMOS AL CASCO DE LA VERDAD | #SoñéQueVolaba 29/6",
+      "date": "20260629",
+      "views": 60610,
+      "was_live": true,
+      "t_seconds": 6071,
+      "t_label": "01:41:11",
+      "quote": "al resto de los que están ahí presentes y que hoy se rasga la mentidura por Adorni, la corrupción de Adorni, capaz que lo asusta que los deja",
+      "conc_at": 34232,
+      "chat_msgs": 108,
+      "chat_ratio": 1.34,
+      "chat_ex": [
+        "IMAGÍNATE LO QUE SE ROBARON LOS OTROS SI ES RERETRASADO DE ADORNI SE ROBO ESO",
+        "Saben mucho mas adorni que de Inzurralde - Cirio, será que no los dejan hablar?",
+        "QUE PESADOS CON INSAURRALDE YA SE REPUDIO Y HABLARON DE ESO CUANDO PASO, AHORA ESTAN HABLA"
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 38,
+      "yt_url": "https://www.youtube.com/watch?v=e3av_6yqgHg&t=6071s"
+    },
+    {
+      "video_id": "tcq7UAzc3iw",
+      "channel": "BLENDER",
+      "program": "SHOWTIME de CHISTES, NAZARENO y las PIRUETAS MÁS LOCAS y CINE-POLÍTICO | BLENDER AT NIGHT",
+      "date": "20260624",
+      "views": 4176,
+      "was_live": true,
+      "t_seconds": 4979,
+      "t_label": "01:22:59",
+      "quote": "Es furor El juego de Manuel Adorni Tengo el juego",
+      "conc_at": 7387,
+      "chat_msgs": 48,
+      "chat_ratio": 1.16,
+      "chat_ex": [
+        "Grand Theft Adorni"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 7,
+      "yt_url": "https://www.youtube.com/watch?v=tcq7UAzc3iw&t=4979s"
+    },
+    {
+      "video_id": "FFy6eNzi-dQ",
+      "channel": "Vorterix",
+      "program": "🔴 NO PREGUNTES POR RUSIA con Mario Pergolini, Nacho Corral, Polaco Silveira y Nico Etevenaux",
+      "date": "20260630",
+      "views": 16705,
+      "was_live": true,
+      "t_seconds": 4188,
+      "t_label": "01:09:48",
+      "quote": "Entonces ahí está la inconsistencia, más allá de cómo le haya llegado esa plata que tiene registrada. Eso por parte de Jessica Sirio y de Martín Insorralde y de Adorni rápidamente sigue la causa por enriquecimiento ilícito y sigue en este sentido conociéndose distintas pruebas qu",
+      "conc_at": 8370,
+      "chat_msgs": 52,
+      "chat_ratio": 1.1,
+      "chat_ex": [
+        "adorni es un gil que le salio mal.. estos son los peces gordos",
+        "Mira la que agarro adorni que pago cash 200 lucas",
+        "deja de defender a Adorni"
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 6,
+      "yt_url": "https://www.youtube.com/watch?v=FFy6eNzi-dQ&t=4188s"
+    },
+    {
+      "video_id": "HTm_q34CwyM",
+      "channel": "AHORA PLAY",
+      "program": "MILEI REINICIA SU GOBIERNO I Claudio Zlotnik Paula Macchi Matías Battista #SerruchoEconómico",
+      "date": "20260629",
+      "views": 2667,
+      "was_live": true,
+      "t_seconds": 4150,
+      "t_label": "01:09:10",
+      "quote": "pero esencialmente factores económicos, una economía que desde el punto de vista de la percepción del público no está produciendo satisfacción política, y estos escándalos como el de Adorni, que manchaban la idea de un gobierno que venía a producir una regeneración de la práctica",
+      "conc_at": 824,
+      "chat_msgs": 94,
+      "chat_ratio": 1.09,
+      "chat_ex": [
+        "¿CÓMO CREÉS QUE REPERCUTE EN MILEI LA RENUNCIA DE ADORNI?",
+        "¿CÓMO CREÉS QUE REPERCUTE EN MILEI LA RENUNCIA DE ADORNI?",
+        "¿CÓMO CREÉS QUE REPERCUTE EN MILEI LA RENUNCIA DE ADORNI?"
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 61,
+      "yt_url": "https://www.youtube.com/watch?v=HTm_q34CwyM&t=4150s"
+    },
+    {
+      "video_id": "gOUmUVtulaw",
+      "channel": "AHORA PLAY",
+      "program": "LA NUEVA ETAPA DEL DÓLAR Y MORA RÉCORD I Carlos Burgueño, Agustina Girón #CierreDeMercados",
+      "date": "20260630",
+      "views": 1786,
+      "was_live": true,
+      "t_seconds": 3256,
+      "t_label": "00:54:16",
+      "quote": "siempre te vengan más intereses la más vieja ahora entiendo por qué Adorni se anotó en inocencia fiscal",
+      "conc_at": 401,
+      "chat_msgs": 91,
+      "chat_ratio": 1.03,
+      "chat_ex": [],
+      "sentiment": "neu",
+      "mentions_in_program": 10,
+      "yt_url": "https://www.youtube.com/watch?v=gOUmUVtulaw&t=3256s"
+    },
+    {
+      "video_id": "IubT1ZyjjEA",
+      "channel": "Vorterix",
+      "program": "🔴 ESTO NO SUCEDIÓ con Hernan Panessi, Noxi, Schapira y Guille Bianchi | VORTERIX EN VIVO",
+      "date": "20260626",
+      "views": 3322,
+      "was_live": true,
+      "t_seconds": 1331,
+      "t_label": "00:22:11",
+      "quote": "Sí, sí, sí, alguien más vamos a agarrar. Yo quiero saber qué opinan del pendrive de Adorni. Ah, mirá.",
+      "conc_at": 688,
+      "chat_msgs": 24,
+      "chat_ratio": 0.98,
+      "chat_ex": [
+        "QUE OPINA DEL PENDRIVE DE ADORNI"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 1,
+      "yt_url": "https://www.youtube.com/watch?v=IubT1ZyjjEA&t=1331s"
+    },
+    {
+      "video_id": "JXVQmuDctII",
+      "channel": "BLENDER",
+      "program": "MIÉRCOLES de PUCHOS HISTÓRICO sobre COMEPECADOS y TALLER de MONSTRUOS y GORE | HAY ALGO AHÍ",
+      "date": "20260625",
+      "views": 9779,
+      "was_live": true,
+      "t_seconds": 1432,
+      "t_label": "00:23:52",
+      "quote": "Lo tengo claro, lo tengo torreado todo Uno compra eso para tener todo como el adornito Y vos decís, che, me compré una mini colección",
+      "conc_at": 13512,
+      "chat_msgs": 107,
+      "chat_ratio": 0.97,
+      "chat_ex": [
+        "PREPAREN UNA PANADERIA PARA CUANDO MUERA ADORNIIII",
+        "Adorni puede darle de comer a la matanza"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 1,
+      "yt_url": "https://www.youtube.com/watch?v=JXVQmuDctII&t=1432s"
+    },
+    {
+      "video_id": "LjEHjrbNNgs",
+      "channel": "Vorterix",
+      "program": "🔴 Y QUÉ? con Male Sanchez, Guille Aquino, Damián Kuc, Navaja Crimen y Anacleta | VORTERIX EN VIVO",
+      "date": "20260626",
+      "views": 30205,
+      "was_live": true,
+      "t_seconds": 5851,
+      "t_label": "01:37:31",
+      "quote": "Flipper, el Flipper de Adorni. Flipper de Adorni, el Time Crisis, pero yo estoy jugando uno en el casco que es Time Crisis.",
+      "conc_at": 23552,
+      "chat_msgs": 228,
+      "chat_ratio": 0.95,
+      "chat_ex": [
+        "UN ADORNI ARCADE ROOM",
+        "iINVITEN A ADORNI"
+      ],
+      "sentiment": "neg",
+      "mentions_in_program": 2,
+      "yt_url": "https://www.youtube.com/watch?v=LjEHjrbNNgs&t=5851s"
+    },
+    {
+      "video_id": "Yp0sVPQV8Dk",
+      "channel": "El Cronista",
+      "program": "¿El RIESGO PAÍS puede caer a 200 puntos? El dato de Yayi Morales que lo CAMBIA TODO",
+      "date": "20260629",
+      "views": 2023,
+      "was_live": true,
+      "t_seconds": 945,
+      "t_label": "00:15:45",
+      "quote": "Nosotros a todos los distintos inversores que fuimos consultando acá, lo que te decían es, el inversor no mira a Adornil, mira a los Fundamentals, cuánto exporta Argentina, el porcentaje de deuda, exportaciones, PBI,",
+      "conc_at": 1715,
+      "chat_msgs": 5,
+      "chat_ratio": 0.93,
+      "chat_ex": [
+        "ADORNI SOLO FUE UNA OPERETA MEDITICA QUE LES DA IGUAL A LOS MERCADOS"
+      ],
+      "sentiment": "neu",
+      "mentions_in_program": 7,
+      "yt_url": "https://www.youtube.com/watch?v=Yp0sVPQV8Dk&t=945s"
+    }
+  ]
+}

@@ -1,0 +1,4260 @@
+{
+  "generated_at": "2026-07-01T16:25:30.962098+00:00",
+  "min_mentions": 5,
+  "min_programs": 2,
+  "curated_count": 15,
+  "candidates_count": 302,
+  "candidates_by_kind": {
+    "empresa": 69,
+    "mixto": 77,
+    "persona": 156
+  },
+  "curated": [
+    {
+      "slug": "manuel-adorni",
+      "name": "Manuel Adorni",
+      "type": "Político",
+      "alias": [
+        "adorni"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "javier-milei",
+      "name": "Javier Milei",
+      "type": "Político",
+      "alias": [
+        "javier milei",
+        "presidente milei",
+        "milei"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "karina-milei",
+      "name": "Karina Milei",
+      "type": "Político",
+      "alias": [
+        "karina milei",
+        "karina"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "mauricio-macri",
+      "name": "Mauricio Macri",
+      "type": "Político",
+      "alias": [
+        "mauricio macri",
+        "macri"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "diego-santilli",
+      "name": "Diego Santilli",
+      "type": "Político",
+      "alias": [
+        "santilli",
+        "colorado santilli"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "cristina-kirchner",
+      "name": "Cristina Kirchner",
+      "type": "Político",
+      "alias": [
+        "cristina kirchner",
+        "cristina fernández",
+        "cristina fernandez",
+        "cfk",
+        "cristina"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "lionel-messi",
+      "name": "Lionel Messi",
+      "type": "Deporte",
+      "alias": [
+        "lionel messi",
+        "leo messi",
+        "messi"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "lali-esposito",
+      "name": "Lali Espósito",
+      "type": "Música",
+      "alias": [
+        "lali espósito",
+        "lali esposito",
+        "lali"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "patricia-bullrich",
+      "name": "Patricia Bullrich",
+      "type": "Político",
+      "alias": [
+        "patricia bullrich",
+        "bullrich"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "lionel-scaloni",
+      "name": "Lionel Scaloni",
+      "type": "Deporte",
+      "alias": [
+        "lionel scaloni",
+        "scaloni"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "julian-alvarez",
+      "name": "Julián Álvarez",
+      "type": "Deporte",
+      "alias": [
+        "julián álvarez",
+        "julian alvarez",
+        "la araña",
+        "la arana"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "shakira",
+      "name": "Shakira",
+      "type": "Música",
+      "alias": [
+        "shakira"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "aerolineas-argentinas",
+      "name": "Aerolíneas Argentinas",
+      "type": "Empresa",
+      "alias": [
+        "aerolíneas argentinas",
+        "aerolineas argentinas",
+        "aerolíneas",
+        "aerolineas"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "ypf",
+      "name": "YPF",
+      "type": "Empresa",
+      "alias": [
+        "ypf"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    },
+    {
+      "slug": "mercado-libre",
+      "name": "Mercado Libre",
+      "type": "Empresa",
+      "alias": [
+        "mercado libre",
+        "mercadolibre",
+        "meli"
+      ],
+      "in_palco_entities": true,
+      "seen_in_extract": true
+    }
+  ],
+  "candidates": [
+    {
+      "slug_guess": "movistar-arena",
+      "canonical_guess": "Movistar Arena",
+      "forms": [
+        "Movistar Arena"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 646,
+      "programs": 118,
+      "channels": 14,
+      "first_seen": "20260605",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "maradona",
+      "canonical_guess": "Maradona",
+      "forms": [
+        "Maradona"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 55,
+      "programs": 38,
+      "channels": 9,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "disney",
+      "canonical_guess": "Disney",
+      "forms": [
+        "Disney"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 49,
+      "programs": 27,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "fifa",
+      "canonical_guess": "FIFA",
+      "forms": [
+        "FIFA"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 48,
+      "programs": 36,
+      "channels": 8,
+      "first_seen": "20260529",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "mbappe",
+      "canonical_guess": "Mbappe",
+      "forms": [
+        "Mbappe",
+        "Mbappé"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 48,
+      "programs": 34,
+      "channels": 9,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "diego-maradona",
+      "canonical_guess": "Diego Maradona",
+      "forms": [
+        "Diego Maradona"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 44,
+      "programs": 32,
+      "channels": 7,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "whatsapp",
+      "canonical_guess": "WhatsApp",
+      "forms": [
+        "WhatsApp"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 41,
+      "programs": 29,
+      "channels": 7,
+      "first_seen": "20260529",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "mcdonald-s",
+      "canonical_guess": "McDonald's",
+      "forms": [
+        "McDonald's"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 40,
+      "programs": 20,
+      "channels": 5,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "cristiano-ronaldo",
+      "canonical_guess": "Cristiano Ronaldo",
+      "forms": [
+        "Cristiano Ronaldo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 39,
+      "programs": 26,
+      "channels": 6,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "bielsa",
+      "canonical_guess": "Bielsa",
+      "forms": [
+        "Bielsa"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 38,
+      "programs": 31,
+      "channels": 7,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "enzo-fernandez",
+      "canonical_guess": "Enzo Fernández",
+      "forms": [
+        "Enzo Fernández"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 37,
+      "programs": 24,
+      "channels": 5,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "fm-luzu",
+      "canonical_guess": "FM LUZU",
+      "forms": [
+        "FM LUZU",
+        "FM Luzu"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 36,
+      "programs": 17,
+      "channels": 1,
+      "first_seen": "20260605",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "blender",
+      "canonical_guess": "Blender",
+      "forms": [
+        "Blender"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 34,
+      "programs": 15,
+      "channels": 5,
+      "first_seen": "20260624",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "paredes",
+      "canonical_guess": "Paredes",
+      "forms": [
+        "Paredes"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 33,
+      "programs": 22,
+      "channels": 6,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "vorterix",
+      "canonical_guess": "VORTERIX",
+      "forms": [
+        "VORTERIX",
+        "Vorterix"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 33,
+      "programs": 16,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "dibu-martinez",
+      "canonical_guess": "Dibu Martínez",
+      "forms": [
+        "Dibu Martínez"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 31,
+      "programs": 26,
+      "channels": 6,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "netflix",
+      "canonical_guess": "Netflix",
+      "forms": [
+        "Netflix"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 30,
+      "programs": 21,
+      "channels": 5,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "tagliafico",
+      "canonical_guess": "Tagliafico",
+      "forms": [
+        "Tagliafico"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 30,
+      "programs": 20,
+      "channels": 7,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "real-madrid",
+      "canonical_guess": "Real Madrid",
+      "forms": [
+        "Real Madrid"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 30,
+      "programs": 20,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "mercado-pago",
+      "canonical_guess": "Mercado Pago",
+      "forms": [
+        "Mercado Pago"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 30,
+      "programs": 18,
+      "channels": 5,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lula",
+      "canonical_guess": "Lula",
+      "forms": [
+        "Lula"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 30,
+      "programs": 15,
+      "channels": 6,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "neymar",
+      "canonical_guess": "Neymar",
+      "forms": [
+        "Neymar"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 29,
+      "programs": 22,
+      "channels": 5,
+      "first_seen": "20260529",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lautaro-martinez",
+      "canonical_guess": "Lautaro Martínez",
+      "forms": [
+        "Lautaro Martínez"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 28,
+      "programs": 22,
+      "channels": 8,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "banco-central",
+      "canonical_guess": "Banco Central",
+      "forms": [
+        "Banco Central"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 26,
+      "programs": 14,
+      "channels": 7,
+      "first_seen": "20260623",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "toy-story",
+      "canonical_guess": "Toy Story",
+      "forms": [
+        "Toy Story"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 26,
+      "programs": 13,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "donald-trump",
+      "canonical_guess": "Donald Trump",
+      "forms": [
+        "Donald Trump"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 25,
+      "programs": 23,
+      "channels": 8,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "jessica-sirio",
+      "canonical_guess": "Jessica Sirío",
+      "forms": [
+        "Jessica Sirio",
+        "Jessica Sirío",
+        "Jéssica Sirio"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 25,
+      "programs": 15,
+      "channels": 7,
+      "first_seen": "20260623",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "miami",
+      "canonical_guess": "Miami",
+      "forms": [
+        "Miami"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 24,
+      "programs": 21,
+      "channels": 7,
+      "first_seen": "20260622",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "chatgpt",
+      "canonical_guess": "ChatGPT",
+      "forms": [
+        "ChatGPT"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 24,
+      "programs": 14,
+      "channels": 6,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "alfaro",
+      "canonical_guess": "Alfaro",
+      "forms": [
+        "Alfaro"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 23,
+      "programs": 18,
+      "channels": 9,
+      "first_seen": "20260624",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "bad-bunny",
+      "canonical_guess": "Bad Bunny",
+      "forms": [
+        "Bad Bunny"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 23,
+      "programs": 16,
+      "channels": 5,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "twitch",
+      "canonical_guess": "Twitch",
+      "forms": [
+        "Twitch"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 23,
+      "programs": 14,
+      "channels": 4,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "gaston-edul",
+      "canonical_guess": "Gastón Edul",
+      "forms": [
+        "Gastón Edul"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 22,
+      "programs": 18,
+      "channels": 2,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "brasil",
+      "canonical_guess": "Brasil",
+      "forms": [
+        "Brasil"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 22,
+      "programs": 17,
+      "channels": 7,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "marcelo-bielsa",
+      "canonical_guess": "Marcelo Bielsa",
+      "forms": [
+        "Marcelo Bielsa"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 21,
+      "programs": 17,
+      "channels": 6,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "trump",
+      "canonical_guess": "Trump",
+      "forms": [
+        "Trump"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 21,
+      "programs": 17,
+      "channels": 8,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "river",
+      "canonical_guess": "River",
+      "forms": [
+        "River"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 21,
+      "programs": 16,
+      "channels": 7,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "spotify",
+      "canonical_guess": "Spotify",
+      "forms": [
+        "Spotify"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 21,
+      "programs": 16,
+      "channels": 4,
+      "first_seen": "20260529",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "barcelona",
+      "canonical_guess": "Barcelona",
+      "forms": [
+        "Barcelona"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 21,
+      "programs": 14,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "adidas",
+      "canonical_guess": "Adidas",
+      "forms": [
+        "Adidas"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 21,
+      "programs": 10,
+      "channels": 3,
+      "first_seen": "20260608",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "google",
+      "canonical_guess": "Google",
+      "forms": [
+        "Google"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 20,
+      "programs": 16,
+      "channels": 10,
+      "first_seen": "20260604",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "fito-paez",
+      "canonical_guess": "Fito Páez",
+      "forms": [
+        "Fito Páez"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 20,
+      "programs": 15,
+      "channels": 5,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "insaurralde",
+      "canonical_guess": "Insaurralde",
+      "forms": [
+        "Insaurralde"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 20,
+      "programs": 14,
+      "channels": 6,
+      "first_seen": "20260623",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "taylor-swift",
+      "canonical_guess": "Taylor Swift",
+      "forms": [
+        "Taylor Swift"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 20,
+      "programs": 14,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "coca-cola",
+      "canonical_guess": "Coca-Cola",
+      "forms": [
+        "Coca-Cola"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 20,
+      "programs": 14,
+      "channels": 4,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "facebook",
+      "canonical_guess": "Facebook",
+      "forms": [
+        "Facebook"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 20,
+      "programs": 13,
+      "channels": 6,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "telefe",
+      "canonical_guess": "Telefe",
+      "forms": [
+        "Telefe"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 20,
+      "programs": 13,
+      "channels": 4,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_fuerte",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "patria-y-familia",
+      "canonical_guess": "Patria y Familia",
+      "forms": [
+        "Patria y Familia",
+        "Patria y familia"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 20,
+      "programs": 9,
+      "channels": 1,
+      "first_seen": "20260605",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "brad-pitt",
+      "canonical_guess": "Brad Pitt",
+      "forms": [
+        "Brad Pitt"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 19,
+      "programs": 16,
+      "channels": 7,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "indio-solari",
+      "canonical_guess": "indio Solari",
+      "forms": [
+        "indio Solari",
+        "Indio Solari"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 19,
+      "programs": 14,
+      "channels": 3,
+      "first_seen": "20260605",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "axel-kicillof",
+      "canonical_guess": "Axel Kicillof",
+      "forms": [
+        "Axel Kicillof"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 18,
+      "programs": 11,
+      "channels": 6,
+      "first_seen": "20260608",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "juli-castro",
+      "canonical_guess": "Juli Castro",
+      "forms": [
+        "Juli Castro"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 18,
+      "programs": 11,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "ocean-drive",
+      "canonical_guess": "Ocean Drive",
+      "forms": [
+        "Ocean Drive"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 18,
+      "programs": 10,
+      "channels": 3,
+      "first_seen": "20260623",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "leo-montero",
+      "canonical_guess": "Leo Montero",
+      "forms": [
+        "Leo Montero"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 18,
+      "programs": 9,
+      "channels": 2,
+      "first_seen": "20260623",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "banco-nacion",
+      "canonical_guess": "Banco Nación",
+      "forms": [
+        "Banco Nación"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 18,
+      "programs": 9,
+      "channels": 6,
+      "first_seen": "20260608",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "tim-payne",
+      "canonical_guess": "Tim Payne",
+      "forms": [
+        "Tim Payne"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 17,
+      "programs": 14,
+      "channels": 4,
+      "first_seen": "20260529",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "paula-chavez",
+      "canonical_guess": "Paula Chávez",
+      "forms": [
+        "Paula Chávez"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 17,
+      "programs": 13,
+      "channels": 2,
+      "first_seen": "20260529",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "alberto-fernandez",
+      "canonical_guess": "Alberto Fernández",
+      "forms": [
+        "Alberto Fernández"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 17,
+      "programs": 10,
+      "channels": 7,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "se-fue-larga",
+      "canonical_guess": "Se fue larga",
+      "forms": [
+        "Se fue larga",
+        "Se Fue Larga"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 17,
+      "programs": 10,
+      "channels": 2,
+      "first_seen": "20260611",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "de-paul",
+      "canonical_guess": "De Paul",
+      "forms": [
+        "De Paul",
+        "de Paul"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 16,
+      "programs": 13,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "san-lorenzo",
+      "canonical_guess": "San Lorenzo",
+      "forms": [
+        "San Lorenzo"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 16,
+      "programs": 12,
+      "channels": 6,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "diego-leuco",
+      "canonical_guess": "Diego Leuco",
+      "forms": [
+        "Diego Leuco"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 16,
+      "programs": 10,
+      "channels": 2,
+      "first_seen": "20260605",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "maria-becerra",
+      "canonical_guess": "María Becerra",
+      "forms": [
+        "María Becerra"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 16,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "gustavo-alfaro",
+      "canonical_guess": "Gustavo Alfaro",
+      "forms": [
+        "Gustavo Alfaro"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 15,
+      "programs": 11,
+      "channels": 6,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "nair-galarza",
+      "canonical_guess": "Nair Galarza",
+      "forms": [
+        "Nair Galarza"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 15,
+      "programs": 9,
+      "channels": 2,
+      "first_seen": "20260529",
+      "last_seen": "20260611",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "urbana-play",
+      "canonical_guess": "Urbana Play",
+      "forms": [
+        "Urbana Play"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 15,
+      "programs": 2,
+      "channels": 1,
+      "first_seen": "20260626",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "marcelo-tinelli",
+      "canonical_guess": "Marcelo Tinelli",
+      "forms": [
+        "Marcelo Tinelli"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 14,
+      "programs": 11,
+      "channels": 4,
+      "first_seen": "20260529",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "resumido-info",
+      "canonical_guess": "Resumido Info",
+      "forms": [
+        "Resumido Info"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 14,
+      "programs": 10,
+      "channels": 1,
+      "first_seen": "20260622",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "gran-hermano",
+      "canonical_guess": "Gran Hermano",
+      "forms": [
+        "Gran Hermano"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 14,
+      "programs": 9,
+      "channels": 3,
+      "first_seen": "20260610",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "la-nacion",
+      "canonical_guess": "La Nación",
+      "forms": [
+        "La Nación"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 14,
+      "programs": 8,
+      "channels": 6,
+      "first_seen": "20260610",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "ronaldo",
+      "canonical_guess": "Ronaldo",
+      "forms": [
+        "Ronaldo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 12,
+      "channels": 5,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "di-maria",
+      "canonical_guess": "Di María",
+      "forms": [
+        "Di María"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 11,
+      "channels": 2,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "adrian-ravier",
+      "canonical_guess": "Adrián Ravier",
+      "forms": [
+        "Adrián Ravier"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 10,
+      "channels": 5,
+      "first_seen": "20260629",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "caputo",
+      "canonical_guess": "Caputo",
+      "forms": [
+        "Caputo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 9,
+      "channels": 6,
+      "first_seen": "20260624",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "mononimo_publico",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "ariana-grande",
+      "canonical_guess": "Ariana Grande",
+      "forms": [
+        "Ariana Grande"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 7,
+      "channels": 2,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "julio-iglesias",
+      "canonical_guess": "Julio Iglesias",
+      "forms": [
+        "Julio Iglesias"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 7,
+      "channels": 4,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "el-indio-solari",
+      "canonical_guess": "El Indio Solari",
+      "forms": [
+        "El Indio Solari"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 13,
+      "programs": 5,
+      "channels": 3,
+      "first_seen": "20260605",
+      "last_seen": "20260624",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "ahora-play",
+      "canonical_guess": "Ahora Play",
+      "forms": [
+        "Ahora Play"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 13,
+      "programs": 4,
+      "channels": 1,
+      "first_seen": "20260629",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "cuti-romero",
+      "canonical_guess": "Cuti Romero",
+      "forms": [
+        "Cuti Romero"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 12,
+      "programs": 11,
+      "channels": 5,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "amazon",
+      "canonical_guess": "Amazon",
+      "forms": [
+        "Amazon"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 12,
+      "programs": 9,
+      "channels": 6,
+      "first_seen": "20260609",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "nike",
+      "canonical_guess": "Nike",
+      "forms": [
+        "Nike"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 12,
+      "programs": 9,
+      "channels": 5,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_conocida",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "nadie-dice-nada",
+      "canonical_guess": "Nadie dice nada",
+      "forms": [
+        "Nadie dice nada",
+        "Nadie Dice Nada"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 12,
+      "programs": 8,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "canal-13",
+      "canonical_guess": "Canal 13",
+      "forms": [
+        "Canal 13"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 12,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260608",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "claudio-barrelier",
+      "canonical_guess": "Claudio Barrelier",
+      "forms": [
+        "Claudio Barrelier"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 12,
+      "programs": 6,
+      "channels": 1,
+      "first_seen": "20260601",
+      "last_seen": "20260625",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "kuti-romero",
+      "canonical_guess": "Kuti Romero",
+      "forms": [
+        "Kuti Romero"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 11,
+      "channels": 5,
+      "first_seen": "20260602",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "nestor-kirchner",
+      "canonical_guess": "Néstor Kirchner",
+      "forms": [
+        "Néstor Kirchner"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 10,
+      "channels": 8,
+      "first_seen": "20260626",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "mario-pergolini",
+      "canonical_guess": "Mario Pergolini",
+      "forms": [
+        "Mario Pergolini"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 10,
+      "channels": 5,
+      "first_seen": "20260604",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lo-celso",
+      "canonical_guess": "Lo Celso",
+      "forms": [
+        "Lo Celso"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 10,
+      "channels": 5,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "ricky-martin",
+      "canonical_guess": "Ricky Martín",
+      "forms": [
+        "Ricky Martin",
+        "Ricky Martín"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 10,
+      "channels": 4,
+      "first_seen": "20260602",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "santi-talledo",
+      "canonical_guess": "Santi Talledo",
+      "forms": [
+        "Santi Talledo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 10,
+      "channels": 2,
+      "first_seen": "20260605",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "pollo-alvarez",
+      "canonical_guess": "Pollo Álvarez",
+      "forms": [
+        "Pollo Álvarez"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 9,
+      "channels": 1,
+      "first_seen": "20260608",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "luis-miguel",
+      "canonical_guess": "Luis Miguel",
+      "forms": [
+        "Luis Miguel"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 9,
+      "channels": 3,
+      "first_seen": "20260604",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "atletico-de-madrid",
+      "canonical_guess": "Atlético de Madrid",
+      "forms": [
+        "Atlético de Madrid"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 11,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260605",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "justin-bieber",
+      "canonical_guess": "Justin Bieber",
+      "forms": [
+        "Justin Bieber"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260529",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "martin-insaurralde",
+      "canonical_guess": "Martín Insaurralde",
+      "forms": [
+        "Martín Insaurralde"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 8,
+      "channels": 6,
+      "first_seen": "20260623",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "paulo-cablan",
+      "canonical_guess": "Paulo Cablan",
+      "forms": [
+        "Paulo Cablan"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 8,
+      "channels": 1,
+      "first_seen": "20260529",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "nico-gonzalez",
+      "canonical_guess": "Nico González",
+      "forms": [
+        "Nico González"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "damian-cook",
+      "canonical_guess": "Damian Cook",
+      "forms": [
+        "Damian Cook",
+        "Damián Cook"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 11,
+      "programs": 4,
+      "channels": 2,
+      "first_seen": "20260626",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "santiago-caputo",
+      "canonical_guess": "Santiago Caputo",
+      "forms": [
+        "Santiago Caputo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 10,
+      "channels": 6,
+      "first_seen": "20260626",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "mar-del-plata",
+      "canonical_guess": "Mar del Plata",
+      "forms": [
+        "Mar del Plata"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 10,
+      "channels": 3,
+      "first_seen": "20260623",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "thiago-almada",
+      "canonical_guess": "Thiago Almada",
+      "forms": [
+        "Thiago Almada"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 10,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "harry-kane",
+      "canonical_guess": "Harry Kane",
+      "forms": [
+        "Harry Kane"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 9,
+      "channels": 3,
+      "first_seen": "20260611",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "nati-j",
+      "canonical_guess": "Nati J",
+      "forms": [
+        "Nati J"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 9,
+      "channels": 1,
+      "first_seen": "20260601",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "luis-enrique",
+      "canonical_guess": "Luis Enrique",
+      "forms": [
+        "Luis Enrique"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lisandro-martinez",
+      "canonical_guess": "Lisandro Martínez",
+      "forms": [
+        "Lisandro Martínez"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260608",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "michael-jordan",
+      "canonical_guess": "Michael Jordan",
+      "forms": [
+        "Michael Jordan"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 10,
+      "programs": 8,
+      "channels": 2,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "rock-and-pop",
+      "canonical_guess": "Rock and Pop",
+      "forms": [
+        "Rock and Pop"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 10,
+      "programs": 6,
+      "channels": 5,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "guillermo-francos",
+      "canonical_guess": "Guillermo Francos",
+      "forms": [
+        "Guillermo Francos"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 9,
+      "channels": 6,
+      "first_seen": "20260626",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "vicky-garabal",
+      "canonical_guess": "Vicky Garabal",
+      "forms": [
+        "Vicky Garabal"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 8,
+      "channels": 2,
+      "first_seen": "20260603",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "dua-lipa",
+      "canonical_guess": "Dua Lipa",
+      "forms": [
+        "Dua Lipa"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 8,
+      "channels": 4,
+      "first_seen": "20260529",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "ernestina-paez",
+      "canonical_guess": "Ernestina Páez",
+      "forms": [
+        "Ernestina Páez"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 8,
+      "channels": 5,
+      "first_seen": "20260626",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "susana-jimenez",
+      "canonical_guess": "Susana Jiménez",
+      "forms": [
+        "Susana Jiménez"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 8,
+      "channels": 5,
+      "first_seen": "20260529",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "juan-roman-riquelme",
+      "canonical_guess": "Juan Román Riquelme",
+      "forms": [
+        "Juan Román Riquelme"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260603",
+      "last_seen": "20260625",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "cami-mayan",
+      "canonical_guess": "Cami Mayan",
+      "forms": [
+        "Cami Mayan",
+        "Cami Mayán"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 8,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "maximo-kirchner",
+      "canonical_guess": "Máximo Kirchner",
+      "forms": [
+        "Máximo Kirchner"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 7,
+      "channels": 4,
+      "first_seen": "20260629",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "casa-rosada",
+      "canonical_guess": "Casa Rosada",
+      "forms": [
+        "Casa Rosada"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 9,
+      "programs": 7,
+      "channels": 6,
+      "first_seen": "20260623",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "toy-story-5",
+      "canonical_guess": "Toy Story 5",
+      "forms": [
+        "Toy Story 5"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 9,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "burger-king",
+      "canonical_guess": "Burger King",
+      "forms": [
+        "Burger King"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 9,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260602",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "kylie-minogue",
+      "canonical_guess": "Kylie Minogue",
+      "forms": [
+        "Kylie Minogue"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260608",
+      "last_seen": "20260609",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "hospital-italiano",
+      "canonical_guess": "Hospital Italiano",
+      "forms": [
+        "Hospital Italiano"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 9,
+      "programs": 4,
+      "channels": 2,
+      "first_seen": "20260611",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "chat-gpt",
+      "canonical_guess": "Chat GPT",
+      "forms": [
+        "Chat GPT"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 9,
+      "programs": 4,
+      "channels": 2,
+      "first_seen": "20260605",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "banco-galicia",
+      "canonical_guess": "Banco Galicia",
+      "forms": [
+        "Banco Galicia"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 9,
+      "programs": 2,
+      "channels": 2,
+      "first_seen": "20260630",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "leandro-paredes",
+      "canonical_guess": "Leandro Paredes",
+      "forms": [
+        "Leandro Paredes"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "fernet-branca",
+      "canonical_guess": "Fernet Branca",
+      "forms": [
+        "Fernet Branca"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 8,
+      "programs": 8,
+      "channels": 2,
+      "first_seen": "20260602",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "charly-garcia",
+      "canonical_guess": "Charly García",
+      "forms": [
+        "Charly García"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 8,
+      "channels": 5,
+      "first_seen": "20260608",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lady-gaga",
+      "canonical_guess": "Lady Gaga",
+      "forms": [
+        "Lady Gaga"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260610",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "tom-hanks",
+      "canonical_guess": "Tom Hanks",
+      "forms": [
+        "Tom Hanks"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 8,
+      "channels": 3,
+      "first_seen": "20260609",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "fabian-fernandez",
+      "canonical_guess": "Fabián Fernández",
+      "forms": [
+        "Fabián Fernández"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 8,
+      "channels": 6,
+      "first_seen": "20260622",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "diego-torres",
+      "canonical_guess": "Diego Torres",
+      "forms": [
+        "Diego Torres"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260605",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "carlos-gardel",
+      "canonical_guess": "Carlos Gardel",
+      "forms": [
+        "Carlos Gardel"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260623",
+      "last_seen": "20260625",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "mirta-legrand",
+      "canonical_guess": "Mirta Legrand",
+      "forms": [
+        "Mirta Legrand"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260604",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "guido-rodriguez",
+      "canonical_guess": "Guido Rodríguez",
+      "forms": [
+        "Guido Rodríguez"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 2,
+      "first_seen": "20260608",
+      "last_seen": "20260623",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "lucas-lecin",
+      "canonical_guess": "Lucas Lecín",
+      "forms": [
+        "Lucas Lecin",
+        "Lucas Lecín"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "banco-provincia",
+      "canonical_guess": "Banco Provincia",
+      "forms": [
+        "Banco Provincia"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 5,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "elon-musk",
+      "canonical_guess": "Elon Musk",
+      "forms": [
+        "Elon Musk"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 5,
+      "first_seen": "20260610",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lucas-ortega",
+      "canonical_guess": "Lucas Ortega",
+      "forms": [
+        "Lucas Ortega"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "kun-aguero",
+      "canonical_guess": "Kun Agüero",
+      "forms": [
+        "Kun Agüero"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 7,
+      "channels": 1,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "los-redondos",
+      "canonical_guess": "Los Redondos",
+      "forms": [
+        "Los Redondos"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 6,
+      "channels": 2,
+      "first_seen": "20260605",
+      "last_seen": "20260624",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "rolling-stones",
+      "canonical_guess": "Rolling Stones",
+      "forms": [
+        "Rolling Stones"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260604",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lebron-james",
+      "canonical_guess": "LeBron James",
+      "forms": [
+        "LeBron James"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 6,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "matias-tabar",
+      "canonical_guess": "Matías Tabar",
+      "forms": [
+        "Matías Tabar"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260630",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "vaca-muerta",
+      "canonical_guess": "Vaca Muerta",
+      "forms": [
+        "Vaca Muerta"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 8,
+      "programs": 5,
+      "channels": 4,
+      "first_seen": "20260630",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "gianni-infantino",
+      "canonical_guess": "Gianni Infantino",
+      "forms": [
+        "Gianni Infantino"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260608",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "adam-sandler",
+      "canonical_guess": "Adam Sandler",
+      "forms": [
+        "Adam Sandler"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 8,
+      "programs": 4,
+      "channels": 2,
+      "first_seen": "20260601",
+      "last_seen": "20260623",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "92-1-fm",
+      "canonical_guess": "92.1 FM",
+      "forms": [
+        "92.1 FM"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 8,
+      "programs": 4,
+      "channels": 1,
+      "first_seen": "20260626",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "canal-9",
+      "canonical_guess": "Canal 9",
+      "forms": [
+        "Canal 9"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 8,
+      "programs": 4,
+      "channels": 4,
+      "first_seen": "20260604",
+      "last_seen": "20260624",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "inter-miami",
+      "canonical_guess": "Inter Miami",
+      "forms": [
+        "Inter Miami"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 8,
+      "programs": 3,
+      "channels": 3,
+      "first_seen": "20260602",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "alexis-mac-allister",
+      "canonical_guess": "Alexis Mac Allister",
+      "forms": [
+        "Alexis Mac Allister"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 4,
+      "first_seen": "20260610",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "guillermo-aquino",
+      "canonical_guess": "Guillermo Aquino",
+      "forms": [
+        "Guillermo Aquino"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 1,
+      "first_seen": "20260626",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "nelson-castro",
+      "canonical_guess": "Nelson Castro",
+      "forms": [
+        "Nelson Castro"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 4,
+      "first_seen": "20260602",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "jorge-macri",
+      "canonical_guess": "Jorge Macri",
+      "forms": [
+        "Jorge Macri"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 5,
+      "first_seen": "20260623",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "angel-di-maria",
+      "canonical_guess": "Ángel Di María",
+      "forms": [
+        "Ángel Di María"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "juan-carlos",
+      "canonical_guess": "Juan Carlos",
+      "forms": [
+        "Juan Carlos"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "nati-jota",
+      "canonical_guess": "Nati Jota",
+      "forms": [
+        "Nati Jota"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 2,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "santiago-del-moro",
+      "canonical_guess": "Santiago del Moro",
+      "forms": [
+        "Santiago del Moro"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 5,
+      "first_seen": "20260610",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "michael-jackson",
+      "canonical_guess": "Michael Jackson",
+      "forms": [
+        "Michael Jackson"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 3,
+      "first_seen": "20260602",
+      "last_seen": "20260625",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "marco-giles",
+      "canonical_guess": "Marco Giles",
+      "forms": [
+        "Marco Giles"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 2,
+      "first_seen": "20260606",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "teo-de-lia",
+      "canonical_guess": "Teo de Lía",
+      "forms": [
+        "Teo de Lía"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 7,
+      "channels": 1,
+      "first_seen": "20260605",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "luis-suarez",
+      "canonical_guess": "Luis Suárez",
+      "forms": [
+        "Luis Suárez"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 4,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "peter-thiel",
+      "canonical_guess": "Peter Thiel",
+      "forms": [
+        "Peter Thiel"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 4,
+      "first_seen": "20260611",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "luis-chela",
+      "canonical_guess": "Luis Chela",
+      "forms": [
+        "Luis Chela"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 1,
+      "first_seen": "20260602",
+      "last_seen": "20260625",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "lenny-kravitz",
+      "canonical_guess": "Lenny Kravitz",
+      "forms": [
+        "Lenny Kravitz"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260606",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "jorge-luis-borges",
+      "canonical_guess": "Jorge Luis Borges",
+      "forms": [
+        "Jorge Luis Borges"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 4,
+      "first_seen": "20260603",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "britney-spears",
+      "canonical_guess": "Britney Spears",
+      "forms": [
+        "Britney Spears"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260608",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "harry-potter",
+      "canonical_guess": "Harry Potter",
+      "forms": [
+        "Harry Potter"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 2,
+      "first_seen": "20260602",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "florencia-pena",
+      "canonical_guess": "Florencia Peña",
+      "forms": [
+        "Florencia Peña"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 5,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "carmen-barbieri",
+      "canonical_guess": "Carmen Barbieri",
+      "forms": [
+        "Carmen Barbieri"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 2,
+      "first_seen": "20260609",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "vero-lozano",
+      "canonical_guess": "Vero Lozano",
+      "forms": [
+        "Vero Lozano"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 2,
+      "first_seen": "20260622",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "facundo-medina",
+      "canonical_guess": "Facundo Medina",
+      "forms": [
+        "Facundo Medina"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "diego-martinez",
+      "canonical_guess": "Diego Martínez",
+      "forms": [
+        "Diego Martínez"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 2,
+      "first_seen": "20260603",
+      "last_seen": "20260624",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "domi-faena",
+      "canonical_guess": "Domi Faena",
+      "forms": [
+        "Domi Faena"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 1,
+      "first_seen": "20260603",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "martin-sirio",
+      "canonical_guess": "Martín Sirio",
+      "forms": [
+        "Martín Sirio"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260604",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "martin-menem",
+      "canonical_guess": "Martín Menem",
+      "forms": [
+        "Martín Menem"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 6,
+      "channels": 4,
+      "first_seen": "20260625",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "luis-caputo",
+      "canonical_guess": "Luis Caputo",
+      "forms": [
+        "Luis Caputo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 4,
+      "first_seen": "20260629",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "keiko-fujimori",
+      "canonical_guess": "Keiko Fujimori",
+      "forms": [
+        "Keiko Fujimori"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 4,
+      "first_seen": "20260630",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "mona-jimenez",
+      "canonical_guess": "Mona Jiménez",
+      "forms": [
+        "Mona Jiménez"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 1,
+      "first_seen": "20260609",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "hannah-montana",
+      "canonical_guess": "Hannah Montana",
+      "forms": [
+        "Hannah Montana"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260606",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "banco-macro",
+      "canonical_guess": "Banco Macro",
+      "forms": [
+        "Banco Macro"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "ernestina-pais",
+      "canonical_guess": "Ernestina País",
+      "forms": [
+        "Ernestina Pais",
+        "Ernestina País"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 4,
+      "first_seen": "20260626",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "juli-poggio",
+      "canonical_guess": "Juli Poggio",
+      "forms": [
+        "Juli Poggio"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 1,
+      "first_seen": "20260609",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "agus-garcia",
+      "canonical_guess": "Agus García",
+      "forms": [
+        "Agus García"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 1,
+      "first_seen": "20260609",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "more-beltran",
+      "canonical_guess": "More Beltrán",
+      "forms": [
+        "More Beltrán"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 7,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260604",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "star-wars",
+      "canonical_guess": "Star Wars",
+      "forms": [
+        "Star Wars"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 7,
+      "programs": 4,
+      "channels": 3,
+      "first_seen": "20260611",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "cabo-verde",
+      "canonical_guess": "Cabo Verde",
+      "forms": [
+        "Cabo Verde"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 4,
+      "first_seen": "20260623",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "guido-casca",
+      "canonical_guess": "Guido Casca",
+      "forms": [
+        "Guido Casca"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "moria-casan",
+      "canonical_guess": "Moria Casán",
+      "forms": [
+        "Moria Casán"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260602",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "s-p-500",
+      "canonical_guess": "S&P 500",
+      "forms": [
+        "S&P 500"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 4,
+      "first_seen": "20260609",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "cris-morena",
+      "canonical_guess": "Cris Morena",
+      "forms": [
+        "Cris Morena"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 3,
+      "first_seen": "20260608",
+      "last_seen": "20260626",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "patri-familia",
+      "canonical_guess": "Patri Familia",
+      "forms": [
+        "Patri Familia",
+        "Patri Família"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 1,
+      "first_seen": "20260604",
+      "last_seen": "20260623",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "robert-de-niro",
+      "canonical_guess": "Robert De Niro",
+      "forms": [
+        "Robert De Niro"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 5,
+      "first_seen": "20260604",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "martin-garabal",
+      "canonical_guess": "Martín Garabal",
+      "forms": [
+        "Martín Garabal"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 1,
+      "first_seen": "20260605",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "dia-supermercado",
+      "canonical_guess": "día (supermercado)",
+      "forms": [
+        "día (supermercado)",
+        "Día (supermercado)"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 6,
+      "programs": 6,
+      "channels": 2,
+      "first_seen": "20260604",
+      "last_seen": "20260623",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "pinon-fijo",
+      "canonical_guess": "Piñón Fijo",
+      "forms": [
+        "Piñón Fijo"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 3,
+      "first_seen": "20260609",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "abel-pintos",
+      "canonical_guess": "Abel Pintos",
+      "forms": [
+        "Abel Pintos"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 2,
+      "first_seen": "20260604",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "media"
+    },
+    {
+      "slug_guess": "off-campus",
+      "canonical_guess": "Off Campus",
+      "forms": [
+        "Off Campus"
+      ],
+      "kind": "empresa",
+      "kinds": [
+        "empresa"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 3,
+      "first_seen": "20260601",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "juan-manuel-fangio",
+      "canonical_guess": "Juan Manuel Fangio",
+      "forms": [
+        "Juan Manuel Fangio"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 4,
+      "first_seen": "20260623",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "diego-armando-maradona",
+      "canonical_guess": "Diego Armando Maradona",
+      "forms": [
+        "Diego Armando Maradona"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 3,
+      "first_seen": "20260603",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "carlos-menem",
+      "canonical_guess": "Carlos Menem",
+      "forms": [
+        "Carlos Menem"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 5,
+      "first_seen": "20260626",
+      "last_seen": "20260701",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "cris-banadia",
+      "canonical_guess": "Cris Banadía",
+      "forms": [
+        "Cris Banadía"
+      ],
+      "kind": "mixto",
+      "kinds": [
+        "empresa",
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 1,
+      "first_seen": "20260604",
+      "last_seen": "20260630",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "marca_nombre_compuesto",
+      "confidence": "alta"
+    },
+    {
+      "slug_guess": "lucas-trejo",
+      "canonical_guess": "Lucas Trejo",
+      "forms": [
+        "Lucas Trejo"
+      ],
+      "kind": "persona",
+      "kinds": [
+        "persona"
+      ],
+      "mentions": 6,
+      "programs": 5,
+      "channels": 4,
+      "first_seen": "20260624",
+      "last_seen": "20260629",
+      "linked_slug": null,
+      "status": "candidata",
+      "filter_reason": "nombre_completo",
+      "confidence": "alta"
+    }
+  ]
+}
