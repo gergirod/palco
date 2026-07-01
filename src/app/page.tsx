@@ -42,8 +42,8 @@ const PASOS = [
   },
   {
     n: "02",
-    t: "Encontramos tu nombre",
-    d: "Detectamos cada mención de tu marca o figura, distinguimos pauta de orgánico y la ubicamos en su contexto real de conversación.",
+    t: "Detectamos cada mención",
+    d: "Detectamos cada mención de las figuras, marcas o temas que seguís, distinguimos pauta de orgánico y la ubicamos en su contexto real de conversación.",
   },
   {
     n: "03",
@@ -76,13 +76,14 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-16 md:pt-28 md:pb-24">
         <p className="eyebrow mb-5">Inteligencia de reputación · streaming en vivo</p>
         <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05] max-w-3xl">
-          Enterate de cómo se habla de vos{" "}
+          Seguí los nombres que te importan{" "}
           <span className="text-signal">antes que nadie</span>.
         </h1>
         <p className="mt-6 text-lg text-muted max-w-2xl">
           Palco escucha el streaming argentino en vivo — Olga, Luzu, Bondi y más — y
-          te dice cuándo, dónde y en qué tono aparece tu nombre. Como un Bloomberg de la
-          atención, pero para tu reputación.
+          te dice cuándo, dónde y en qué tono mencionan las figuras, marcas o temas
+          que elegís seguir. Como un Bloomberg de la atención, pero para política,
+          reputación y cultura.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link href="/onboarding" className="btn-signal">
@@ -107,7 +108,7 @@ export default function Landing() {
             },
             {
               t: "Pauta vs. orgánico, separado.",
-              d: "Distinguimos lo que se dijo porque pagaron de lo que surgió solo. Dos historias muy distintas para tu reputación.",
+              d: "Distinguimos lo que se dijo porque pagaron de lo que surgió solo. Dos historias muy distintas sobre la misma figura o marca.",
             },
             {
               t: "La prueba textual, siempre.",
@@ -186,7 +187,7 @@ export default function Landing() {
       {/* cta */}
       <section className="mx-auto max-w-6xl px-6 py-24 text-center">
         <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight max-w-3xl mx-auto">
-          Tu nombre ya está sonando. La pregunta es si te estás enterando.
+          Lo que seguís ya está sonando en el aire. La pregunta es si te estás enterando.
         </h2>
         <div className="mt-8">
           <Link href="/onboarding" className="btn-signal">
