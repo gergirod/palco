@@ -48,7 +48,7 @@ export default function Landing() {
           <div>
             <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
             <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.08]">
-              Enterate cuándo y cómo hablan de las{" "}
+              Enterate cuándo y cómo se habla de las{" "}
               <span className="text-signal">personas y empresas</span> que te importan.
             </h1>
             <p className="mt-5 text-lg text-ink font-medium">
@@ -115,7 +115,7 @@ export default function Landing() {
       {/* cierre */}
       <section className="mx-auto max-w-6xl px-6 py-16 text-center">
         <h2 className="font-display text-2xl md:text-4xl font-semibold tracking-tight max-w-3xl mx-auto">
-          Lo que gestionás ya está sonando en vivo. La pregunta es si te estás enterando.
+          Ya se está hablando de lo que te importa en el streaming. La pregunta es si te estás enterando.
         </h2>
         <div className="mt-7">
           <Link href="/onboarding" className="btn-signal">
