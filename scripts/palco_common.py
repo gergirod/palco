@@ -106,7 +106,10 @@ def send_resend(to: str, subject: str, html: str) -> None:
     http_json(
         "POST",
         "https://api.resend.com/emails",
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "User-Agent": "palco-scripts/1.0",
+        },
         body={"from": from_addr, "to": [to], "subject": subject, "html": html},
     )
 
