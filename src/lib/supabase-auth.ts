@@ -19,14 +19,24 @@ export function getSupabase(): SupabaseClient | null {
   return _client;
 }
 
-/** Envía el magic link al mail. redirectTo vuelve al dashboard. */
+/** Envía el magic link al mail. redirectTo pasa por /auth/callback. */
 export async function sendMagicLink(email: string): Promise<{ ok: boolean; error?: string }> {
   const sb = getSupabase();
   if (!sb) return { ok: false, error: "Auth no configurado (falta NEXT_PUBLIC_SUPABASE_*)." };
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const { error } = await sb.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${origin}/dashboard` },
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+    },
   });
   return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+/** Sesión actual en el browser (null si no hay login o auth deshabilitado). */
+export async function getSession() {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.auth.getSession();
+  return data.session;
 }

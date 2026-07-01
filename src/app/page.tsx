@@ -75,7 +75,7 @@ export default function Landing() {
               <Link href="/onboarding" className="btn-signal">
                 Pedir una demo con tus nombres
               </Link>
-              <Link href={`/dashboard?e=${EJEMPLO.slug}`} className="btn-ghost">
+              <Link href={`/dashboard?demo=1&e=${EJEMPLO.slug}`} className="btn-ghost">
                 Ver un panel de ejemplo
               </Link>
             </div>

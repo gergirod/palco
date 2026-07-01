@@ -368,16 +368,20 @@ export default function PalcoPage() {
   const [frecuencia, setFrecuencia] = useState<Frecuencia>("diario");
   const [email, setEmail] = useState("");
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
+  const [isDemo, setIsDemo] = useState(false);
 
-  // Lee la watchlist elegida en el onboarding (?e=slug1,slug2&plan=pro).
+  // Lee la watchlist elegida en el onboarding (?e=slug1,slug2&plan=pro)
+  // o el panel de ejemplo desde la landing (?demo=1&e=slug).
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
+    const demo = p.get("demo") === "1";
+    setIsDemo(demo);
     const e = (p.get("e") || "")
       .split(",")
       .map((s) => s.trim())
       .filter((s) => D.radars[s]);
     if (e.length) {
-      setWatch(e);
+      setWatch(demo ? [e[0]] : e);
       setSlug(e[0]);
     }
     if (p.get("plan")) setPlan(p.get("plan")!);
@@ -511,29 +515,46 @@ export default function PalcoPage() {
             PALCO
           </div>
           <div className="flex items-center gap-2 sm:gap-3 text-[13px]">
-            {plan && (
-              <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
-                Plan {PLAN_LABEL[plan] || plan}
-              </span>
+            {isDemo ? (
+              <>
+                <span className="hidden sm:inline-block rounded-full border border-slate-200 bg-slate-50 px-3 py-1 font-medium text-slate-500">
+                  Panel de ejemplo
+                </span>
+                <Link
+                  href="/onboarding"
+                  className="rounded-lg px-3 py-1.5 font-semibold text-white hover:opacity-90"
+                  style={{ backgroundColor: BRAND }}
+                >
+                  Pedir demo con tus nombres
+                </Link>
+              </>
+            ) : (
+              <>
+                {plan && (
+                  <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
+                    Plan {PLAN_LABEL[plan] || plan}
+                  </span>
+                )}
+                <button
+                  onClick={() => setShowAvisos(true)}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
+                >
+                  ⚙ Avisos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = new URLSearchParams(window.location.search);
+                    p.set("edit", "1");
+                    router.push(`/onboarding?${p.toString()}`);
+                  }}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
+                >
+                  <span className="sm:hidden">Editar</span>
+                  <span className="hidden sm:inline">Editar watchlist</span>
+                </button>
+              </>
             )}
-            <button
-              onClick={() => setShowAvisos(true)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
-            >
-              ⚙ Avisos
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const p = new URLSearchParams(window.location.search);
-                p.set("edit", "1");
-                router.push(`/onboarding?${p.toString()}`);
-              }}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
-            >
-              <span className="sm:hidden">Editar</span>
-              <span className="hidden sm:inline">Editar watchlist</span>
-            </button>
           </div>
         </div>
       </div>
@@ -695,7 +716,7 @@ export default function PalcoPage() {
 
       <div className="mx-auto max-w-[1100px] px-5 py-8">
         {/* rail de watchlist (viene del onboarding) */}
-        {watch.length > 0 && (
+        {!isDemo && watch.length > 0 && (
           <div className="mb-5 flex flex-wrap items-center gap-2">
             <span className="text-[12px] font-medium text-slate-400">Tu watchlist:</span>
             {watch.map((s) => {
@@ -736,11 +757,16 @@ export default function PalcoPage() {
               {alertas.map((rr) => (
                 <button
                   key={rr.slug}
+                  type="button"
+                  disabled={isDemo}
                   onClick={() => {
+                    if (isDemo) return;
                     setSlug(rr.slug);
                     setTab("neg");
                   }}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-left hover:border-red-300"
+                  className={`flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-left ${
+                    isDemo ? "cursor-default" : "hover:border-red-300"
+                  }`}
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-slate-800">
@@ -766,7 +792,8 @@ export default function PalcoPage() {
           </section>
         )}
 
-        {/* selector de entidad */}
+        {/* selector de entidad (oculto en panel de ejemplo) */}
+        {!isDemo && (
         <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <label className="text-[12px] font-medium text-slate-500">
             ¿A quién querés monitorear?
@@ -892,9 +919,10 @@ export default function PalcoPage() {
             </div>
           )}
         </section>
+        )}
 
         {/* header entidad */}
-        <header className="mt-6 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-6">
+        <header className={`flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-6 ${isDemo ? "mt-4" : "mt-6"}`}>
           <div>
             <p className="text-[12px] uppercase tracking-wide text-slate-400">{R.type}</p>
             <h1 className="mt-1 text-3xl font-bold leading-tight">
@@ -1494,8 +1522,18 @@ export default function PalcoPage() {
         </section>
 
         <footer className="mt-10 border-t border-slate-200 pt-4 text-[11px] text-slate-400">
-          Palco · demo sobre corpus real · datos capturados del streaming argentino en vivo ·
-          elegí otra entidad arriba para cambiar el radar
+          Palco · demo sobre corpus real · datos capturados del streaming argentino en vivo
+          {isDemo ? (
+            <>
+              {" "}
+              ·{" "}
+              <Link href="/onboarding" className="font-medium hover:underline" style={{ color: BRAND }}>
+                Pedí tu panel con tus nombres
+              </Link>
+            </>
+          ) : (
+            <> · elegí otra entidad arriba para cambiar el radar</>
+          )}
         </footer>
       </div>
     </div>

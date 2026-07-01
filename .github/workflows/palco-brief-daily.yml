@@ -1,0 +1,37 @@
+name: Palco · resumen diario
+
+on:
+  schedule:
+    # 17:00 ART (UTC-3) = 20:00 UTC — "un mail cada tarde"
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Solo listar destinatarios, sin mandar mail
+        type: boolean
+        default: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Enviar resumen diario
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          BRIEF_RECIPIENTS: ${{ secrets.BRIEF_RECIPIENTS }}
+          BRIEF_WATCHLIST: ${{ secrets.BRIEF_WATCHLIST }}
+          PALCO_DASHBOARD_URL: ${{ vars.PALCO_DASHBOARD_URL }}
+        run: |
+          ARGS="--kind diario"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python scripts/send_briefs.py $ARGS

@@ -1,0 +1,40 @@
+name: Palco · ni bien aparece
+
+# Sin cron: el pipeline dispara esto al terminar de procesar (repository_dispatch).
+# También podés correrlo a mano desde Actions.
+
+on:
+  repository_dispatch:
+    types: [palco-pipeline-done]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Solo listar destinatarios, sin mandar mail
+        type: boolean
+        default: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Enviar avisos al-toque
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          ALERT_RECIPIENTS: ${{ secrets.ALERT_RECIPIENTS }}
+          BRIEF_RECIPIENTS: ${{ secrets.BRIEF_RECIPIENTS }}
+          BRIEF_WATCHLIST: ${{ secrets.BRIEF_WATCHLIST }}
+          PALCO_DASHBOARD_URL: ${{ vars.PALCO_DASHBOARD_URL }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="--dry-run"; fi
+          python scripts/send_alerts.py $ARGS
