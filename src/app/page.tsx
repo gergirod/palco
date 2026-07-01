@@ -4,51 +4,29 @@ const CANALES = [
   "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana", "Neura", "Vorterix",
 ];
 
-const ENTREGABLES = [
+const PUNTOS = [
   {
-    t: "Alerta en tiempo real",
-    d: "Apenas se menciona un nombre de tu watchlist con audiencia y chat que lo justifican, te llega — con la cita, el programa y el minuto.",
+    t: "En vivo, no al otro día",
+    d: "Te llega en el momento, mientras se está diciendo — no cuando ya es tendencia.",
   },
   {
-    t: "Brief diario",
-    d: "Cada mañana a tu mail: qué se dijo ayer sobre los nombres que seguís, en qué canales y con qué clima.",
+    t: "Los nombres que vos elegís",
+    d: "Tu candidato, los rivales, una marca, un tema. Seguís lo que te importa a vos.",
   },
   {
-    t: "Reporte semanal",
-    d: "La narrativa de la semana con share of voice y sentimiento por nombre. Lo que un monitor serio te daría — más la sala.",
-  },
-  {
-    t: "Flag de crisis",
-    d: "Mención + audiencia alta + chat disparado en negativo, al mismo tiempo. Te enterás tres minutos después de que se dijo, no cuando ya explotó.",
-  },
-];
-
-const PASOS = [
-  {
-    n: "01",
-    t: "Escuchamos el aire",
-    d: "Capturamos y transcribimos cada minuto de streaming en vivo — y medimos cuánta gente estaba mirando y cómo se movía el chat en ese momento.",
-  },
-  {
-    n: "02",
-    t: "Rastreamos tus nombres",
-    d: "Escribís cualquier nombre —tu candidato, los rivales, una marca, un tema— y Palco lo busca hacia atrás en todo lo capturado y hacia adelante en vivo.",
-  },
-  {
-    n: "03",
-    t: "Te avisamos primero",
-    d: "Cada aparición se vuelve una ficha: canal, programa, minuto, cita textual, audiencia en vivo, reacción del chat y tono. Enterate antes de que sea tendencia.",
+    t: "Con la reacción de la gente",
+    d: "No solo qué se dijo: cuánta gente estaba mirando y cómo lo tomó el chat.",
   },
 ];
 
 export default function Landing() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen flex flex-col">
       {/* nav */}
       <header className="sticky top-0 z-30 backdrop-blur bg-paper/80 border-b border-line">
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
           <Link href="/" className="font-display text-xl font-semibold tracking-tight">
-            Palco<span className="text-signal">.</span>
+            Palco<span className="text-signal-bright">.</span>
           </Link>
           <nav className="flex items-center gap-2">
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
@@ -61,168 +39,74 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* hero */}
-      <section className="mx-auto max-w-6xl px-6 pt-20 pb-16 md:pt-28 md:pb-24">
-        <p className="eyebrow mb-5">Monitoreo de streaming en vivo · comunicación política</p>
-        <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05] max-w-3xl">
-          El radar sobre los nombres que{" "}
-          <span className="text-signal">gestionás</span>.
-        </h1>
-        <p className="mt-6 text-lg text-muted max-w-2xl">
-          El streaming en vivo arma el clima antes que la tele y las redes — y hoy
-          nadie lo mira. Palco escucha Olga, Luzu, Bondi y más, y te dice cuándo,
-          dónde y en qué tono se habla de tu candidato, tus rivales o el tema que
-          estás manejando — y cómo reacciona la audiencia en el minuto exacto.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Link href="/onboarding" className="btn-signal">
-            Pedir una demo con tus nombres
-          </Link>
-          <Link href="/dashboard" className="btn-ghost">
-            Ver un panel de ejemplo
-          </Link>
-        </div>
-        <p className="mt-4 text-sm text-muted">
-          Cobertura hoy: {CANALES.join(" · ")}.
-        </p>
-      </section>
-
-      {/* dos termómetros */}
-      <section className="border-y border-line bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <p className="eyebrow mb-3">Dos termómetros a la vez</p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-            No contamos menciones. Medimos la atención que tuvieron.
-          </h2>
-          <div className="mt-12 grid md:grid-cols-2 gap-8">
-            <div className="card p-8">
-              <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
-                El termómetro de cobertura
-              </h3>
-              <p className="text-sm text-muted leading-relaxed">
-                Qué se dice, en qué canales y con qué tono. Share of voice y
-                sentimiento por cada nombre — lo que hace un monitor de medios serio,
-                pero sobre lo hablado en vivo, que hasta ahora quedaba en un punto ciego.
-              </p>
+      {/* hero — todo lo que somos, sin scrollear */}
+      <section className="mx-auto w-full max-w-6xl px-6 pt-14 pb-10 md:pt-20">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          {/* texto */}
+          <div>
+            <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
+            <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.08]">
+              Enterate cuando hablan de{" "}
+              <span className="text-signal">los nombres que seguís</span>.
+            </h1>
+            <p className="mt-5 text-lg text-muted">
+              Es como un monitoreo de medios, pero para el streaming en vivo — eso que
+              hoy nadie mira y donde arranca todo. Vos elegís los nombres que te
+              importan y te avisamos apenas los nombran: en qué programa, qué se dijo y
+              cómo reaccionó la gente que estaba mirando.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/onboarding" className="btn-signal">
+                Pedir una demo con tus nombres
+              </Link>
+              <Link href="/dashboard" className="btn-ghost">
+                Ver un panel de ejemplo
+              </Link>
             </div>
-            <div className="card p-8">
-              <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
-                El termómetro de la sala
-              </h3>
-              <p className="text-sm text-muted leading-relaxed">
-                Cuánta gente estaba mirando y cómo reaccionó el chat en el minuto de la
-                mención. Una frase en un programa de 200 personas no es lo mismo que una
-                en Olga con 41.000 mirando y el chat explotando. Esto no lo hace nadie más.
-              </p>
+            <p className="mt-5 text-sm text-muted">
+              Hoy escuchamos: {CANALES.join(" · ")}.
+            </p>
+          </div>
+
+          {/* ejemplo concreto */}
+          <div className="card p-6 md:justify-self-end w-full max-w-sm">
+            <div className="flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-2 font-medium text-crisis">
+                <span className="inline-block h-2 w-2 rounded-full bg-crisis" />
+                Alerta · en vivo
+              </span>
+              <span className="text-muted">reci&eacute;n</span>
+            </div>
+            <p className="mt-4 text-sm font-medium">Olga · Ser&iacute;a Incre&iacute;ble</p>
+            <p className="text-xs text-muted">12.400 mirando en este momento</p>
+            <p className="mt-4 border-l-2 border-line pl-3 text-sm leading-relaxed">
+              &laquo;&hellip;lo que dijo no se lo banca nadie, se le fue la mano&hellip;&raquo;
+            </p>
+            <div className="mt-4 rounded-xl bg-crisis-soft px-3 py-2 text-xs font-medium text-crisis">
+              Posible crisis: mucha gente mirando y el chat en contra.
             </div>
           </div>
         </div>
       </section>
 
-      {/* flag de crisis — killer feature */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="card p-8 md:p-12 border-l-4" style={{ borderLeftColor: "var(--crisis)" }}>
-          <p className="eyebrow mb-3" style={{ color: "var(--crisis)" }}>
-            La señal que nadie más puede computar
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-3xl">
-            Flag de crisis: mención + audiencia alta + chat en negativo, al mismo tiempo.
-          </h2>
-          <p className="mt-6 text-lg text-muted max-w-2xl">
-            Cruzamos las tres capas en el mismo minuto. Nadie más las tiene juntas, así
-            que nadie más lo puede calcular. Es la diferencia entre enterarte de una
-            crisis cuando ya es tendencia y enterarte tres minutos después de que se dijo
-            la frase — cuando todavía podés hacer algo.
-          </p>
+      {/* tres puntos — corto */}
+      <section className="border-y border-line bg-surface">
+        <div className="mx-auto max-w-6xl px-6 py-12 grid md:grid-cols-3 gap-8">
+          {PUNTOS.map((p) => (
+            <div key={p.t}>
+              <h3 className="font-display text-lg font-semibold tracking-tight mb-1.5">{p.t}</h3>
+              <p className="text-sm text-muted leading-relaxed">{p.d}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* cómo funciona */}
-      <section className="border-t border-line bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="eyebrow mb-3">Cómo funciona</p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-            De horas de streaming a la sola frase que te importa.
-          </h2>
-          <div className="mt-12 grid md:grid-cols-3 gap-10">
-            {PASOS.map((p) => (
-              <div key={p.n}>
-                <div className="font-display text-signal text-2xl font-semibold mb-3">{p.n}</div>
-                <h3 className="font-display text-xl font-semibold tracking-tight mb-2">{p.t}</h3>
-                <p className="text-sm text-muted leading-relaxed">{p.d}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* para quién */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <p className="eyebrow mb-3">Para quién</p>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-          No monitoreás tu propio nombre. Monitoreás el mapa que tenés que gestionar.
+      {/* cierre */}
+      <section className="mx-auto max-w-6xl px-6 py-16 text-center">
+        <h2 className="font-display text-2xl md:text-4xl font-semibold tracking-tight max-w-3xl mx-auto">
+          Lo que seguís ya está sonando en vivo. La pregunta es si te estás enterando.
         </h2>
-        <div className="mt-12 grid md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
-              Comunicación política
-            </h3>
-            <p className="text-sm text-muted leading-relaxed">
-              Consultores, jefes de prensa de campaña y equipos de imagen. Seguís a tu
-              candidato, a los rivales y a los temas calientes al mismo tiempo — de cara
-              al ciclo 2027 y a cualquier episodio reputacional en curso.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-display text-xl font-semibold tracking-tight mb-2">
-              Asuntos corporativos
-            </h3>
-            <p className="text-sm text-muted leading-relaxed">
-              Energía, bancos, prepagas, aerolíneas, telcos. Sectores donde una frase al
-              aire mueve la percepción de la marca — y donde querés enterarte cuando pasa,
-              no en el resumen del día siguiente.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* concierge / entregables */}
-      <section className="border-t border-line bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="eyebrow mb-3">Cómo empezás</p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-            Nos das tus nombres. Nosotros operamos el radar. Vos recibís lo que importa.
-          </h2>
-          <p className="mt-5 text-muted max-w-2xl">
-            Palco arranca como servicio gestionado: definís tu watchlist y recibís cuatro
-            entregables sobre ella. Se paga por nombre en seguimiento, no por "tu
-            reputación".
-          </p>
-          <div className="mt-12 grid sm:grid-cols-2 gap-6">
-            {ENTREGABLES.map((e) => (
-              <div key={e.t} className="card p-7">
-                <h3 className="font-display text-xl font-semibold tracking-tight mb-2">{e.t}</h3>
-                <p className="text-sm text-muted leading-relaxed">{e.d}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-10">
-            <Link href="/onboarding" className="btn-signal">
-              Pedir una demo con tus nombres
-            </Link>
-            <p className="mt-3 text-sm text-muted">
-              La demo es el producto funcionando con datos reales. Ves tu propio mapa, no un pitch.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* cta */}
-      <section className="mx-auto max-w-6xl px-6 py-24 text-center">
-        <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight max-w-3xl mx-auto">
-          Lo que gestionás ya está sonando en el aire. La pregunta es si te estás enterando.
-        </h2>
-        <div className="mt-8">
+        <div className="mt-7">
           <Link href="/onboarding" className="btn-signal">
             Pedir una demo con tus nombres
           </Link>
@@ -230,12 +114,12 @@ export default function Landing() {
       </section>
 
       {/* footer */}
-      <footer className="border-t border-line">
-        <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted">
+      <footer className="mt-auto border-t border-line">
+        <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted">
           <span className="font-display text-ink font-semibold">
-            Palco<span className="text-signal">.</span>
+            Palco<span className="text-signal-bright">.</span>
           </span>
-          <span>El radar de reputación sobre el streaming en vivo · Argentina</span>
+          <span>Monitoreo del streaming en vivo · Argentina</span>
           <Link href="/login" className="text-signal font-medium">
             Ingresar
           </Link>
