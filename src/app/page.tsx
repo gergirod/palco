@@ -1,21 +1,23 @@
 import Link from "next/link";
 
 const CANALES = [
-  "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana", "Neura", "Vorterix",
+  "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana Play", "Neura",
+  "Vorterix", "Border", "Cronista", "Ahora Play", "Aura", "Cenital", "Carajo",
+  "El Destape", "Futurock", "Bravo TV", "Carnaval",
 ];
 
 const PUNTOS = [
   {
-    t: "En vivo, no al otro día",
-    d: "Te llega mientras se está diciendo — no cuando ya es tendencia o llegó al recorte de la tele.",
+    t: "Personas y empresas que te importan",
+    d: "Cargás los nombres que gestionás — tu candidato, tu marca, un vocero, la competencia — y Palco los escucha en todo el aire.",
   },
   {
-    t: "Las figuras, marcas y temas que gestionás",
-    d: "Tu candidato, la competencia, un vocero, un tema sensible. Seguís lo que tenés que cuidar.",
+    t: "En vivo, no al otro día",
+    d: "Te avisa mientras se está diciendo: en qué programa, qué se dijo y con qué tono. No cuando ya fue tendencia o llegó al recorte de la tele.",
   },
   {
     t: "Con la reacción de la audiencia",
-    d: "No solo qué se dijo: cuánta gente miraba y cómo lo tomó el chat. Si algo escala, te lo marcamos como posible crisis.",
+    d: "Cuánta gente lo estaba escuchando y cómo lo tomó el chat. Si algo se prende, te salta una alerta de crisis en el momento.",
   },
 ];
 
@@ -39,25 +41,26 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* hero — se explica solo: qué categoría, qué es, qué hace */}
+      {/* hero — se explica solo: categoría + analogía + qué hace */}
       <section className="mx-auto w-full max-w-6xl px-6 pt-14 pb-10 md:pt-20">
         <div className="grid md:grid-cols-2 gap-10 items-center">
           {/* texto */}
           <div>
             <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
             <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.08]">
-              El monitoreo de medios no escucha el streaming en vivo.{" "}
-              <span className="text-signal">Palco sí</span>.
+              Palco te dice cuándo y cómo se habla de las{" "}
+              <span className="text-signal">personas y empresas</span> que te importan
+              en el streaming en vivo.
             </h1>
             <p className="mt-5 text-lg text-ink font-medium">
               Es el monitoreo de medios, pero para el streaming en vivo.
             </p>
             <p className="mt-3 text-lg text-muted">
               Los equipos de prensa y comunicación ya siguen diarios, radio y TV. Pero
-              hoy la agenda también se arma en el streaming — y nadie lo monitorea.
-              Palco escucha el aire y te avisa apenas nombran a las figuras, marcas o
-              temas que gestionás: en qué programa, qué se dijo y cómo reaccionó la
-              audiencia.
+              hoy la agenda también se arma en el streaming — y nadie lo escucha. Palco
+              te avisa cuándo nombran a las personas y empresas que gestionás: en qué
+              programa, qué se dijo, con qué tono y cómo reaccionó la gente que estaba
+              mirando.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/onboarding" className="btn-signal">
