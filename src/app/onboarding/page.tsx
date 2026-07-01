@@ -83,7 +83,7 @@ const PLANES: Plan[] = [
     bajada: "Seguí un nombre o tema y no te pierdas nada de lo que se dice.",
     incluye: [
       "1 nombre o tema",
-      "Tablero en vivo, actualizado cada día",
+      "Tablero actualizado cada día",
       "Resumen diario por mail",
       "Avisos de crisis apenas los detectamos",
     ],
