@@ -12,12 +12,12 @@ const PUNTOS = [
     d: "Cargás los nombres que gestionás — tu candidato, tu marca, un vocero, la competencia — y Palco los escucha en todo el aire.",
   },
   {
-    t: "En vivo, no al otro día",
-    d: "Te avisa mientras se está diciendo: en qué programa, qué se dijo y con qué tono. No cuando ya fue tendencia o llegó al recorte de la tele.",
+    t: "El mismo día, no cuando ya es tendencia",
+    d: "Escuchamos horas de aire que nadie puede seguir a mano. Cada mención te llega el mismo día: en qué programa, qué se dijo y con qué tono. No cuando ya llegó al recorte de la tele.",
   },
   {
     t: "Con la reacción de la audiencia",
-    d: "Cuánta gente lo estaba escuchando y cómo lo tomó el chat. Si algo se prende, te salta una alerta de crisis en el momento.",
+    d: "Cuánta gente lo estaba escuchando y cómo lo tomó el chat. Si algo se prende, te lo marcamos como posible crisis.",
   },
 ];
 
@@ -58,9 +58,9 @@ export default function Landing() {
             <p className="mt-3 text-lg text-muted">
               Los equipos de prensa y comunicación ya siguen diarios, radio y TV. Pero
               hoy la agenda también se arma en el streaming — y nadie lo escucha. Palco
-              te avisa cuándo nombran a las personas y empresas que gestionás: en qué
-              programa, qué se dijo, con qué tono y cómo reaccionó la gente que estaba
-              mirando.
+              escucha todos los programas y te muestra cada vez que nombran a las
+              personas y empresas que gestionás: en qué programa, qué se dijo, con qué
+              tono y cómo reaccionó la gente que estaba mirando.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/onboarding" className="btn-signal">
@@ -80,12 +80,12 @@ export default function Landing() {
             <div className="flex items-center justify-between text-xs">
               <span className="inline-flex items-center gap-2 font-medium text-signal">
                 <span className="inline-block h-2 w-2 rounded-full bg-signal-bright" />
-                Mención detectada · en vivo
+                Mención detectada
               </span>
-              <span className="text-muted">hace 2 min</span>
+              <span className="text-muted">programa de hoy</span>
             </div>
             <p className="mt-4 text-sm font-medium">Ciclo de streaming · política</p>
-            <p className="text-xs text-muted">8.900 mirando en este momento</p>
+            <p className="text-xs text-muted">8.900 mirando en ese momento</p>
             <p className="mt-4 border-l-2 border-line pl-3 text-sm leading-relaxed">
               &laquo;&hellip;lo nombraron al pasar cuando hablaban del acto de ayer&hellip;&raquo;
             </p>
