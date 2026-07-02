@@ -31,6 +31,11 @@ function AuthCallbackInner() {
     }
 
     (async () => {
+      // Magic link (implicit): el hash trae access_token; detectSessionInUrl lo parsea al iniciar.
+      if (typeof window !== "undefined" && window.location.hash.includes("access_token")) {
+        await sb.auth.getSession();
+      }
+
       const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
         if (!alive) return;
         if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
