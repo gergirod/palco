@@ -12,7 +12,6 @@ import {
   dashboardQueryFromAccount,
   isPalcoAccountConfigured,
   loadPalcoAccount,
-  MAX_COMPETIDORES,
   type PendingPalcoAccount,
   savePalcoAccount,
 } from "@/lib/palco-account";
@@ -154,7 +153,7 @@ function compact(n: number): string {
 const CATS = ["Todas", "Político", "Deporte", "Música", "Empresa"] as const;
 
 /* ---------- UI: barra de sentimiento mini ---------- */
-function MiniSent({ r }: { r: IndexRow }) {
+function MiniSent({ r }: { r: { neg: number; neu: number; pos: number } }) {
   const t = r.neg + r.neu + r.pos || 1;
   return (
     <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-100">
@@ -226,7 +225,10 @@ export default function OnboardingPage() {
   // Sin selección de plan: todos entran con la prueba que simula Pro (3 nombres).
   const [planId, setPlanId] = useState<Plan["id"]>(TRIAL_PLAN as Plan["id"]);
   const [sel, setSel] = useState<string[]>([]);
-  const [compSel, setCompSel] = useState<string[]>([]);
+  // Competencia: 1 por cada entidad de la watchlist → mapa entidad→rival.
+  const [compByEntity, setCompByEntity] = useState<Record<string, string>>({});
+  // Entidad que se está asignando en el paso "Competencia".
+  const [compActiveEntity, setCompActiveEntity] = useState<string>("");
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<(typeof CATS)[number]>("Todas");
   // gobernanza de avisos (defaults sanos: equilibrado + todo + diario)
@@ -315,7 +317,11 @@ export default function OnboardingPage() {
         setSel(acc.watchlist.map((w) => w.slug));
       }
       if (acc.competidores?.length) {
-        setCompSel(acc.competidores.map((c) => c.slug));
+        const map: Record<string, string> = {};
+        for (const c of acc.competidores) {
+          if (c.para && c.slug) map[c.para] = c.slug;
+        }
+        setCompByEntity(map);
       }
       if (acc.avisos?.email_contacto) setEmail(acc.avisos.email_contacto);
     });
@@ -418,14 +424,34 @@ export default function OnboardingPage() {
   }
   const lleno = sel.length >= plan.limite;
 
-  function toggleComp(slug: string) {
-    setCompSel((cur) => {
-      if (cur.includes(slug)) return cur.filter((s) => s !== slug);
-      if (cur.length >= MAX_COMPETIDORES) return cur;
-      return [...cur, slug];
+  // Asigna (o deselecciona) la competencia de la entidad activa. 1 por entidad.
+  function assignComp(compSlug: string) {
+    if (!compActiveEntity) return;
+    setCompByEntity((cur) => {
+      if (cur[compActiveEntity] === compSlug) {
+        const next = { ...cur };
+        delete next[compActiveEntity];
+        return next;
+      }
+      return { ...cur, [compActiveEntity]: compSlug };
     });
   }
-  const compLleno = compSel.length >= MAX_COMPETIDORES;
+  // Toda entidad de la watchlist tiene su competencia elegida.
+  const compCompleto = sel.length > 0 && sel.every((s) => compByEntity[s]);
+
+  // Mantiene la entidad activa dentro de la watchlist y poda competencias
+  // de entidades que se hayan sacado.
+  useEffect(() => {
+    if (!sel.includes(compActiveEntity)) {
+      setCompActiveEntity(sel[0] ?? "");
+    }
+    setCompByEntity((cur) => {
+      const next: Record<string, string> = {};
+      for (const s of sel) if (cur[s]) next[s] = cur[s];
+      return Object.keys(next).length === Object.keys(cur).length ? cur : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sel]);
 
   function addAlias(slug: string) {
     const raw = (aliasDraft[slug] || "").trim().toLowerCase();
@@ -458,14 +484,19 @@ export default function OnboardingPage() {
           alias: aliasCfg[slug] ?? row.alias,
         };
       }),
-      competidores: compSel.map((slug) => {
-        const row = browseBySlug.get(slug)!;
-        return {
-          slug,
-          nombre: row.name,
-          alias: row.alias,
-        };
-      }),
+      competidores: sel
+        .map((entidadSlug) => {
+          const compSlug = compByEntity[entidadSlug];
+          const row = compSlug ? browseBySlug.get(compSlug) : undefined;
+          if (!compSlug || !row) return null;
+          return {
+            slug: compSlug,
+            nombre: row.name,
+            alias: row.alias,
+            para: entidadSlug,
+          };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== null),
       avisos: {
         sensibilidad,
         solo_negativo: soloNegativo,
@@ -512,9 +543,17 @@ export default function OnboardingPage() {
   const selRows = sel
     .map((s) => browseBySlug.get(s))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
-  const compRows = compSel
-    .map((s) => browseBySlug.get(s))
-    .filter((r): r is NonNullable<typeof r> => Boolean(r));
+  // Pares entidad → su competencia, para el resumen final.
+  const compPares = sel
+    .map((entidadSlug) => {
+      const entidad = browseBySlug.get(entidadSlug);
+      const rival = compByEntity[entidadSlug]
+        ? browseBySlug.get(compByEntity[entidadSlug])
+        : undefined;
+      if (!entidad || !rival) return null;
+      return { entidad, rival };
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null);
 
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
@@ -806,31 +845,62 @@ export default function OnboardingPage() {
           <section>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h1 className="text-3xl font-bold">¿Quién es tu competencia?</h1>
+                <h1 className="text-3xl font-bold">¿Con quién comparás a cada uno?</h1>
                 <p className="mt-2 text-[15px] text-slate-600">
-                  Elegí hasta <b>{MAX_COMPETIDORES} rivales</b> para comparar en el tablero.
-                  Es <b>independiente</b> de tu watchlist: podés seguir un nombre y medirte
-                  contra otros.
+                  Elegí <b>1 competencia por cada nombre</b> que seguís. En el tablero
+                  vas a medir a cada uno contra su rival.
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-right shadow-sm">
                 <p className="text-[11px] uppercase tracking-wide text-slate-400">
-                  Competencia
+                  Asignadas
                 </p>
                 <p className="text-lg font-bold tabular-nums">
-                  {compSel.length}
+                  {sel.filter((s) => compByEntity[s]).length}
                   <span className="ml-1 text-[13px] font-medium text-slate-400">
-                    / {MAX_COMPETIDORES}
+                    / {sel.length}
                   </span>
                 </p>
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2">
+            {/* tabs: una por entidad de la watchlist */}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {selRows.map((r) => {
+                const activa = r.slug === compActiveEntity;
+                const rivalSlug = compByEntity[r.slug];
+                const rival = rivalSlug ? browseBySlug.get(rivalSlug) : undefined;
+                return (
+                  <button
+                    key={r.slug}
+                    type="button"
+                    onClick={() => setCompActiveEntity(r.slug)}
+                    className={`flex flex-col rounded-xl border px-4 py-2 text-left transition ${
+                      activa
+                        ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                        : "border-slate-200 bg-white hover:border-slate-400"
+                    }`}
+                    style={activa ? { backgroundColor: "#fbebd6" } : undefined}
+                  >
+                    <span className="text-[14px] font-semibold">{r.name}</span>
+                    <span className="text-[12px] text-slate-500">
+                      {rival ? `vs ${rival.name}` : "elegí su competencia…"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="mt-4 text-[13px] text-slate-600">
+              Elegí la competencia de{" "}
+              <b>{browseBySlug.get(compActiveEntity)?.name ?? "—"}</b>:
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar rival por nombre…"
+                placeholder="Buscar competencia por nombre…"
                 className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
               />
               <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
@@ -849,45 +919,37 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            {compLleno && (
-              <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-[13px] text-slate-600">
-                Llegaste al tope de {MAX_COMPETIDORES} rivales. Sacá uno para agregar otro.
-              </p>
-            )}
-
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((r) => {
-                const on = compSel.includes(r.slug);
-                const bloq = !on && compLleno;
-                return (
-                  <button
-                    key={r.slug}
-                    type="button"
-                    onClick={() => toggleComp(r.slug)}
-                    disabled={bloq}
-                    className={`flex flex-col rounded-xl border p-4 text-left shadow-sm transition ${
-                      on
-                        ? "border-slate-700 ring-2 ring-slate-300"
-                        : bloq
-                          ? "border-slate-200 bg-white opacity-40"
+              {filtered
+                .filter((r) => r.slug !== compActiveEntity)
+                .map((r) => {
+                  const on = compByEntity[compActiveEntity] === r.slug;
+                  return (
+                    <button
+                      key={r.slug}
+                      type="button"
+                      onClick={() => assignComp(r.slug)}
+                      className={`flex flex-col rounded-xl border p-4 text-left shadow-sm transition ${
+                        on
+                          ? "border-slate-700 ring-2 ring-slate-300"
                           : "border-slate-200 bg-white hover:border-slate-400"
-                    }`}
-                    style={on ? { backgroundColor: "#f1f5f9" } : undefined}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-slate-900">{r.name}</p>
-                      {on && (
-                        <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-white">
-                          rival
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-[12px] text-slate-500">
-                      {r.type} · {compact(r.mentions)} menc.
-                    </p>
-                  </button>
-                );
-              })}
+                      }`}
+                      style={on ? { backgroundColor: "#f1f5f9" } : undefined}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-slate-900">{r.name}</p>
+                        {on && (
+                          <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-white">
+                            competencia
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-[12px] text-slate-500">
+                        {r.type} · {compact(r.mentions)} menc.
+                      </p>
+                    </button>
+                  );
+                })}
             </div>
 
             <div className="mt-8 flex items-center justify-between">
@@ -901,10 +963,11 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => (isEdit ? entrar() : setPaso("alias"))}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
+                disabled={!compCompleto}
+                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ backgroundColor: BRAND }}
               >
-                {isEdit ? "Guardar cambios" : compSel.length === 0 ? "Saltar →" : "Seguir →"}
+                {isEdit ? "Guardar cambios" : "Seguir →"}
               </button>
             </div>
           </section>
@@ -1233,18 +1296,22 @@ export default function OnboardingPage() {
                   );
                 })}
               </div>
-              {compRows.length > 0 && (
+              {compPares.length > 0 && (
                 <>
                   <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-                    Tu competencia ({compRows.length})
+                    Comparaciones ({compPares.length})
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {compRows.map((r) => (
+                    {compPares.map(({ entidad, rival }) => (
                       <div
-                        key={r.slug}
+                        key={entidad.slug}
                         className="rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-[13px] text-slate-700"
                       >
-                        <p className="font-semibold">{r.name}</p>
+                        <p className="font-semibold">
+                          {entidad.name}{" "}
+                          <span className="font-normal text-slate-500">vs</span>{" "}
+                          {rival.name}
+                        </p>
                       </div>
                     ))}
                   </div>

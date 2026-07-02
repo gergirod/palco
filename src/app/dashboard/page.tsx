@@ -467,7 +467,8 @@ export default function PalcoPage() {
   const [feedShow, setFeedShow] = useState(6); // destacados por programa (resumen)
   const [solicitadas, setSolicitadas] = useState<string[]>([]); // catálogo: pedidas para seguir
   const [watch, setWatch] = useState<string[]>([]);
-  const [competidores, setCompetidores] = useState<string[]>([]);
+  // Competencia por entidad: mapa entidad→rival (1 por cada nombre seguido).
+  const [compByEntity, setCompByEntity] = useState<Record<string, string>>({});
   const [plan, setPlan] = useState<string>("");
   // gobernanza de avisos (settings del tablero)
   const [showAvisos, setShowAvisos] = useState(false);
@@ -531,9 +532,11 @@ export default function PalcoPage() {
         }
         if (acc.plan) setPlan(acc.plan);
         if (acc.competidores?.length) {
-          setCompetidores(
-            acc.competidores.map((c) => c.slug).filter((s) => D.radars[s])
-          );
+          const map: Record<string, string> = {};
+          for (const c of acc.competidores) {
+            if (c.para && c.slug && D.radars[c.slug]) map[c.para] = c.slug;
+          }
+          setCompByEntity(map);
         }
         const a = acc.avisos;
         if (a.sensibilidad) setSensibilidad(a.sensibilidad);
@@ -787,8 +790,10 @@ export default function PalcoPage() {
     };
   }, [porDia]);
   const comparativa = useMemo(() => {
-    if (!competidores.length) return [];
-    const slugs = [slug, ...competidores.filter((s) => s !== slug)];
+    // Cada entidad se compara contra su propia competencia (1 por entidad).
+    const rival = compByEntity[slug];
+    if (!rival || rival === slug || !D.radars[rival]) return [];
+    const slugs = [slug, rival];
     const seen = new Set<string>();
     const filas = slugs
       .filter((s) => {
@@ -819,7 +824,7 @@ export default function PalcoPage() {
     return filas
       .map((f) => ({ ...f, sovPct: Math.round((f.menciones / totalSet) * 100) }))
       .sort((a, b) => b.menciones - a.menciones);
-  }, [slug, competidores, D]);
+  }, [slug, compByEntity, D]);
   // Mejor / peor imagen del set: rankeo por net (pos − neg). Responde de una
   // "¿quién tiene mejor y peor imagen?" sin leer toda la tabla.
   const imagenRanking = useMemo(() => {
@@ -1428,12 +1433,11 @@ export default function PalcoPage() {
                   <thead>
                     <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wide text-slate-400">
                       <th className="px-4 py-3 font-semibold">Nombre</th>
-                      <th className="px-4 py-3 font-semibold">Menciones</th>
-                      <th className="px-4 py-3 font-semibold" title="Cuánto de la conversación del set comparado se lleva cada uno (menciones propias ÷ total del set).">
-                        Voz
+                      <th className="px-4 py-3 font-semibold" title="Cuánto se habla de cada uno: menciones totales y qué parte de la charla del set comparado se lleva.">
+                        Se habla de
                       </th>
-                      <th className="px-4 py-3 font-semibold" title="Qué % de las menciones propias de cada uno son negativas (base = sus propias menciones, no un versus).">
-                        Imagen neg.
+                      <th className="px-4 py-3 font-semibold" title="Cómo se habla de cada uno: rojo = negativo, gris = neutro, verde = positivo (base = sus propias menciones).">
+                        Imagen
                       </th>
                       <th className="hidden px-4 py-3 font-semibold sm:table-cell">Estado</th>
                     </tr>
@@ -1466,34 +1470,23 @@ export default function PalcoPage() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 tabular-nums text-slate-700">
-                          {compact(f.menciones)}
-                        </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
-                              <div
-                                className="h-full rounded-full"
-                                style={{ width: `${f.sovPct}%`, background: BRAND }}
-                              />
-                            </div>
-                            <span className="tabular-nums font-medium text-slate-600">
-                              {f.sovPct}%
-                            </span>
+                          <div className="tabular-nums font-medium text-slate-800">
+                            {compact(f.menciones)}
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            {f.sovPct}% de la charla
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span
-                            className={`tabular-nums font-medium ${
-                              f.negPct >= 40
-                                ? "text-red-600"
-                                : f.negPct <= 15
-                                  ? "text-emerald-600"
-                                  : "text-slate-600"
-                            }`}
-                          >
-                            {f.negPct}%
-                          </span>
+                          <div className="flex h-2 w-28 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full bg-red-500" style={{ width: `${f.negPct}%` }} />
+                            <div className="h-full bg-slate-300" style={{ width: `${f.neuPct}%` }} />
+                            <div className="h-full bg-emerald-500" style={{ width: `${f.posPct}%` }} />
+                          </div>
+                          <div className={`mt-1 text-[12px] font-medium ${f.verdictoCls}`}>
+                            {f.verdicto}
+                          </div>
                         </td>
                         <td className="hidden px-4 py-3 sm:table-cell">
                           {f.crisis ? (

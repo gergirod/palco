@@ -7,9 +7,14 @@ export type WatchlistItem = {
   alias: string[];
 };
 
-/** Rivales para comparar en el tablero — independiente de la watchlist. */
-export const MAX_COMPETIDORES = 3;
-export type CompetidorItem = WatchlistItem;
+/** Competencia para comparar en el tablero: exactamente 1 por cada entidad
+    de la watchlist. Cada competidor apunta, vía `para`, a la entidad contra
+    la que se lo compara. */
+export const MAX_COMPETIDORES_POR_ENTIDAD = 1;
+export type CompetidorItem = WatchlistItem & {
+  /** slug de la entidad de la watchlist a la que se compara. */
+  para: string;
+};
 
 export type AvisosConfig = {
   sensibilidad: "menos" | "equilibrado" | "mas";
