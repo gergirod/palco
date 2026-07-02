@@ -8,11 +8,13 @@ import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { fetchDataset } from "@/lib/supabase";
+import { PaywallExpired } from "@/components/palco/PaywallExpired";
 import {
   loadPalcoAccount,
   savePalcoAccount,
   isPalcoAccountConfigured,
   trialState,
+  type PalcoAccount,
   type TrialState,
 } from "@/lib/palco-account";
 import { TRIAL_DIAS, PAGO, whatsappPagoUrl } from "@/config/trial";
@@ -427,6 +429,7 @@ export default function PalcoPage() {
   const [imagenTab, setImagenTab] = useState<ImagenTab>("todo");
   const [isDemo, setIsDemo] = useState(false);
   const [accountReady, setAccountReady] = useState(false);
+  const [palcoAccount, setPalcoAccount] = useState<PalcoAccount | null>(null);
   // Acceso: prueba vigente / pagó / vencida. Lo calcula trialState() desde la DB.
   const [trial, setTrial] = useState<TrialState | null>(null);
 
@@ -463,6 +466,8 @@ export default function PalcoPage() {
         router.replace("/onboarding");
         return;
       }
+
+      setPalcoAccount(acc);
 
       // Estado de la prueba: si venció (y no pagó) bloqueamos el tablero abajo.
       setTrial(trialState(acc));
@@ -736,59 +741,44 @@ export default function PalcoPage() {
   // PAYWALL: la prueba venció (o la cuenta está cortada) y no pagó → bloqueamos.
   // El demo (?demo=1) nunca se bloquea.
   if (!isDemo && trial && !trial.ok) {
-    const bloqueada = trial.kind === "blocked";
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9] px-5 py-10 text-slate-900">
-        <div className="w-full max-w-[460px] rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
-          <div
-            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white"
-            style={{ backgroundColor: BRAND }}
-          >
-            🔒
-          </div>
-          <h1 className="mt-4 text-2xl font-bold">
-            {bloqueada ? "Tu cuenta está pausada" : "Se terminó tu prueba gratis"}
-          </h1>
-          <p className="mt-2 text-[15px] leading-relaxed text-slate-600">
-            {bloqueada
-              ? "Escribinos y la reactivamos en el momento."
-              : `Tuviste ${TRIAL_DIAS} días para probar Palco. Para seguir viendo lo que se dice de tus nombres, activá tu plan.`}
-          </p>
-
-          <div className="mt-6 flex flex-col gap-2.5">
-            <a
-              href={whatsappPagoUrl(email)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
+    if (trial.kind === "blocked") {
+      return (
+        <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9] px-5 py-10 text-slate-900">
+          <div className="w-full max-w-[460px] rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
+            <div
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white"
               style={{ backgroundColor: BRAND }}
             >
-              Activar mi plan por WhatsApp
-            </a>
-            {PAGO.mercadoPagoUrl && (
+              🔒
+            </div>
+            <h1 className="mt-4 text-2xl font-bold">Tu cuenta está pausada</h1>
+            <p className="mt-2 text-[15px] leading-relaxed text-slate-600">
+              Escribinos y la reactivamos en el momento.
+            </p>
+            <div className="mt-6 flex flex-col gap-2.5">
               <a
-                href={PAGO.mercadoPagoUrl}
+                href={whatsappPagoUrl(email)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-slate-200 bg-white px-6 py-3 text-[15px] font-semibold text-slate-700 hover:border-slate-400"
+                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
+                style={{ backgroundColor: BRAND }}
               >
-                Pagar con Mercado Pago
+                Escribir por WhatsApp
               </a>
-            )}
-            <a
-              href={`mailto:${PAGO.email}?subject=Palco%20-%20quiero%20activar%20mi%20plan`}
-              className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
-            >
-              o escribinos a {PAGO.email}
-            </a>
+              <a
+                href={`mailto:${PAGO.email}?subject=Palco%20-%20reactivar%20cuenta`}
+                className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
+              >
+                o escribinos a {PAGO.email}
+              </a>
+            </div>
           </div>
-
-          <p className="mt-6 border-t border-slate-100 pt-4 text-[12px] text-slate-400">
-            Cuando actives, tus nombres y avisos quedan tal cual los dejaste.
-          </p>
-        </div>
-      </main>
-    );
+        </main>
+      );
+    }
+    if (palcoAccount) {
+      return <PaywallExpired account={palcoAccount} email={email || palcoAccount.email} />;
+    }
   }
 
   return (

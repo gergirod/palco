@@ -26,11 +26,12 @@ create table if not exists public.palco_accounts (
   email text not null,
   plan text,
   -- estado comercial de la cuenta:
+  --   pending → recién registrado; sin onboarding (sin plan ni trial)
   --   trial   → prueba gratis en curso (se bloquea sola al vencer trial_ends_at)
   --   active  → pagó; acceso pleno (lo activás vos a mano en esta tabla)
   --   blocked → cortada manualmente
-  status text not null default 'trial',
-  -- fin de la prueba gratis. Se setea solo al registrarse (ver trigger).
+  status text not null default 'pending',
+  -- fin de la prueba gratis. Se setea al completar onboarding (no al registrarse).
   -- Para dar más días a alguien: editá esta fecha. Para activar: status='active'.
   trial_ends_at timestamptz,
   watchlist jsonb not null default '[]'::jsonb,
@@ -42,7 +43,7 @@ create table if not exists public.palco_accounts (
 );
 
 -- Si la tabla ya existía, sumamos las columnas nuevas (idempotente).
-alter table public.palco_accounts add column if not exists status text not null default 'trial';
+alter table public.palco_accounts add column if not exists status text not null default 'pending';
 alter table public.palco_accounts add column if not exists trial_ends_at timestamptz;
 alter table public.palco_accounts add column if not exists competidores jsonb not null default '[]'::jsonb;
 
@@ -78,9 +79,9 @@ security definer
 set search_path = public
 as $$
 begin
-  -- Al registrarse arranca la prueba gratis. Cambiá '2 days' por los días que quieras.
-  insert into public.palco_accounts (user_id, email, status, trial_ends_at)
-  values (new.id, new.email, 'trial', now() + interval '2 days')
+  -- Cuenta vacía: el trial arranca al completar onboarding (ver savePalcoAccount startTrial).
+  insert into public.palco_accounts (user_id, email, status, plan, trial_ends_at)
+  values (new.id, new.email, 'pending', null, null)
   on conflict (user_id) do nothing;
   return new;
 end;

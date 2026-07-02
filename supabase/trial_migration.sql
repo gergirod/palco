@@ -7,13 +7,18 @@ alter table public.palco_accounts add column if not exists status text not null 
 alter table public.palco_accounts add column if not exists trial_ends_at timestamptz;
 create index if not exists palco_accounts_status_idx on public.palco_accounts (status);
 
--- 2) Backfill: a las cuentas viejas sin fecha, les damos 2 días desde su alta.
---    (si querés arrancarles la prueba desde HOY, cambiá created_at por now())
+-- 2) Backfill: cuentas con watchlist pero sin trial → ya completaron onboarding.
 update public.palco_accounts
-set trial_ends_at = created_at + interval '2 days'
-where trial_ends_at is null;
+set trial_ends_at = coalesce(trial_ends_at, created_at + interval '2 days'),
+    status = case when status = 'pending' and jsonb_array_length(watchlist) > 0 then 'trial' else status end
+where trial_ends_at is null and jsonb_array_length(watchlist) > 0;
 
--- 3) Trigger: que las cuentas NUEVAS arranquen la prueba solas al registrarse.
+-- Cuentas sin watchlist → pending (aún no hicieron onboarding).
+update public.palco_accounts
+set status = 'pending', trial_ends_at = null
+where jsonb_array_length(watchlist) = 0 and status = 'trial' and trial_ends_at is not null;
+
+-- 3) Trigger: cuenta vacía al registrarse (trial al terminar onboarding).
 create or replace function public.handle_new_palco_user()
 returns trigger
 language plpgsql
@@ -21,8 +26,8 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.palco_accounts (user_id, email, status, trial_ends_at)
-  values (new.id, new.email, 'trial', now() + interval '2 days')  -- cambiá los días acá
+  insert into public.palco_accounts (user_id, email, status, plan, trial_ends_at)
+  values (new.id, new.email, 'pending', null, null)
   on conflict (user_id) do nothing;
   return new;
 end;

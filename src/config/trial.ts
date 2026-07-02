@@ -3,7 +3,7 @@
 // vive lo que ve el usuario y a dónde lo mandás a pagar.
 
 /** Días de prueba. Es solo informativo para los textos de la UI.
- *  El vencimiento real lo define trial_ends_at en la DB (trigger SQL). */
+ *  El vencimiento real lo define trial_ends_at en la DB (se setea al terminar onboarding). */
 export const TRIAL_DIAS = 2;
 
 /** Plan que simulamos durante la prueba (Pro = hasta 3 nombres). */

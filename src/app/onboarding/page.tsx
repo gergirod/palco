@@ -411,7 +411,7 @@ export default function OnboardingPage() {
       .map((s) => INDEX.find((r) => r.slug === s))
       .filter(Boolean) as IndexRow[];
     return {
-      plan: planId,
+      plan: isEdit ? planId : TRIAL_PLAN,
       watchlist: selRows.map((r) => ({
         slug: r.slug,
         nombre: r.name,
@@ -456,7 +456,7 @@ export default function OnboardingPage() {
       router.push("/login");
       return;
     }
-    const saved = await savePalcoAccount(pending);
+    const saved = await savePalcoAccount(pending, { startTrial: !isEdit });
     setEntrarLoading(false);
     if (!saved.ok) {
       window.alert(saved.error ?? "No se pudo guardar tu cuenta.");
