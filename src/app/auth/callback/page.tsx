@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { flushPendingAccount, readPendingAccount, resolvePostAuthPath } from "@/lib/palco-account";
+import { flushPendingAccount, resolvePostAuthPath } from "@/lib/palco-account";
 import { authEnabled, getSupabase } from "@/lib/supabase-auth";
 
 function AuthCallbackInner() {
@@ -25,11 +25,8 @@ function AuthCallbackInner() {
 
     async function finish(sessionOk: boolean) {
       if (!sessionOk || !alive) return;
-      const hadPending = Boolean(readPendingAccount()?.watchlist?.length);
       await flushPendingAccount();
-      const dest = await resolvePostAuthPath({
-        justFinishedOnboarding: hadPending,
-      });
+      const dest = await resolvePostAuthPath();
       if (alive) router.replace(dest);
     }
 

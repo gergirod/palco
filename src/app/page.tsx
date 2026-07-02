@@ -18,7 +18,7 @@ const EJEMPLO = {
 };
 
 /** Planes que mostramos en la landing SIN precio: el precio se conversa.
- *  El alta real es por prueba gratis desde /onboarding. */
+ *  El alta real es por prueba gratis: /login → onboarding → panel. */
 const PLANES = [
   {
     nombre: "Individual",
@@ -69,7 +69,7 @@ export default function Landing() {
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
               Ingresar
             </Link>
-            <Link href="/onboarding" className="btn-signal">
+            <Link href="/login" className="btn-signal">
               Pedir una demo
             </Link>
           </nav>
@@ -96,7 +96,7 @@ export default function Landing() {
               dijo, con qué tono y cómo lo tomó la audiencia.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/onboarding" className="btn-signal">
+              <Link href="/login" className="btn-signal">
                 Pedir una demo con tus nombres
               </Link>
               <Link href={`/dashboard?demo=1&e=${EJEMPLO.slug}`} className="btn-ghost">
@@ -182,14 +182,14 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Link href="/onboarding" className="btn-ghost mt-6 justify-center">
+              <Link href="/login" className="btn-ghost mt-6 justify-center">
                 Consultanos
               </Link>
             </div>
           ))}
         </div>
         <p className="mt-6 text-center text-sm text-muted">
-          ¿No sabés cuál te sirve? <Link href="/onboarding" className="text-signal font-medium">Probalo gratis</Link> y lo vemos juntos.
+          ¿No sabés cuál te sirve? <Link href="/login" className="text-signal font-medium">Probalo gratis</Link> y lo vemos juntos.
         </p>
       </section>
 
@@ -199,7 +199,7 @@ export default function Landing() {
           Ya se está hablando de lo que te importa en el streaming. La pregunta es si te estás enterando.
         </h2>
         <div className="mt-7">
-          <Link href="/onboarding" className="btn-signal">
+          <Link href="/login" className="btn-signal">
             Pedir una demo con tus nombres
           </Link>
         </div>

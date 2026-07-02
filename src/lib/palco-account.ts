@@ -143,17 +143,14 @@ export function isPalcoAccountConfigured(acc: PalcoAccount | null | undefined): 
   return Boolean(acc?.watchlist?.length && acc.plan);
 }
 
-/** Tras login: onboarding listo si acaba de confirmar el alta; tablero si ya volvía. */
-export async function resolvePostAuthPath(opts?: { justFinishedOnboarding?: boolean }): Promise<string> {
-  if (opts?.justFinishedOnboarding) {
-    return "/onboarding?auth=1&paso=listo";
-  }
+/** Tras login: onboarding si falta configurar; tablero si ya tiene watchlist. */
+export async function resolvePostAuthPath(): Promise<string> {
   const acc = await loadPalcoAccount();
   if (isPalcoAccountConfigured(acc)) {
     const q = dashboardQueryFromAccount(acc!);
     return q ? `/dashboard?${q}` : "/dashboard";
   }
-  return "/onboarding";
+  return "/onboarding?from=login";
 }
 
 export async function loadPalcoAccount(): Promise<PalcoAccount | null> {

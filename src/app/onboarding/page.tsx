@@ -7,7 +7,6 @@ import catalogData from "@/data/palco_catalog.json";
 import {
   authEnabled,
   getSession,
-  sendMagicLink,
 } from "@/lib/supabase-auth";
 import {
   dashboardQueryFromAccount,
@@ -16,7 +15,6 @@ import {
   MAX_COMPETIDORES,
   type PendingPalcoAccount,
   savePalcoAccount,
-  stashPendingAccount,
 } from "@/lib/palco-account";
 import { displayAlias, matchesQuery } from "@/lib/palco-watchlist";
 import { TRIAL_DIAS, TRIAL_PLAN, TRIAL_LIMITE } from "@/config/trial";
@@ -226,9 +224,7 @@ export default function OnboardingPage() {
   // alias editables por entidad (mock local; en producción → palco_watchlist.yaml)
   const [aliasCfg, setAliasCfg] = useState<Record<string, string[]>>({});
   const [aliasDraft, setAliasDraft] = useState<Record<string, string>>({});
-  const [authPending, setAuthPending] = useState(false);
   const [entrarLoading, setEntrarLoading] = useState(false);
-  const [postAuth, setPostAuth] = useState(false);
 
   const plan = PLANES.find((p) => p.id === planId)!;
   const pasosUi = isEdit ? PASOS_EDIT : PASOS;
@@ -270,39 +266,40 @@ export default function OnboardingPage() {
     });
   }, []);
 
-  // Tras magic link: hidratar resumen y mostrar paso "listo" antes del tablero.
+  // Alta por /login: sin sesión → ingresar; con sesión → mail del usuario.
+  useEffect(() => {
+    if (isEdit) return;
+    if (!authEnabled) return;
+
+    let alive = true;
+    (async () => {
+      const session = await getSession();
+      if (!alive) return;
+      if (!session) {
+        router.replace("/login");
+        return;
+      }
+      if (session.user.email) {
+        setEmail((cur) => cur || session.user.email!);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [isEdit, router]);
+
+  // Viene del magic link: arrancar en bienvenida (no saltar al tablero).
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
-    if (p.get("auth") === "1") setPostAuth(true);
-    if (p.get("auth") !== "1") return;
-    if (p.get("paso") === "listo") setPaso("listo");
-    loadPalcoAccount().then((acc) => {
-      if (!acc?.watchlist?.length) return;
-      setSel(acc.watchlist.map((w) => w.slug));
-      if (acc.competidores?.length) {
-        setCompSel(acc.competidores.map((c) => c.slug));
-      }
-      if (acc.plan === "esencial" || acc.plan === "profesional" || acc.plan === "enterprise") {
-        setPlanId(acc.plan);
-      }
-      const a = acc.avisos;
-      if (a.sensibilidad) setSensibilidad(a.sensibilidad);
-      setSoloNegativo(!!a.solo_negativo);
-      if (a.frecuencia) setFrecuencia(a.frecuencia);
-      setEmail(a.email_contacto || acc.email || "");
-      const aliases: Record<string, string[]> = {};
-      for (const w of acc.watchlist) {
-        if (w.alias?.length) aliases[w.slug] = [...w.alias];
-      }
-      if (Object.keys(aliases).length) setAliasCfg(aliases);
-    });
+    if (p.get("from") === "login") setPaso("bienvenida");
   }, []);
 
-  // Usuario logueado con cuenta lista → tablero (salvo modo edición o post-magic-link en listo).
+  // Usuario logueado con cuenta lista → tablero (salvo edición o alta en curso).
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     if (p.get("edit") === "1") return;
-    if (p.get("auth") === "1") return;
+    if (p.get("from") === "login") return;
     if (!authEnabled) return;
 
     let alive = true;
@@ -453,27 +450,19 @@ export default function OnboardingPage() {
     }
 
     setEntrarLoading(true);
-    stashPendingAccount(pending);
-
     const session = await getSession();
-    if (session) {
-      const saved = await savePalcoAccount(pending);
+    if (!session) {
       setEntrarLoading(false);
-      if (!saved.ok) {
-        window.alert(saved.error ?? "No se pudo guardar tu cuenta.");
-        return;
-      }
-      router.push(`/dashboard?${q}`);
+      router.push("/login");
       return;
     }
-
-    const sent = await sendMagicLink(email.trim());
+    const saved = await savePalcoAccount(pending);
     setEntrarLoading(false);
-    if (!sent.ok) {
-      window.alert(sent.error ?? "No se pudo enviar el link.");
+    if (!saved.ok) {
+      window.alert(saved.error ?? "No se pudo guardar tu cuenta.");
       return;
     }
-    setAuthPending(true);
+    router.push(`/dashboard?${q}`);
   }
 
   const selRows = sel
@@ -1175,21 +1164,10 @@ export default function OnboardingPage() {
               >
                 ✓
               </div>
-              <h1 className="mt-4 text-3xl font-bold">
-                {postAuth ? "Ya estás adentro." : "Todo listo."}
-              </h1>
+              <h1 className="mt-4 text-3xl font-bold">Todo listo.</h1>
               <p className="mt-2 text-[15px] text-slate-600">
-                {postAuth ? (
-                  <>
-                    Tu prueba gratis de <b>{TRIAL_DIAS} días</b> está activa. Revisá tu
-                    configuración y abrí el panel cuando quieras.
-                  </>
-                ) : (
-                  <>
-                    Arranca tu prueba gratis de <b>{TRIAL_DIAS} días</b>. Ya estamos
-                    escuchando por vos. Así te queda configurado:
-                  </>
-                )}
+                Tu prueba gratis de <b>{TRIAL_DIAS} días</b> arranca cuando abras el panel.
+                Así te queda configurado:
               </p>
             </div>
 
@@ -1277,28 +1255,19 @@ export default function OnboardingPage() {
               >
                 ← Ajustar
               </button>
-              {authPending ? (
-                <div className="max-w-sm rounded-xl border border-[#f0c99a] bg-[#fbebd6] px-5 py-4 text-left text-[14px] text-slate-700">
-                  Te mandamos un link a <b>{email.trim()}</b>. Abrilo para confirmar tu
-                  cuenta — después elegís tus nombres y abrís el panel.
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void entrar()}
-                  disabled={entrarLoading}
-                  className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
-                  style={{ backgroundColor: BRAND }}
-                >
-                  {entrarLoading
-                    ? "Guardando…"
-                    : postAuth
-                      ? `Abrir mi panel · ${TRIAL_DIAS} días gratis →`
-                      : authEnabled
-                        ? "Seguir gratis · mandame el link →"
-                        : "Ver mi tablero →"}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => void entrar()}
+                disabled={entrarLoading}
+                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                style={{ backgroundColor: BRAND }}
+              >
+                {entrarLoading
+                  ? "Guardando…"
+                  : authEnabled
+                    ? `Abrir mi panel · ${TRIAL_DIAS} días gratis →`
+                    : "Ver mi tablero →"}
+              </button>
             </div>
           </section>
         )}

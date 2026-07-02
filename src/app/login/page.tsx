@@ -38,13 +38,14 @@ export default function LoginPage() {
               Entrá a tu panel
             </h1>
             <p className="text-sm text-muted mb-6">
-              Te mandamos un link de acceso a tu mail. Sin contraseñas.
+              Te mandamos un link a tu mail. Después elegís a quién seguir y arrancás tu
+              prueba gratis de 2 días. Sin contraseñas.
             </p>
 
             {state === "sent" ? (
               <div className="rounded-xl bg-signal-soft border border-line p-4 text-sm">
-                Listo. Revisá <span className="font-medium">{email}</span> y abrí el link para
-                entrar. Podés cerrar esta pestaña.
+                Listo. Revisá <span className="font-medium">{email}</span> y abrí el link.
+                El siguiente paso es elegir tus nombres y abrir el panel.
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-3">
@@ -68,11 +69,7 @@ export default function LoginPage() {
                 )}
                 {!authEnabled && (
                   <p className="text-xs text-muted">
-                    Modo demo: auth no configurado todavía. Podés{" "}
-                    <Link href="/onboarding" className="underline">
-                      ver el onboarding
-                    </Link>{" "}
-                    igual.
+                    Modo demo: auth no configurado todavía.
                   </p>
                 )}
               </form>
@@ -80,10 +77,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-sm text-muted mt-6">
-            ¿Todavía no lo probaste?{" "}
-            <Link href="/onboarding" className="text-signal font-medium">
-              Configurá tu monitoreo
-            </Link>
+            ¿Primera vez? Ingresá con tu mail — el onboarding empieza después del link.
           </p>
         </div>
       </div>
