@@ -72,7 +72,7 @@ type Radar = {
   sentiment_chat?: { neg: number; neu: number; pos: number };
   chat_scored?: number;
   share_of_voice: { channel: string; mentions: number; pct: number }[];
-  by_day: { day: string; mentions: number }[];
+  by_day: { day: string; mentions: number; neg?: number; neu?: number; pos?: number }[];
   crisis: Card | null;
   feed: Card[];
   menciones?: Mencion[];
@@ -120,7 +120,13 @@ type Data = {
   index: IndexRow[];
   radars: Record<string, Radar>;
   comenciones?: ComencionPar[];
+  live_since?: string; // "YYYYMMDD": primer día de tracking en vivo con chat
 };
+
+/** Día 0 del tracking en vivo con chat. El corpus tiene VOD backfilleado más
+ *  viejo (sin audiencia), que no cuenta como imagen en vivo. Fallback hasta que
+ *  el pipeline lo calcule y lo escriba en el dataset (live_since). */
+const LIVE_SINCE_DEFAULT = "20260623";
 
 const BUNDLED = bundled as unknown as Data;
 
@@ -165,6 +171,15 @@ function compact(n: number | null | undefined): string {
 function fmtDay(d: string): string {
   if (!d || d.length < 8) return d;
   return `${d.slice(6, 8)}/${d.slice(4, 6)}`;
+}
+
+/** "20260701" -> Date (medianoche local). Para filtrar por ventana temporal. */
+function parseYmd(d: string): Date {
+  return new Date(
+    Number(d.slice(0, 4)),
+    Number(d.slice(4, 6)) - 1,
+    Number(d.slice(6, 8)),
+  );
 }
 
 /* iconos SVG (aire / chat) — sin emoji para render consistente */
@@ -389,6 +404,20 @@ const PLAN_LABEL: Record<string, string> = {
 /* ---------- gobernanza de avisos (mismos controles que el onboarding;
    mapean a DEFAULT_REGLAS del pipeline, en palabras humanas) ---------- */
 type ImagenTab = "todo" | "aire" | "chat";
+type Rango = "24h" | "48h" | "7d" | "30d" | "max";
+const RANGO_DIAS: Record<Exclude<Rango, "max">, number> = {
+  "24h": 1,
+  "48h": 2,
+  "7d": 7,
+  "30d": 30,
+};
+const RANGO_OPTS: { id: Rango; label: string }[] = [
+  { id: "24h", label: "24 h" },
+  { id: "48h", label: "48 h" },
+  { id: "7d", label: "1 semana" },
+  { id: "30d", label: "1 mes" },
+  { id: "max", label: "Máximo" },
+];
 type Sensibilidad = "menos" | "equilibrado" | "mas";
 type Frecuencia = "al-toque" | "diario" | "semanal";
 const SENS_OPTS: { id: Sensibilidad; titulo: string; bajada: string; reco?: boolean }[] = [
@@ -427,6 +456,7 @@ export default function PalcoPage() {
   const [email, setEmail] = useState("");
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
   const [imagenTab, setImagenTab] = useState<ImagenTab>("todo");
+  const [rango, setRango] = useState<Rango>("max");
   const [isDemo, setIsDemo] = useState(false);
   const [accountReady, setAccountReady] = useState(false);
   const [palcoAccount, setPalcoAccount] = useState<PalcoAccount | null>(null);
@@ -658,22 +688,68 @@ export default function PalcoPage() {
     return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 10);
   }, [R, imagenTab]);
   const maxCanal = Math.max(...porCanal.map((c) => c.total), 1);
+  // Historial completo del día 0. El volumen de fondo sale de by_day (todo el
+  // corpus trackeado, no solo las menciones recientes que vienen capadas); el
+  // sentimiento se toma de las menciones cuando existen (preciso y por pestaña),
+  // o de by_day si viene enriquecido, o queda neutro para días viejos.
   const porDia = useMemo(() => {
-    const map = new Map<string, DiaRow>();
+    // 1) menciones → sentimiento por día (respeta la pestaña aire/chat/todo)
+    const desdeMenc = new Map<string, DiaRow>();
     for (const m of R.menciones ?? []) {
       if (imagenTab === "aire" && m.origen !== "aire") continue;
       if (imagenTab === "chat" && m.origen !== "chat") continue;
       const day = m.date?.slice(0, 8);
       if (!day) continue;
-      const row = map.get(day) ?? { day, total: 0, neg: 0, neu: 0, pos: 0 };
+      const row = desdeMenc.get(day) ?? { day, total: 0, neg: 0, neu: 0, pos: 0 };
       row.total++;
       if (m.sentiment === "neg") row.neg++;
       else if (m.sentiment === "pos") row.pos++;
       else row.neu++;
-      map.set(day, row);
+      desdeMenc.set(day, row);
     }
-    return [...map.values()].sort((a, b) => a.day.localeCompare(b.day)).slice(-14);
-  }, [R, imagenTab]);
+    // 2) unir todos los días (by_day = volumen al aire de todo el historial).
+    //    En la pestaña "chat" by_day no aplica (solo trackea aire).
+    const dias = new Set<string>(desdeMenc.keys());
+    if (imagenTab !== "chat") {
+      for (const b of R.by_day ?? []) if (b.day) dias.add(b.day);
+    }
+    const byDayMap = new Map(
+      (imagenTab === "chat" ? [] : R.by_day ?? []).map((b) => [b.day, b]),
+    );
+    // 3) por día: volumen autoritativo + split de sentimiento proporcional
+    let rows: DiaRow[] = [];
+    for (const day of dias) {
+      const menc = desdeMenc.get(day);
+      const bd = byDayMap.get(day);
+      const total = bd ? bd.mentions : menc ? menc.total : 0;
+      if (total <= 0) continue;
+      let neg = 0;
+      let pos = 0;
+      let neu = total;
+      if (menc && menc.total > 0) {
+        neg = Math.round((total * menc.neg) / menc.total);
+        pos = Math.round((total * menc.pos) / menc.total);
+        neu = Math.max(0, total - neg - pos);
+      } else if (bd && typeof bd.neg === "number" && typeof bd.pos === "number") {
+        neg = bd.neg;
+        pos = bd.pos;
+        neu = Math.max(0, total - neg - pos);
+      }
+      rows.push({ day, total, neg, neu, pos });
+    }
+    rows.sort((a, b) => a.day.localeCompare(b.day));
+    // 4) piso: solo el tracking en vivo con chat. El VOD backfilleado más viejo
+    //    (sin audiencia) no cuenta como imagen en vivo.
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    rows = rows.filter((d) => d.day >= liveSince);
+    // 5) filtro por ventana temporal, relativo al último día con data
+    if (rango !== "max" && rows.length) {
+      const desde = parseYmd(rows[rows.length - 1].day);
+      desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+      return rows.filter((d) => parseYmd(d.day) >= desde);
+    }
+    return rows;
+  }, [R, imagenTab, rango, D]);
   const maxDiaVol = Math.max(...porDia.map((d) => d.total), 1);
   const tendencia = useMemo(() => {
     if (porDia.length < 2) return null;
@@ -693,7 +769,7 @@ export default function PalcoPage() {
     if (!competidores.length) return [];
     const slugs = [slug, ...competidores.filter((s) => s !== slug)];
     const seen = new Set<string>();
-    return slugs
+    const filas = slugs
       .filter((s) => {
         if (seen.has(s)) return false;
         seen.add(s);
@@ -709,7 +785,12 @@ export default function PalcoPage() {
           negPct: imagenNegRadar(radar),
           crisis: Boolean(radar.crisis),
         };
-      })
+      });
+    // Share of voice: cada uno sobre el total del set comparado (así el versus
+    // es real, no menciones absolutas sueltas al lado de un % de base propia).
+    const totalSet = filas.reduce((acc, f) => acc + f.menciones, 0) || 1;
+    return filas
+      .map((f) => ({ ...f, sovPct: Math.round((f.menciones / totalSet) * 100) }))
       .sort((a, b) => b.menciones - a.menciones);
   }, [slug, competidores, D]);
   const feed = tab === "neg" ? R.feed.filter((f) => f.sentiment === "neg") : R.feed;
@@ -1264,7 +1345,7 @@ export default function PalcoPage() {
                   Vs. competencia
                 </h2>
                 <p className="mt-1 text-[12px] text-slate-400">
-                  Quién ocupa más la conversación y con qué imagen
+                  Voz = cuánto de la conversación se lleva cada uno · Imagen neg. = sobre sus propias menciones
                 </p>
               </div>
               <button
@@ -1282,7 +1363,12 @@ export default function PalcoPage() {
                     <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wide text-slate-400">
                       <th className="px-4 py-3 font-semibold">Nombre</th>
                       <th className="px-4 py-3 font-semibold">Menciones</th>
-                      <th className="px-4 py-3 font-semibold">Imagen neg.</th>
+                      <th className="px-4 py-3 font-semibold" title="Cuánto de la conversación del set comparado se lleva cada uno (menciones propias ÷ total del set).">
+                        Voz
+                      </th>
+                      <th className="px-4 py-3 font-semibold" title="Qué % de las menciones propias de cada uno son negativas (base = sus propias menciones, no un versus).">
+                        Imagen neg.
+                      </th>
                       <th className="hidden px-4 py-3 font-semibold sm:table-cell">Estado</th>
                     </tr>
                   </thead>
@@ -1316,6 +1402,19 @@ export default function PalcoPage() {
                         </td>
                         <td className="px-4 py-3 tabular-nums text-slate-700">
                           {compact(f.menciones)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                              <div
+                                className="h-full rounded-full"
+                                style={{ width: `${f.sovPct}%`, background: BRAND }}
+                              />
+                            </div>
+                            <span className="tabular-nums font-medium text-slate-600">
+                              {f.sovPct}%
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -1456,6 +1555,22 @@ export default function PalcoPage() {
                   }`}
                 >
                   {t.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+              {RANGO_OPTS.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setRango(r.id)}
+                  className={`rounded-md px-3 py-1 ${
+                    rango === r.id
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {r.label}
                 </button>
               ))}
             </div>
