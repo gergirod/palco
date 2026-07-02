@@ -16,6 +16,8 @@ import {
   type PendingPalcoAccount,
   savePalcoAccount,
 } from "@/lib/palco-account";
+import { buildCatalogBrowseRows, type CatalogBrowseRow } from "@/lib/palco-catalog-browse";
+import { fetchDatasets } from "@/lib/supabase";
 import { displayAlias, matchesQuery } from "@/lib/palco-watchlist";
 import { TRIAL_DIAS, TRIAL_PLAN, TRIAL_LIMITE } from "@/config/trial";
 
@@ -40,7 +42,12 @@ type IndexRow = {
   neu: number;
   pos: number;
 };
-const INDEX = (data as unknown as { index: IndexRow[] }).index;
+const ENTITIES_BUNDLED = data as unknown as {
+  index: IndexRow[];
+  radars: Record<string, { watchlist_display?: { alias?: string[] } }>;
+  comenciones?: ComencionPar[];
+};
+const INDEX = ENTITIES_BUNDLED.index;
 
 type CatalogCurated = {
   slug: string;
@@ -50,11 +57,14 @@ type CatalogCurated = {
   in_palco_entities?: boolean;
 };
 type CatalogCandidate = {
+  slug_guess: string;
   canonical_guess: string;
   forms: string[];
   kind: string;
   mentions: number;
   programs: number;
+  channels?: number;
+  linked_slug?: string | null;
   status: string;
   confidence?: "alta" | "media" | "baja";
   filter_reason?: string;
@@ -68,9 +78,12 @@ const CATALOG = catalogData as unknown as {
   curated: CatalogCurated[];
   candidates: CatalogCandidate[];
 };
-const COMENCIONES =
-  ((data as unknown as { comenciones?: ComencionPar[] }).comenciones) ?? [];
-const CATALOG_BY_SLUG = new Map(CATALOG.curated.map((c) => [c.slug, c]));
+const COMENCIONES_BUNDLED = ENTITIES_BUNDLED.comenciones ?? [];
+const BUNDLED_ROWS = buildCatalogBrowseRows(
+  CATALOG,
+  INDEX,
+  ENTITIES_BUNDLED.radars
+);
 
 /* ---------- planes (modelo self-serve tipo Podscan: precio transparente,
    se paga por cuántos nombres/temas seguís. Cada nombre = una persona, marca
@@ -138,7 +151,7 @@ function compact(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "") + "k";
   return String(n);
 }
-const CATS = ["Todas", "Político", "Deporte", "Música"] as const;
+const CATS = ["Todas", "Político", "Deporte", "Música", "Empresa"] as const;
 
 /* ---------- UI: barra de sentimiento mini ---------- */
 function MiniSent({ r }: { r: IndexRow }) {
@@ -225,10 +238,52 @@ export default function OnboardingPage() {
   const [aliasCfg, setAliasCfg] = useState<Record<string, string[]>>({});
   const [aliasDraft, setAliasDraft] = useState<Record<string, string>>({});
   const [entrarLoading, setEntrarLoading] = useState(false);
+  const [browseRows, setBrowseRows] = useState<CatalogBrowseRow[]>(BUNDLED_ROWS);
+  const [comenciones, setComenciones] = useState(COMENCIONES_BUNDLED);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+
+  const browseBySlug = useMemo(
+    () => new Map(browseRows.map((r) => [r.slug, r])),
+    [browseRows]
+  );
+  const radarCount = useMemo(
+    () => browseRows.filter((r) => r.radarReady).length,
+    [browseRows]
+  );
 
   const plan = PLANES.find((p) => p.id === planId)!;
   const pasosUi = isEdit ? PASOS_EDIT : PASOS;
   const pasoIdx = pasosUi.findIndex((p) => p.id === paso);
+
+  // Catálogo vivo desde Supabase (400+ radares); fallback al bundle local.
+  useEffect(() => {
+    let alive = true;
+    setCatalogLoading(true);
+    fetchDatasets(["palco_entities", "palco_catalog"])
+      .then((batch) => {
+        if (!alive) return;
+        const ent = batch.palco_entities as typeof ENTITIES_BUNDLED | undefined;
+        const cat = batch.palco_catalog as typeof CATALOG | undefined;
+        if (ent?.index?.length) {
+          setBrowseRows(
+            buildCatalogBrowseRows(
+              cat ?? CATALOG,
+              ent.index,
+              ent.radars
+            )
+          );
+          if (ent.comenciones?.length) setComenciones(ent.comenciones);
+        } else if (cat) {
+          setBrowseRows(buildCatalogBrowseRows(cat, INDEX, ENTITIES_BUNDLED.radars));
+        }
+      })
+      .finally(() => {
+        if (alive) setCatalogLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Modo edición desde el tablero (?edit=1): sin bienvenida ni plan, con watchlist actual.
   useEffect(() => {
@@ -238,7 +293,7 @@ export default function OnboardingPage() {
     const slugs = (p.get("e") || "")
       .split(",")
       .map((s) => s.trim())
-      .filter((s) => INDEX.some((r) => r.slug === s));
+      .filter(Boolean);
     if (slugs.length) setSel(slugs);
     const pl = p.get("plan");
     if (pl === "esencial" || pl === "profesional" || pl === "enterprise") setPlanId(pl);
@@ -257,7 +312,7 @@ export default function OnboardingPage() {
     loadPalcoAccount().then((acc) => {
       if (!acc) return;
       if (acc.watchlist?.length && !slugs.length) {
-        setSel(acc.watchlist.map((w) => w.slug).filter((s) => INDEX.some((r) => r.slug === s)));
+        setSel(acc.watchlist.map((w) => w.slug));
       }
       if (acc.competidores?.length) {
         setCompSel(acc.competidores.map((c) => c.slug));
@@ -331,8 +386,8 @@ export default function OnboardingPage() {
       const next = { ...prev };
       for (const slug of sel) {
         if (next[slug]) continue;
-        const cur = CATALOG_BY_SLUG.get(slug);
-        next[slug] = cur?.alias?.length ? [...cur.alias] : [];
+        const row = browseBySlug.get(slug);
+        next[slug] = row?.alias?.length ? [...row.alias] : [];
       }
       return next;
     });
@@ -340,33 +395,19 @@ export default function OnboardingPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return INDEX.filter((r) => {
+    return browseRows.filter((r) => {
       if (cat !== "Todas" && r.type !== cat) return false;
-      const catRow = CATALOG_BY_SLUG.get(r.slug);
-      return matchesQuery(q, r.name, catRow?.alias ?? []);
-    }).sort((a, b) => b.mentions - a.mentions);
-  }, [query, cat]);
-
-  const candidateHits = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return CATALOG.candidates
-      .filter(
-        (c) =>
-          (c.confidence === "alta" || c.confidence === "media") &&
-          (c.canonical_guess.toLowerCase().includes(q) ||
-            c.forms.some((f) => f.toLowerCase().includes(q)))
-      )
-      .slice(0, 6);
-  }, [query]);
+      return matchesQuery(q, r.name, r.alias);
+    });
+  }, [query, cat, browseRows]);
 
   const comencionesSel = useMemo(() => {
     if (sel.length < 2) return [];
     const set = new Set(sel);
-    return COMENCIONES.filter((p) => set.has(p.par[0]) && set.has(p.par[1]))
+    return comenciones.filter((p) => set.has(p.par[0]) && set.has(p.par[1]))
       .sort((a, b) => b.cruces_total - a.cruces_total)
       .slice(0, 4);
-  }, [sel]);
+  }, [sel, comenciones]);
 
   function toggle(slug: string) {
     setSel((cur) => {
@@ -389,7 +430,7 @@ export default function OnboardingPage() {
   function addAlias(slug: string) {
     const raw = (aliasDraft[slug] || "").trim().toLowerCase();
     if (raw.length < 2) return;
-    const nombre = INDEX.find((r) => r.slug === slug)?.name.toLowerCase() ?? "";
+    const nombre = browseBySlug.get(slug)?.name.toLowerCase() ?? "";
     if (raw === nombre) return;
     setAliasCfg((cur) => {
       const list = cur[slug] ?? [];
@@ -407,21 +448,24 @@ export default function OnboardingPage() {
   }
 
   function buildPending(): PendingPalcoAccount {
-    const compRows = compSel
-      .map((s) => INDEX.find((r) => r.slug === s))
-      .filter(Boolean) as IndexRow[];
     return {
       plan: isEdit ? planId : TRIAL_PLAN,
-      watchlist: selRows.map((r) => ({
-        slug: r.slug,
-        nombre: r.name,
-        alias: aliasCfg[r.slug] ?? CATALOG_BY_SLUG.get(r.slug)?.alias ?? [],
-      })),
-      competidores: compRows.map((r) => ({
-        slug: r.slug,
-        nombre: r.name,
-        alias: CATALOG_BY_SLUG.get(r.slug)?.alias ?? [],
-      })),
+      watchlist: sel.map((slug) => {
+        const row = browseBySlug.get(slug)!;
+        return {
+          slug,
+          nombre: row.name,
+          alias: aliasCfg[slug] ?? row.alias,
+        };
+      }),
+      competidores: compSel.map((slug) => {
+        const row = browseBySlug.get(slug)!;
+        return {
+          slug,
+          nombre: row.name,
+          alias: row.alias,
+        };
+      }),
       avisos: {
         sensibilidad,
         solo_negativo: soloNegativo,
@@ -466,11 +510,11 @@ export default function OnboardingPage() {
   }
 
   const selRows = sel
-    .map((s) => INDEX.find((r) => r.slug === s))
-    .filter(Boolean) as IndexRow[];
+    .map((s) => browseBySlug.get(s))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r));
   const compRows = compSel
-    .map((s) => INDEX.find((r) => r.slug === s))
-    .filter(Boolean) as IndexRow[];
+    .map((s) => browseBySlug.get(s))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
@@ -590,8 +634,8 @@ export default function OnboardingPage() {
                 <h1 className="text-3xl font-bold">¿A quién querés seguir?</h1>
                 <p className="mt-2 text-[15px] text-slate-600">
                   En tu prueba gratis seguís hasta <b>{plan.limite} nombres</b>.
-                  Estos ya aparecen en lo capturado; en tu cuenta sumás cualquier
-                  otro nombre o tema.
+                  Elegí entre <b>{radarCount}</b> nombres con radar listo en streaming
+                  argentino — buscá por apodo o filtrá por categoría.
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-right shadow-sm">
@@ -630,6 +674,11 @@ export default function OnboardingPage() {
                 ))}
               </div>
             </div>
+            <p className="mt-2 text-[12px] text-slate-500">
+              Mostrando {filtered.length} de {browseRows.length} entidades
+              {catalogLoading ? " · actualizando catálogo…" : ""}
+              {query.trim() || cat !== "Todas" ? " (filtradas)" : ""}
+            </p>
 
             {lleno && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#f0c99a] bg-[#fbebd6] px-4 py-2.5 text-[13px]">
@@ -652,8 +701,8 @@ export default function OnboardingPage() {
               {filtered.map((r) => {
                 const on = sel.includes(r.slug);
                 const bloq = !on && lleno;
-                const catRow = CATALOG_BY_SLUG.get(r.slug);
-                const aliasHint = catRow?.alias?.slice(0, 3).join(" · ");
+                const aliasHint = r.alias.slice(0, 3).join(" · ");
+                const hasSent = r.neg + r.neu + r.pos > 0;
                 return (
                   <button
                     key={r.slug}
@@ -674,8 +723,14 @@ export default function OnboardingPage() {
                           <p className="text-[15px] font-semibold leading-tight">
                             {r.name}
                           </p>
-                          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                            Radar listo
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                              r.radarReady
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50 text-amber-800"
+                            }`}
+                          >
+                            {r.radarReady ? "Radar listo" : "Detectado"}
                           </span>
                         </div>
                         <p className="text-[12px] text-slate-400">{r.type}</p>
@@ -702,53 +757,28 @@ export default function OnboardingPage() {
                         veces nombrado
                       </span>
                       <span>
-                        <b className="tabular-nums text-slate-800">{r.channels}</b>{" "}
+                        <b className="tabular-nums text-slate-800">{r.channels || "—"}</b>{" "}
                         canales
                       </span>
+                      {!r.radarReady && r.programs > 0 && (
+                        <span>
+                          <b className="tabular-nums text-slate-800">{r.programs}</b> prog.
+                        </span>
+                      )}
                     </div>
-                    <div className="mt-2">
-                      <MiniSent r={r} />
-                    </div>
+                    {hasSent && (
+                      <div className="mt-2">
+                        <MiniSent r={r} />
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
 
-            {candidateHits.length > 0 && (
-              <div className="mt-6">
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-                  Detectado en el corpus
-                </p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {candidateHits.map((c) => (
-                    <div
-                      key={c.canonical_guess}
-                      className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-left"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-[14px] font-semibold">{c.canonical_guess}</p>
-                          <p className="text-[11px] text-slate-500">
-                            {c.kind} · {compact(c.mentions)} menc. · {c.programs} programas
-                          </p>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-800">
-                          {c.confidence === "alta" ? "Detectado" : "Candidata"}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-[12px] text-slate-600">
-                        Todavía sin radar completo. En tu cuenta lo activamos con un retro-scan.
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filtered.length === 0 && candidateHits.length === 0 && (
+            {filtered.length === 0 && (
               <p className="mt-6 rounded-xl border border-slate-200 bg-white p-6 text-center text-[14px] text-slate-500">
-                No encontramos ese nombre en el demo. En tu cuenta escribís cualquiera
-                y lo empezamos a seguir desde ese momento.
+                No encontramos ese nombre. Probá otro apodo o cambiá el filtro de categoría.
               </p>
             )}
 
@@ -893,7 +923,7 @@ export default function OnboardingPage() {
 
             <div className="mt-8 space-y-5">
               {sel.map((slug) => {
-                const row = INDEX.find((r) => r.slug === slug);
+                const row = browseBySlug.get(slug);
                 if (!row) return null;
                 const alias = aliasCfg[slug] ?? [];
                 const w = { nombre: row.name, alias };
@@ -1185,7 +1215,7 @@ export default function OnboardingPage() {
                 {selRows.map((r) => {
                   const alias = displayAlias({
                     nombre: r.name,
-                    alias: aliasCfg[r.slug] ?? CATALOG_BY_SLUG.get(r.slug)?.alias ?? [],
+                    alias: aliasCfg[r.slug] ?? r.alias ?? [],
                   });
                   return (
                     <div

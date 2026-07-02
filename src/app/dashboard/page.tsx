@@ -372,16 +372,37 @@ function pctImagen(d: DiaRow, k: "neg" | "pos") {
 }
 
 function imagenNegRadar(radar: Radar): number {
+  return imagenBreakdownRadar(radar).negPct;
+}
+
+/** Imagen completa de una entidad (aire + chat) en % sobre su propia base.
+ *  net = pos − neg (rankea mejor/peor imagen); veredicto = etiqueta en palabras. */
+function imagenBreakdownRadar(radar: Radar): {
+  negPct: number;
+  neuPct: number;
+  posPct: number;
+  net: number;
+  verdicto: string;
+  cls: string;
+} {
   const sc = radar.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 };
   const neg = radar.sentiment.neg + sc.neg;
-  const total =
-    radar.sentiment.neg +
-    radar.sentiment.neu +
-    radar.sentiment.pos +
-    sc.neg +
-    sc.neu +
-    sc.pos;
-  return total ? Math.round((neg / total) * 100) : 0;
+  const neu = radar.sentiment.neu + sc.neu;
+  const pos = radar.sentiment.pos + sc.pos;
+  const total = neg + neu + pos || 1;
+  const negPct = Math.round((neg / total) * 100);
+  const posPct = Math.round((pos / total) * 100);
+  const neuPct = Math.max(0, 100 - negPct - posPct);
+  // veredicto por % negativo (honesto); el ranking mejor/peor usa net.
+  const [verdicto, cls] =
+    negPct >= 55
+      ? ["Muy negativa", "text-red-600"]
+      : negPct >= 40
+        ? ["Negativa", "text-red-600"]
+        : negPct >= 25
+          ? ["Mixta", "text-amber-600"]
+          : ["Positiva", "text-emerald-600"];
+  return { negPct, neuPct, posPct, net: posPct - negPct, verdicto, cls };
 }
 
 function mencionesRadar(radar: Radar): number {
@@ -777,12 +798,18 @@ export default function PalcoPage() {
       })
       .map((s) => {
         const radar = D.radars[s]!;
+        const img = imagenBreakdownRadar(radar);
         return {
           slug: s,
           nombre: radar.entity,
           esVos: s === slug,
           menciones: mencionesRadar(radar),
-          negPct: imagenNegRadar(radar),
+          negPct: img.negPct,
+          neuPct: img.neuPct,
+          posPct: img.posPct,
+          net: img.net,
+          verdicto: img.verdicto,
+          verdictoCls: img.cls,
           crisis: Boolean(radar.crisis),
         };
       });
@@ -793,6 +820,13 @@ export default function PalcoPage() {
       .map((f) => ({ ...f, sovPct: Math.round((f.menciones / totalSet) * 100) }))
       .sort((a, b) => b.menciones - a.menciones);
   }, [slug, competidores, D]);
+  // Mejor / peor imagen del set: rankeo por net (pos − neg). Responde de una
+  // "¿quién tiene mejor y peor imagen?" sin leer toda la tabla.
+  const imagenRanking = useMemo(() => {
+    if (comparativa.length < 2) return null;
+    const orden = [...comparativa].sort((a, b) => b.net - a.net);
+    return { mejor: orden[0], peor: orden[orden.length - 1] };
+  }, [comparativa]);
   const feed = tab === "neg" ? R.feed.filter((f) => f.sentiment === "neg") : R.feed;
   const feedVisible = feed.slice(0, feedShow);
 
@@ -1345,7 +1379,7 @@ export default function PalcoPage() {
                   Vs. competencia
                 </h2>
                 <p className="mt-1 text-[12px] text-slate-400">
-                  Voz = cuánto de la conversación se lleva cada uno · Imagen neg. = sobre sus propias menciones
+                  Cuánto se habla de cada uno y con qué imagen (rojo = negativa · verde = positiva)
                 </p>
               </div>
               <button
@@ -1356,6 +1390,38 @@ export default function PalcoPage() {
                 Editar competencia
               </button>
             </div>
+            {comparativa.length > 1 && imagenRanking && (
+              <div className="mb-3 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Mejor imagen
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-[15px] font-semibold text-slate-800">
+                      {imagenRanking.mejor.nombre}
+                    </span>
+                    <span className="text-[12px] text-slate-400">
+                      · {imagenRanking.mejor.posPct}% positiva
+                    </span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Peor imagen
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <span className="text-[15px] font-semibold text-slate-800">
+                      {imagenRanking.peor.nombre}
+                    </span>
+                    <span className="text-[12px] text-slate-400">
+                      · {imagenRanking.peor.negPct}% negativa
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
             {comparativa.length > 1 ? (
               <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <table className="w-full text-left text-[13px]">
