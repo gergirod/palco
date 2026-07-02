@@ -459,6 +459,11 @@ export default function PalcoPage() {
         return;
       }
 
+      if (!acc) {
+        router.replace("/onboarding");
+        return;
+      }
+
       // Estado de la prueba: si venció (y no pagó) bloqueamos el tablero abajo.
       setTrial(trialState(acc));
 
@@ -483,22 +488,7 @@ export default function PalcoPage() {
         return;
       }
 
-      const e = (p.get("e") || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => D.radars[s]);
-      if (e.length) {
-        setWatch(e);
-        setSlug(e[0]);
-      }
-      if (p.get("plan")) setPlan(p.get("plan")!);
-      const s = p.get("sens");
-      if (s === "menos" || s === "equilibrado" || s === "mas") setSensibilidad(s);
-      if (p.get("neg") === "1") setSoloNegativo(true);
-      const f = p.get("freq");
-      if (f === "al-toque" || f === "diario" || f === "semanal") setFrecuencia(f);
-      if (p.get("mail")) setEmail(p.get("mail")!);
-      setAccountReady(true);
+      router.replace("/onboarding");
     })();
 
     return () => {

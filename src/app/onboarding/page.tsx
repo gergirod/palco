@@ -228,6 +228,7 @@ export default function OnboardingPage() {
   const [aliasDraft, setAliasDraft] = useState<Record<string, string>>({});
   const [authPending, setAuthPending] = useState(false);
   const [entrarLoading, setEntrarLoading] = useState(false);
+  const [postAuth, setPostAuth] = useState(false);
 
   const plan = PLANES.find((p) => p.id === planId)!;
   const pasosUi = isEdit ? PASOS_EDIT : PASOS;
@@ -269,10 +270,39 @@ export default function OnboardingPage() {
     });
   }, []);
 
-  // Usuario logueado con cuenta lista → tablero (salvo modo edición).
+  // Tras magic link: hidratar resumen y mostrar paso "listo" antes del tablero.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("auth") === "1") setPostAuth(true);
+    if (p.get("auth") !== "1") return;
+    if (p.get("paso") === "listo") setPaso("listo");
+    loadPalcoAccount().then((acc) => {
+      if (!acc?.watchlist?.length) return;
+      setSel(acc.watchlist.map((w) => w.slug));
+      if (acc.competidores?.length) {
+        setCompSel(acc.competidores.map((c) => c.slug));
+      }
+      if (acc.plan === "esencial" || acc.plan === "profesional" || acc.plan === "enterprise") {
+        setPlanId(acc.plan);
+      }
+      const a = acc.avisos;
+      if (a.sensibilidad) setSensibilidad(a.sensibilidad);
+      setSoloNegativo(!!a.solo_negativo);
+      if (a.frecuencia) setFrecuencia(a.frecuencia);
+      setEmail(a.email_contacto || acc.email || "");
+      const aliases: Record<string, string[]> = {};
+      for (const w of acc.watchlist) {
+        if (w.alias?.length) aliases[w.slug] = [...w.alias];
+      }
+      if (Object.keys(aliases).length) setAliasCfg(aliases);
+    });
+  }, []);
+
+  // Usuario logueado con cuenta lista → tablero (salvo modo edición o post-magic-link en listo).
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     if (p.get("edit") === "1") return;
+    if (p.get("auth") === "1") return;
     if (!authEnabled) return;
 
     let alive = true;
@@ -1145,10 +1175,21 @@ export default function OnboardingPage() {
               >
                 ✓
               </div>
-              <h1 className="mt-4 text-3xl font-bold">Todo listo.</h1>
+              <h1 className="mt-4 text-3xl font-bold">
+                {postAuth ? "Ya estás adentro." : "Todo listo."}
+              </h1>
               <p className="mt-2 text-[15px] text-slate-600">
-                Arranca tu prueba gratis de <b>{TRIAL_DIAS} días</b>. Ya estamos
-                escuchando por vos. Así te queda configurado:
+                {postAuth ? (
+                  <>
+                    Tu prueba gratis de <b>{TRIAL_DIAS} días</b> está activa. Revisá tu
+                    configuración y abrí el panel cuando quieras.
+                  </>
+                ) : (
+                  <>
+                    Arranca tu prueba gratis de <b>{TRIAL_DIAS} días</b>. Ya estamos
+                    escuchando por vos. Así te queda configurado:
+                  </>
+                )}
               </p>
             </div>
 
@@ -1238,8 +1279,8 @@ export default function OnboardingPage() {
               </button>
               {authPending ? (
                 <div className="max-w-sm rounded-xl border border-[#f0c99a] bg-[#fbebd6] px-5 py-4 text-left text-[14px] text-slate-700">
-                  Te mandamos un link a <b>{email.trim()}</b>. Abrilo para entrar al
-                  tablero — ahí guardamos tu watchlist y tus avisos.
+                  Te mandamos un link a <b>{email.trim()}</b>. Abrilo para confirmar tu
+                  cuenta — después elegís tus nombres y abrís el panel.
                 </div>
               ) : (
                 <button
@@ -1251,9 +1292,11 @@ export default function OnboardingPage() {
                 >
                   {entrarLoading
                     ? "Guardando…"
-                    : authEnabled
-                      ? "Entrar a mi tablero →"
-                      : "Ver mi tablero →"}
+                    : postAuth
+                      ? `Abrir mi panel · ${TRIAL_DIAS} días gratis →`
+                      : authEnabled
+                        ? "Seguir gratis · mandame el link →"
+                        : "Ver mi tablero →"}
                 </button>
               )}
             </div>
