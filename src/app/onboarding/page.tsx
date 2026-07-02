@@ -13,18 +13,20 @@ import {
   dashboardQueryFromAccount,
   isPalcoAccountConfigured,
   loadPalcoAccount,
+  MAX_COMPETIDORES,
   type PendingPalcoAccount,
   savePalcoAccount,
   stashPendingAccount,
 } from "@/lib/palco-account";
 import { displayAlias, matchesQuery } from "@/lib/palco-watchlist";
+import { TRIAL_DIAS, TRIAL_PLAN, TRIAL_LIMITE } from "@/config/trial";
 
 /* ============================================================================
    Palco · Onboarding
-   Flujo real (mockeado) estilo Streem: bienvenida → plan → elegir a quién seguir
-   → confirmar → tablero. Corpus real: las entidades y sus números salen del
-   dataset capturado. Light mode + design system de /palco.
-   Path inicial: /palco/onboarding
+   Flujo sin fricción: bienvenida → elegir a quién seguir → cómo lo dicen →
+   avisos → listo. Sin planes ni precio: todos entran con una PRUEBA GRATIS
+   que simula el plan Pro (hasta 3 nombres). El corte lo maneja la DB
+   (palco_accounts.trial_ends_at). Path inicial: /onboarding
 ============================================================================ */
 
 const BRAND = "#b45309";
@@ -191,17 +193,18 @@ const FRECUENCIAS: { id: Frecuencia; titulo: string; bajada: string }[] = [
 ];
 
 /* ---------- pasos ---------- */
-type Paso = "bienvenida" | "plan" | "entidades" | "alias" | "avisos" | "listo";
+type Paso = "bienvenida" | "plan" | "entidades" | "competencia" | "alias" | "avisos" | "listo";
 const PASOS: { id: Paso; label: string }[] = [
   { id: "bienvenida", label: "Bienvenida" },
-  { id: "plan", label: "Plan" },
   { id: "entidades", label: "A quién seguir" },
+  { id: "competencia", label: "Competencia" },
   { id: "alias", label: "Cómo lo dicen" },
   { id: "avisos", label: "Avisos" },
   { id: "listo", label: "Listo" },
 ];
 const PASOS_EDIT: { id: Paso; label: string }[] = [
   { id: "entidades", label: "A quién seguir" },
+  { id: "competencia", label: "Competencia" },
   { id: "alias", label: "Cómo lo dicen" },
 ];
 
@@ -209,8 +212,10 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [isEdit, setIsEdit] = useState(false);
   const [paso, setPaso] = useState<Paso>("bienvenida");
-  const [planId, setPlanId] = useState<Plan["id"]>("profesional");
+  // Sin selección de plan: todos entran con la prueba que simula Pro (3 nombres).
+  const [planId, setPlanId] = useState<Plan["id"]>(TRIAL_PLAN as Plan["id"]);
   const [sel, setSel] = useState<string[]>([]);
+  const [compSel, setCompSel] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<(typeof CATS)[number]>("Todas");
   // gobernanza de avisos (defaults sanos: equilibrado + todo + diario)
@@ -246,7 +251,22 @@ export default function OnboardingPage() {
     const f = p.get("freq");
     if (f === "al-toque" || f === "diario" || f === "semanal") setFrecuencia(f);
     if (p.get("mail")) setEmail(p.get("mail")!);
-    setPaso("entidades");
+    const pasoParam = p.get("paso");
+    if (pasoParam === "competencia" || pasoParam === "alias" || pasoParam === "entidades") {
+      setPaso(pasoParam);
+    } else {
+      setPaso("entidades");
+    }
+    loadPalcoAccount().then((acc) => {
+      if (!acc) return;
+      if (acc.watchlist?.length && !slugs.length) {
+        setSel(acc.watchlist.map((w) => w.slug).filter((s) => INDEX.some((r) => r.slug === s)));
+      }
+      if (acc.competidores?.length) {
+        setCompSel(acc.competidores.map((c) => c.slug));
+      }
+      if (acc.avisos?.email_contacto) setEmail(acc.avisos.email_contacto);
+    });
   }, []);
 
   // Usuario logueado con cuenta lista → tablero (salvo modo edición).
@@ -330,6 +350,15 @@ export default function OnboardingPage() {
   }
   const lleno = sel.length >= plan.limite;
 
+  function toggleComp(slug: string) {
+    setCompSel((cur) => {
+      if (cur.includes(slug)) return cur.filter((s) => s !== slug);
+      if (cur.length >= MAX_COMPETIDORES) return cur;
+      return [...cur, slug];
+    });
+  }
+  const compLleno = compSel.length >= MAX_COMPETIDORES;
+
   function addAlias(slug: string) {
     const raw = (aliasDraft[slug] || "").trim().toLowerCase();
     if (raw.length < 2) return;
@@ -351,12 +380,20 @@ export default function OnboardingPage() {
   }
 
   function buildPending(): PendingPalcoAccount {
+    const compRows = compSel
+      .map((s) => INDEX.find((r) => r.slug === s))
+      .filter(Boolean) as IndexRow[];
     return {
       plan: planId,
       watchlist: selRows.map((r) => ({
         slug: r.slug,
         nombre: r.name,
         alias: aliasCfg[r.slug] ?? CATALOG_BY_SLUG.get(r.slug)?.alias ?? [],
+      })),
+      competidores: compRows.map((r) => ({
+        slug: r.slug,
+        nombre: r.name,
+        alias: CATALOG_BY_SLUG.get(r.slug)?.alias ?? [],
       })),
       avisos: {
         sensibilidad,
@@ -373,7 +410,10 @@ export default function OnboardingPage() {
       user_id: "",
       email: email.trim(),
       plan: pending.plan,
+      status: "trial",
+      trial_ends_at: null,
       watchlist: pending.watchlist,
+      competidores: pending.competidores,
       avisos: pending.avisos,
     });
 
@@ -407,6 +447,9 @@ export default function OnboardingPage() {
   }
 
   const selRows = sel
+    .map((s) => INDEX.find((r) => r.slug === s))
+    .filter(Boolean) as IndexRow[];
+  const compRows = compSel
     .map((s) => INDEX.find((r) => r.slug === s))
     .filter(Boolean) as IndexRow[];
 
@@ -508,106 +551,15 @@ export default function OnboardingPage() {
             </div>
 
             <button
-              onClick={() => setPaso("plan")}
+              onClick={() => setPaso("entidades")}
               className="mt-8 inline-flex items-center gap-2 rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
               style={{ backgroundColor: BRAND }}
             >
-              Empezar →
+              Empezar gratis →
             </button>
             <p className="mt-3 text-[12px] text-slate-400">
-              Toma 1 minuto · sin tarjeta
+              {TRIAL_DIAS} días de prueba · hasta {TRIAL_LIMITE} nombres · sin tarjeta
             </p>
-          </section>
-        )}
-
-        {/* ---------------- PLAN ---------------- */}
-        {!isEdit && paso === "plan" && (
-          <section>
-            <div className="text-center">
-              <h1 className="text-3xl font-bold">Elegí tu plan</h1>
-              <p className="mt-2 text-[15px] text-slate-600">
-                Pagás por <b>cuántos nombres o temas</b> querés seguir. Un nombre es
-                una persona, marca o tema. Sumás más cuando quieras — sin sorpresas.
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {PLANES.map((p) => {
-                const active = p.id === planId;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => setPlanId(p.id)}
-                    className={`relative flex flex-col rounded-2xl border p-5 text-left shadow-sm transition ${
-                      active
-                        ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
-                        : "border-slate-200 bg-white hover:border-slate-400"
-                    }`}
-                    style={active ? { backgroundColor: "#fbebd6" } : { backgroundColor: "#fff" }}
-                  >
-                    {p.destacado && (
-                      <span
-                        className="absolute -top-2.5 left-5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold text-white"
-                        style={{ backgroundColor: BRAND }}
-                      >
-                        MÁS ELEGIDO
-                      </span>
-                    )}
-                    <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
-                      {p.para}
-                    </p>
-                    <p className="mt-1 text-2xl font-bold">{p.nombre}</p>
-                    <p className="mt-0.5 text-[13px] font-medium" style={{ color: BRAND }}>
-                      {p.aMedida
-                        ? "Nombres ilimitados"
-                        : p.limite === 1
-                        ? "1 nombre"
-                        : `Hasta ${p.limite} nombres`}{" "}
-                      · {p.precio}
-                    </p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-slate-500">
-                      {p.bajada}
-                    </p>
-                    <ul className="mt-3 space-y-1.5">
-                      {p.incluye.map((f) => (
-                        <li key={f} className="flex gap-2 text-[13px] text-slate-700">
-                          <span style={{ color: BRAND }}>✓</span>
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div
-                      className={`mt-4 rounded-lg py-2 text-center text-[13px] font-semibold ${
-                        active ? "text-white" : "bg-slate-100 text-slate-600"
-                      }`}
-                      style={active ? { backgroundColor: BRAND } : undefined}
-                    >
-                      {active ? "Seleccionado" : "Elegir"}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <p className="mt-4 text-center text-[13px] text-slate-500">
-              Un nombre es una persona, marca o tema. Sumás o sacás cuando quieras.
-            </p>
-
-            <div className="mt-8 flex items-center justify-between">
-              <button
-                onClick={() => setPaso("bienvenida")}
-                className="text-[14px] text-slate-500 hover:text-slate-800"
-              >
-                ← Volver
-              </button>
-              <button
-                onClick={() => setPaso("entidades")}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
-                style={{ backgroundColor: BRAND }}
-              >
-                Seguir →
-              </button>
-            </div>
           </section>
         )}
 
@@ -618,19 +570,7 @@ export default function OnboardingPage() {
               <div>
                 <h1 className="text-3xl font-bold">¿A quién querés seguir?</h1>
                 <p className="mt-2 text-[15px] text-slate-600">
-                  {plan.aMedida ? (
-                    <>
-                      Con <b>{plan.nombre}</b> elegís los nombres que quieras.
-                    </>
-                  ) : plan.limite === 1 ? (
-                    <>
-                      Con <b>{plan.nombre}</b> seguís <b>1 nombre</b>.
-                    </>
-                  ) : (
-                    <>
-                      Elegí hasta <b>{plan.limite} nombres</b> con tu plan {plan.nombre}.
-                    </>
-                  )}{" "}
+                  En tu prueba gratis seguís hasta <b>{plan.limite} nombres</b>.
                   Estos ya aparecen en lo capturado; en tu cuenta sumás cualquier
                   otro nombre o tema.
                 </p>
@@ -675,16 +615,16 @@ export default function OnboardingPage() {
             {lleno && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#f0c99a] bg-[#fbebd6] px-4 py-2.5 text-[13px]">
                 <span className="text-slate-700">
-                  Llegaste al tope de tu plan {plan.nombre} ({plan.limite}{" "}
-                  {plan.limite === 1 ? "nombre" : "nombres"}).
+                  Llegaste al tope de la prueba ({plan.limite}{" "}
+                  {plan.limite === 1 ? "nombre" : "nombres"}). ¿Necesitás más?
                 </span>
-                <button
-                  onClick={() => setPaso("plan")}
+                <a
+                  href="mailto:german@knownfy.ai?subject=Palco%20-%20quiero%20seguir%20m%C3%A1s%20nombres"
                   className="font-semibold hover:underline"
                   style={{ color: BRAND }}
                 >
-                  Subir de plan →
-                </button>
+                  Escribinos →
+                </a>
               </div>
             )}
 
@@ -795,18 +735,127 @@ export default function OnboardingPage() {
 
             <div className="mt-8 flex items-center justify-between">
               <button
-                onClick={() => (isEdit ? volverAlTablero() : setPaso("plan"))}
+                onClick={() => (isEdit ? volverAlTablero() : setPaso("bienvenida"))}
                 className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 {isEdit ? "← Cancelar" : "← Volver"}
               </button>
               <button
-                onClick={() => setPaso("alias")}
+                onClick={() => setPaso("competencia")}
                 disabled={sel.length === 0}
                 className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ backgroundColor: BRAND }}
               >
                 Seguir →
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* ---------------- COMPETENCIA (hasta 3, independiente de watchlist) ---------------- */}
+        {paso === "competencia" && (
+          <section>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h1 className="text-3xl font-bold">¿Quién es tu competencia?</h1>
+                <p className="mt-2 text-[15px] text-slate-600">
+                  Elegí hasta <b>{MAX_COMPETIDORES} rivales</b> para comparar en el tablero.
+                  Es <b>independiente</b> de tu watchlist: podés seguir un nombre y medirte
+                  contra otros.
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-right shadow-sm">
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                  Competencia
+                </p>
+                <p className="text-lg font-bold tabular-nums">
+                  {compSel.length}
+                  <span className="ml-1 text-[13px] font-medium text-slate-400">
+                    / {MAX_COMPETIDORES}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar rival por nombre…"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+              />
+              <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
+                {CATS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCat(c)}
+                    className={`rounded-md px-3 py-1.5 ${
+                      cat === c ? "text-white" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                    style={cat === c ? { backgroundColor: BRAND } : undefined}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {compLleno && (
+              <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-[13px] text-slate-600">
+                Llegaste al tope de {MAX_COMPETIDORES} rivales. Sacá uno para agregar otro.
+              </p>
+            )}
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((r) => {
+                const on = compSel.includes(r.slug);
+                const bloq = !on && compLleno;
+                return (
+                  <button
+                    key={r.slug}
+                    type="button"
+                    onClick={() => toggleComp(r.slug)}
+                    disabled={bloq}
+                    className={`flex flex-col rounded-xl border p-4 text-left shadow-sm transition ${
+                      on
+                        ? "border-slate-700 ring-2 ring-slate-300"
+                        : bloq
+                          ? "border-slate-200 bg-white opacity-40"
+                          : "border-slate-200 bg-white hover:border-slate-400"
+                    }`}
+                    style={on ? { backgroundColor: "#f1f5f9" } : undefined}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold text-slate-900">{r.name}</p>
+                      {on && (
+                        <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-white">
+                          rival
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-[12px] text-slate-500">
+                      {r.type} · {compact(r.mentions)} menc.
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setPaso("entidades")}
+                className="text-[14px] text-slate-500 hover:text-slate-800"
+              >
+                ← Volver
+              </button>
+              <button
+                type="button"
+                onClick={() => (isEdit ? entrar() : setPaso("alias"))}
+                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
+                style={{ backgroundColor: BRAND }}
+              >
+                {isEdit ? "Guardar cambios" : compSel.length === 0 ? "Saltar →" : "Seguir →"}
               </button>
             </div>
           </section>
@@ -916,7 +965,7 @@ export default function OnboardingPage() {
 
             <div className="mt-8 flex items-center justify-between">
               <button
-                onClick={() => setPaso("entidades")}
+                onClick={() => setPaso("competencia")}
                 className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Volver
@@ -1096,22 +1145,18 @@ export default function OnboardingPage() {
               >
                 ✓
               </div>
-              <h1 className="mt-4 text-3xl font-bold">Todo listo, {plan.nombre}.</h1>
+              <h1 className="mt-4 text-3xl font-bold">Todo listo.</h1>
               <p className="mt-2 text-[15px] text-slate-600">
-                Ya estamos escuchando por vos. Así te queda configurado:
+                Arranca tu prueba gratis de <b>{TRIAL_DIAS} días</b>. Ya estamos
+                escuchando por vos. Así te queda configurado:
               </p>
             </div>
 
             <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-[13px] text-slate-500">Plan</span>
+                <span className="text-[13px] text-slate-500">Prueba gratis</span>
                 <span className="text-[14px] font-semibold">
-                  {plan.nombre} ·{" "}
-                  {plan.aMedida
-                    ? "nombres ilimitados"
-                    : plan.limite === 1
-                    ? "1 nombre"
-                    : `hasta ${plan.limite} nombres`}
+                  {TRIAL_DIAS} días · hasta {plan.limite} nombres
                 </span>
               </div>
               <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
@@ -1139,6 +1184,23 @@ export default function OnboardingPage() {
                   );
                 })}
               </div>
+              {compRows.length > 0 && (
+                <>
+                  <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
+                    Tu competencia ({compRows.length})
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {compRows.map((r) => (
+                      <div
+                        key={r.slug}
+                        className="rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-[13px] text-slate-700"
+                      >
+                        <p className="font-semibold">{r.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                 Tus avisos
               </p>

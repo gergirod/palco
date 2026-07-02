@@ -25,13 +25,29 @@ create table if not exists public.palco_accounts (
   user_id uuid primary key references auth.users (id) on delete cascade,
   email text not null,
   plan text,
+  -- estado comercial de la cuenta:
+  --   trial   → prueba gratis en curso (se bloquea sola al vencer trial_ends_at)
+  --   active  → pagó; acceso pleno (lo activás vos a mano en esta tabla)
+  --   blocked → cortada manualmente
+  status text not null default 'trial',
+  -- fin de la prueba gratis. Se setea solo al registrarse (ver trigger).
+  -- Para dar más días a alguien: editá esta fecha. Para activar: status='active'.
+  trial_ends_at timestamptz,
   watchlist jsonb not null default '[]'::jsonb,
+  -- Hasta 3 rivales para comparar en el tablero (independiente de watchlist).
+  competidores jsonb not null default '[]'::jsonb,
   avisos jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
+-- Si la tabla ya existía, sumamos las columnas nuevas (idempotente).
+alter table public.palco_accounts add column if not exists status text not null default 'trial';
+alter table public.palco_accounts add column if not exists trial_ends_at timestamptz;
+alter table public.palco_accounts add column if not exists competidores jsonb not null default '[]'::jsonb;
+
 create index if not exists palco_accounts_email_idx on public.palco_accounts (email);
+create index if not exists palco_accounts_status_idx on public.palco_accounts (status);
 
 alter table public.palco_accounts enable row level security;
 
@@ -62,8 +78,9 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.palco_accounts (user_id, email)
-  values (new.id, new.email)
+  -- Al registrarse arranca la prueba gratis. Cambiá '2 days' por los días que quieras.
+  insert into public.palco_accounts (user_id, email, status, trial_ends_at)
+  values (new.id, new.email, 'trial', now() + interval '2 days')
   on conflict (user_id) do nothing;
   return new;
 end;

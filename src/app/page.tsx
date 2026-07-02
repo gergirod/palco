@@ -17,6 +17,30 @@ const EJEMPLO = {
   cita: "…una figura de Messi muy típica de Argentina. Para mí es Julián.",
 };
 
+/** Planes que mostramos en la landing SIN precio: el precio se conversa.
+ *  El alta real es por prueba gratis desde /onboarding. */
+const PLANES = [
+  {
+    nombre: "Individual",
+    para: "Un nombre",
+    bajada: "Seguí un nombre o tema y no te pierdas nada de lo que se dice.",
+    incluye: ["1 nombre o tema", "Tablero al día", "Resumen diario", "Avisos de crisis"],
+  },
+  {
+    nombre: "Pro",
+    para: "Hasta 3 nombres",
+    bajada: "Seguí tu principal, un rival y un tema — todo junto.",
+    incluye: ["Hasta 3 nombres", "Avisos de crisis", "Resumen diario", "Reporte semanal curado"],
+    destacado: true,
+  },
+  {
+    nombre: "A medida",
+    para: "Sin límite",
+    bajada: "Todos los nombres que necesites, con reportes a tu marca y API.",
+    incluye: ["Nombres ilimitados", "Reportes con tu marca", "API", "Soporte dedicado"],
+  },
+];
+
 const PUNTOS = [
   {
     t: "Personas y empresas que te importan",
@@ -120,6 +144,53 @@ export default function Landing() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* planes — sin precio: se conversa (Consultanos) */}
+      <section className="mx-auto w-full max-w-6xl px-6 py-16">
+        <div className="text-center">
+          <p className="eyebrow mb-3">Planes</p>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
+            Elegí según cuántos nombres seguís.
+          </h2>
+          <p className="mt-3 text-muted">
+            Empezás con una prueba gratis. El plan lo armamos con vos según lo que necesites.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          {PLANES.map((p) => (
+            <div
+              key={p.nombre}
+              className={`card relative flex flex-col p-6 ${
+                p.destacado ? "ring-2 ring-signal" : ""
+              }`}
+            >
+              {p.destacado && (
+                <span className="absolute -top-3 left-6 rounded-full bg-signal px-2.5 py-0.5 text-xs font-semibold text-white">
+                  Más elegido
+                </span>
+              )}
+              <p className="eyebrow">{p.para}</p>
+              <p className="mt-1 font-display text-2xl font-semibold tracking-tight">{p.nombre}</p>
+              <p className="mt-2 text-sm text-muted leading-relaxed">{p.bajada}</p>
+              <ul className="mt-4 space-y-1.5 text-sm">
+                {p.incluye.map((f) => (
+                  <li key={f} className="flex gap-2">
+                    <span className="text-signal">✓</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/onboarding" className="btn-ghost mt-6 justify-center">
+                Consultanos
+              </Link>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 text-center text-sm text-muted">
+          ¿No sabés cuál te sirve? <Link href="/onboarding" className="text-signal font-medium">Probalo gratis</Link> y lo vemos juntos.
+        </p>
       </section>
 
       {/* cierre */}

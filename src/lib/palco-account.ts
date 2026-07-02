@@ -6,6 +6,10 @@ export type WatchlistItem = {
   alias: string[];
 };
 
+/** Rivales para comparar en el tablero — independiente de la watchlist. */
+export const MAX_COMPETIDORES = 3;
+export type CompetidorItem = WatchlistItem;
+
 export type AvisosConfig = {
   sensibilidad: "menos" | "equilibrado" | "mas";
   solo_negativo: boolean;
@@ -13,19 +17,67 @@ export type AvisosConfig = {
   email_contacto?: string;
 };
 
+export type AccountStatus = "trial" | "active" | "blocked";
+
 export type PalcoAccount = {
   user_id: string;
   email: string;
   plan: string | null;
+  status: AccountStatus;
+  trial_ends_at: string | null;
   watchlist: WatchlistItem[];
+  competidores: CompetidorItem[];
   avisos: AvisosConfig;
 };
+
+/** Estado de acceso derivado de status + trial_ends_at. */
+export type TrialState = {
+  /** true si puede usar el tablero. */
+  ok: boolean;
+  /** por qué: pagó, prueba vigente, vencida o cortada. */
+  kind: "active" | "trial" | "expired" | "blocked";
+  /** días enteros que faltan (solo en kind="trial"). */
+  diasRestantes: number;
+  endsAt: Date | null;
+};
+
+const MS_DIA = 1000 * 60 * 60 * 24;
+
+/** Decide si la cuenta puede entrar al tablero. Lo automático del flujo. */
+export function trialState(acc: PalcoAccount | null | undefined): TrialState {
+  if (!acc) return { ok: false, kind: "expired", diasRestantes: 0, endsAt: null };
+
+  if (acc.status === "active") {
+    return { ok: true, kind: "active", diasRestantes: 0, endsAt: null };
+  }
+  if (acc.status === "blocked") {
+    return { ok: false, kind: "blocked", diasRestantes: 0, endsAt: null };
+  }
+
+  // status === "trial": vale mientras no venza trial_ends_at.
+  const endsAt = acc.trial_ends_at ? new Date(acc.trial_ends_at) : null;
+  if (!endsAt) {
+    // Sin fecha (dato viejo): lo tratamos como prueba vigente para no cortar de más.
+    return { ok: true, kind: "trial", diasRestantes: 0, endsAt: null };
+  }
+  const restanteMs = endsAt.getTime() - Date.now();
+  if (restanteMs <= 0) {
+    return { ok: false, kind: "expired", diasRestantes: 0, endsAt };
+  }
+  return {
+    ok: true,
+    kind: "trial",
+    diasRestantes: Math.max(1, Math.ceil(restanteMs / MS_DIA)),
+    endsAt,
+  };
+}
 
 export const PENDING_ACCOUNT_KEY = "palco_pending_account";
 
 export type PendingPalcoAccount = {
   plan: string;
   watchlist: WatchlistItem[];
+  competidores: CompetidorItem[];
   avisos: AvisosConfig;
 };
 
@@ -39,7 +91,8 @@ export function readPendingAccount(): PendingPalcoAccount | null {
   const raw = localStorage.getItem(PENDING_ACCOUNT_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as PendingPalcoAccount;
+    const parsed = JSON.parse(raw) as PendingPalcoAccount;
+    return { ...parsed, competidores: parsed.competidores ?? [] };
   } catch {
     return null;
   }
@@ -66,6 +119,7 @@ export async function savePalcoAccount(data: PendingPalcoAccount): Promise<{ ok:
       email: user.email ?? data.avisos.email_contacto ?? "",
       plan: data.plan,
       watchlist: data.watchlist,
+      competidores: data.competidores,
       avisos: data.avisos,
       updated_at: new Date().toISOString(),
     },
@@ -110,7 +164,7 @@ export async function loadPalcoAccount(): Promise<PalcoAccount | null> {
 
   const { data, error } = await sb
     .from("palco_accounts")
-    .select("user_id, email, plan, watchlist, avisos")
+    .select("user_id, email, plan, status, trial_ends_at, watchlist, competidores, avisos")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -120,7 +174,10 @@ export async function loadPalcoAccount(): Promise<PalcoAccount | null> {
     user_id: data.user_id,
     email: data.email,
     plan: data.plan,
+    status: (data.status as AccountStatus) ?? "trial",
+    trial_ends_at: (data.trial_ends_at as string | null) ?? null,
     watchlist: (data.watchlist as WatchlistItem[]) ?? [],
+    competidores: (data.competidores as CompetidorItem[]) ?? [],
     avisos: (data.avisos as AvisosConfig) ?? {
       sensibilidad: "equilibrado",
       solo_negativo: false,

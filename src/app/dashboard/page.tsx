@@ -8,7 +8,14 @@ import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { fetchDataset } from "@/lib/supabase";
-import { loadPalcoAccount, savePalcoAccount, isPalcoAccountConfigured } from "@/lib/palco-account";
+import {
+  loadPalcoAccount,
+  savePalcoAccount,
+  isPalcoAccountConfigured,
+  trialState,
+  type TrialState,
+} from "@/lib/palco-account";
+import { TRIAL_DIAS, PAGO, whatsappPagoUrl } from "@/config/trial";
 
 /* ---------- tipos ---------- */
 type Card = {
@@ -272,8 +279,8 @@ const SENT = {
   pos: { label: "positivo", dot: "🟢", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
 } as const;
 
-/* termómetro de tono reutilizable (aire vs chat), en % sobre su propia base */
-function ToneThermo({
+/* termómetro de imagen reutilizable (aire vs chat vs combinado), en % sobre su propia base */
+function ImagenThermo({
   title,
   sub,
   note,
@@ -318,6 +325,52 @@ function ToneThermo({
   );
 }
 
+function imagenDominante(s: { neg: number; neu: number; pos: number }) {
+  const total = s.neg + s.neu + s.pos;
+  if (!total) return null;
+  const max = Math.max(s.neg, s.neu, s.pos);
+  if (max / total < 0.45) return null;
+  if (s.neg === max) return "neg" as const;
+  if (s.pos === max) return "pos" as const;
+  return "neu" as const;
+}
+
+function MiniImagenBar({ s }: { s: { neg: number; neu: number; pos: number } }) {
+  const total = s.neg + s.neu + s.pos;
+  if (!total) return <span className="text-[11px] text-slate-400">sin clasificar</span>;
+  const pct = (n: number) => (n / total) * 100;
+  return (
+    <div className="flex h-2 min-w-[72px] flex-1 overflow-hidden rounded-full bg-slate-100">
+      <div className="bg-red-500" style={{ width: `${pct(s.neg)}%` }} />
+      <div className="bg-slate-400" style={{ width: `${pct(s.neu)}%` }} />
+      <div className="bg-emerald-500" style={{ width: `${pct(s.pos)}%` }} />
+    </div>
+  );
+}
+
+type DiaRow = { day: string; total: number; neg: number; neu: number; pos: number };
+
+function pctImagen(d: DiaRow, k: "neg" | "pos") {
+  return d.total ? Math.round((d[k] / d.total) * 100) : 0;
+}
+
+function imagenNegRadar(radar: Radar): number {
+  const sc = radar.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 };
+  const neg = radar.sentiment.neg + sc.neg;
+  const total =
+    radar.sentiment.neg +
+    radar.sentiment.neu +
+    radar.sentiment.pos +
+    sc.neg +
+    sc.neu +
+    sc.pos;
+  return total ? Math.round((neg / total) * 100) : 0;
+}
+
+function mencionesRadar(radar: Radar): number {
+  return radar.totals.transcript_mentions + radar.totals.chat_mentions;
+}
+
 const ORIGEN: Record<string, { label: string; cls: string; origen: "hablado" | "ambos" | "chat" }> = {
   hablado: { label: "dicho al aire", cls: "text-slate-700 bg-slate-100 border-slate-200", origen: "hablado" },
   ambos: { label: "aire y sala", cls: "text-[#b45309] bg-[#fbebd6] border-[#f0c99a]", origen: "ambos" },
@@ -333,6 +386,7 @@ const PLAN_LABEL: Record<string, string> = {
 
 /* ---------- gobernanza de avisos (mismos controles que el onboarding;
    mapean a DEFAULT_REGLAS del pipeline, en palabras humanas) ---------- */
+type ImagenTab = "todo" | "aire" | "chat";
 type Sensibilidad = "menos" | "equilibrado" | "mas";
 type Frecuencia = "al-toque" | "diario" | "semanal";
 const SENS_OPTS: { id: Sensibilidad; titulo: string; bajada: string; reco?: boolean }[] = [
@@ -361,6 +415,7 @@ export default function PalcoPage() {
   const [feedShow, setFeedShow] = useState(6); // destacados por programa (resumen)
   const [solicitadas, setSolicitadas] = useState<string[]>([]); // catálogo: pedidas para seguir
   const [watch, setWatch] = useState<string[]>([]);
+  const [competidores, setCompetidores] = useState<string[]>([]);
   const [plan, setPlan] = useState<string>("");
   // gobernanza de avisos (settings del tablero)
   const [showAvisos, setShowAvisos] = useState(false);
@@ -369,8 +424,11 @@ export default function PalcoPage() {
   const [frecuencia, setFrecuencia] = useState<Frecuencia>("diario");
   const [email, setEmail] = useState("");
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
+  const [imagenTab, setImagenTab] = useState<ImagenTab>("todo");
   const [isDemo, setIsDemo] = useState(false);
   const [accountReady, setAccountReady] = useState(false);
+  // Acceso: prueba vigente / pagó / vencida. Lo calcula trialState() desde la DB.
+  const [trial, setTrial] = useState<TrialState | null>(null);
 
   // Lee URL (?demo, ?e=…) o la cuenta guardada en Supabase.
   useEffect(() => {
@@ -401,6 +459,9 @@ export default function PalcoPage() {
         return;
       }
 
+      // Estado de la prueba: si venció (y no pagó) bloqueamos el tablero abajo.
+      setTrial(trialState(acc));
+
       if (acc?.watchlist?.length) {
         const slugs = acc.watchlist.map((w) => w.slug).filter((s) => D.radars[s]);
         if (slugs.length) {
@@ -408,6 +469,11 @@ export default function PalcoPage() {
           setSlug(slugs[0]);
         }
         if (acc.plan) setPlan(acc.plan);
+        if (acc.competidores?.length) {
+          setCompetidores(
+            acc.competidores.map((c) => c.slug).filter((s) => D.radars[s])
+          );
+        }
         const a = acc.avisos;
         if (a.sensibilidad) setSensibilidad(a.sensibilidad);
         setSoloNegativo(!!a.solo_negativo);
@@ -442,6 +508,7 @@ export default function PalcoPage() {
 
   useEffect(() => {
     setCruceShow({});
+    setImagenTab("todo");
   }, [slug]);
 
   // Trae la última versión del dataset desde Supabase (fallback: el bundle).
@@ -515,8 +582,6 @@ export default function PalcoPage() {
       .slice(0, 6);
   }, [query, notFound, D]);
 
-  const maxSov = Math.max(...R.share_of_voice.map((s) => s.mentions), 1);
-
   async function guardarAvisos() {
     const existing = await loadPalcoAccount();
     if (existing) {
@@ -531,6 +596,7 @@ export default function PalcoPage() {
       await savePalcoAccount({
         plan: (existing.plan ?? plan) || "profesional",
         watchlist: slugs,
+        competidores: existing.competidores ?? [],
         avisos: {
           sensibilidad,
           solo_negativo: soloNegativo,
@@ -542,18 +608,115 @@ export default function PalcoPage() {
     setShowAvisos(false);
   }
 
-  const maxDay = Math.max(...R.by_day.map((s) => s.mentions), 1);
   const airProgs = R.sentiment.neg + R.sentiment.neu + R.sentiment.pos;
   const chatScored = R.chat_scored ?? 0;
-  // Reacción de la sala = intensidad del chat. Solo cuenta para programas con
-  // chat en vivo capturado (LUZU y otros sin chat quedan afuera: darían ×0 y
-  // ensucian la métrica). El pico es el momento de mayor reacción del chat.
-  const conChat = R.feed.filter(
-    (f) => (f.chat_ratio ?? 0) > 0 || (f.chat_msgs ?? 0) > 0
+  const imagenCombinada = useMemo(
+    () => ({
+      neg: R.sentiment.neg + (R.sentiment_chat?.neg ?? 0),
+      neu: R.sentiment.neu + (R.sentiment_chat?.neu ?? 0),
+      pos: R.sentiment.pos + (R.sentiment_chat?.pos ?? 0),
+    }),
+    [R]
   );
-  const pico = conChat.length
-    ? conChat.reduce((a, b) => ((b.chat_ratio ?? 0) > (a.chat_ratio ?? 0) ? b : a))
-    : null;
+  const imagenActual =
+    imagenTab === "todo"
+      ? imagenCombinada
+      : imagenTab === "aire"
+        ? R.sentiment
+        : (R.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 });
+  const imagenMeta: Record<
+    ImagenTab,
+    { sub: string; note: string; baseLabel: string }
+  > = {
+    todo: {
+      sub: "Lo dicho al aire y la reacción del chat, en conjunto",
+      note: "La imagen completa: programas + audiencia en vivo.",
+      baseLabel: `sobre ${imagenCombinada.neg + imagenCombinada.neu + imagenCombinada.pos} menciones`,
+    },
+    aire: {
+      sub: "Lo que dijeron los programas en vivo",
+      note: "Ojo: un medio puede estar alineado o pautado.",
+      baseLabel: `sobre ${airProgs} programas`,
+    },
+    chat: {
+      sub: "La reacción de la gente en la sala",
+      note: "Más genuino: es lo que escribe la audiencia en vivo.",
+      baseLabel: `sobre ${chatScored} mensajes`,
+    },
+  };
+  const porCanal = useMemo(() => {
+    const map = new Map<
+      string,
+      { channel: string; total: number; neg: number; neu: number; pos: number }
+    >();
+    for (const m of R.menciones ?? []) {
+      if (imagenTab === "aire" && m.origen !== "aire") continue;
+      if (imagenTab === "chat" && m.origen !== "chat") continue;
+      const ch = m.channel || "?";
+      const row = map.get(ch) ?? { channel: ch, total: 0, neg: 0, neu: 0, pos: 0 };
+      row.total++;
+      if (m.sentiment === "neg") row.neg++;
+      else if (m.sentiment === "pos") row.pos++;
+      else row.neu++;
+      map.set(ch, row);
+    }
+    return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 10);
+  }, [R, imagenTab]);
+  const maxCanal = Math.max(...porCanal.map((c) => c.total), 1);
+  const porDia = useMemo(() => {
+    const map = new Map<string, DiaRow>();
+    for (const m of R.menciones ?? []) {
+      if (imagenTab === "aire" && m.origen !== "aire") continue;
+      if (imagenTab === "chat" && m.origen !== "chat") continue;
+      const day = m.date?.slice(0, 8);
+      if (!day) continue;
+      const row = map.get(day) ?? { day, total: 0, neg: 0, neu: 0, pos: 0 };
+      row.total++;
+      if (m.sentiment === "neg") row.neg++;
+      else if (m.sentiment === "pos") row.pos++;
+      else row.neu++;
+      map.set(day, row);
+    }
+    return [...map.values()].sort((a, b) => a.day.localeCompare(b.day)).slice(-14);
+  }, [R, imagenTab]);
+  const maxDiaVol = Math.max(...porDia.map((d) => d.total), 1);
+  const tendencia = useMemo(() => {
+    if (porDia.length < 2) return null;
+    const ultimo = porDia[porDia.length - 1];
+    const prev = porDia[porDia.length - 2];
+    return {
+      ultimo,
+      prev,
+      volDelta: ultimo.total - prev.total,
+      negUlt: pctImagen(ultimo, "neg"),
+      negPrev: pctImagen(prev, "neg"),
+      posUlt: pctImagen(ultimo, "pos"),
+      posPrev: pctImagen(prev, "pos"),
+    };
+  }, [porDia]);
+  const comparativa = useMemo(() => {
+    if (!competidores.length) return [];
+    const slugs = [slug, ...competidores.filter((s) => s !== slug)];
+    const seen = new Set<string>();
+    return slugs
+      .filter((s) => {
+        if (seen.has(s)) return false;
+        seen.add(s);
+        return Boolean(D.radars[s]);
+      })
+      .map((s) => {
+        const radar = D.radars[s]!;
+        return {
+          slug: s,
+          nombre: radar.entity,
+          esVos: s === slug,
+          menciones: mencionesRadar(radar),
+          negPct: imagenNegRadar(radar),
+          crisis: Boolean(radar.crisis),
+        };
+      })
+      .sort((a, b) => b.menciones - a.menciones);
+  }, [slug, competidores, D]);
   const feed = tab === "neg" ? R.feed.filter((f) => f.sentiment === "neg") : R.feed;
   const feedVisible = feed.slice(0, feedShow);
 
@@ -576,6 +739,64 @@ export default function PalcoPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9]">
         <p className="text-sm text-slate-500">Cargando tu panel…</p>
+      </main>
+    );
+  }
+
+  // PAYWALL: la prueba venció (o la cuenta está cortada) y no pagó → bloqueamos.
+  // El demo (?demo=1) nunca se bloquea.
+  if (!isDemo && trial && !trial.ok) {
+    const bloqueada = trial.kind === "blocked";
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9] px-5 py-10 text-slate-900">
+        <div className="w-full max-w-[460px] rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
+          <div
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white"
+            style={{ backgroundColor: BRAND }}
+          >
+            🔒
+          </div>
+          <h1 className="mt-4 text-2xl font-bold">
+            {bloqueada ? "Tu cuenta está pausada" : "Se terminó tu prueba gratis"}
+          </h1>
+          <p className="mt-2 text-[15px] leading-relaxed text-slate-600">
+            {bloqueada
+              ? "Escribinos y la reactivamos en el momento."
+              : `Tuviste ${TRIAL_DIAS} días para probar Palco. Para seguir viendo lo que se dice de tus nombres, activá tu plan.`}
+          </p>
+
+          <div className="mt-6 flex flex-col gap-2.5">
+            <a
+              href={whatsappPagoUrl(email)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
+              style={{ backgroundColor: BRAND }}
+            >
+              Activar mi plan por WhatsApp
+            </a>
+            {PAGO.mercadoPagoUrl && (
+              <a
+                href={PAGO.mercadoPagoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-slate-200 bg-white px-6 py-3 text-[15px] font-semibold text-slate-700 hover:border-slate-400"
+              >
+                Pagar con Mercado Pago
+              </a>
+            )}
+            <a
+              href={`mailto:${PAGO.email}?subject=Palco%20-%20quiero%20activar%20mi%20plan`}
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
+            >
+              o escribinos a {PAGO.email}
+            </a>
+          </div>
+
+          <p className="mt-6 border-t border-slate-100 pt-4 text-[12px] text-slate-400">
+            Cuando actives, tus nombres y avisos quedan tal cual los dejaste.
+          </p>
+        </div>
       </main>
     );
   }
@@ -611,10 +832,26 @@ export default function PalcoPage() {
               </>
             ) : (
               <>
-                {plan && (
-                  <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
-                    Plan {PLAN_LABEL[plan] || plan}
-                  </span>
+                {trial?.kind === "trial" ? (
+                  <a
+                    href={whatsappPagoUrl(email)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium hover:opacity-90"
+                    style={{ color: BRAND }}
+                    title="Activar mi plan"
+                  >
+                    Prueba
+                    {trial.diasRestantes > 0
+                      ? ` · ${trial.diasRestantes} día${trial.diasRestantes === 1 ? "" : "s"}`
+                      : ""}
+                  </a>
+                ) : (
+                  plan && (
+                    <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
+                      Plan {PLAN_LABEL[plan] || plan}
+                    </span>
+                  )
                 )}
                 <button
                   onClick={() => setShowAvisos(true)}
@@ -1011,7 +1248,7 @@ export default function PalcoPage() {
               Radar de {R.entity} en el streaming
             </h1>
             <p className="mt-1 text-[14px] text-slate-500">
-              Qué se dice · cuánta gente lo escucha en vivo · cómo reacciona la sala
+              Qué se dice · dónde · con qué imagen
             </p>
           </div>
           <div className="text-right">
@@ -1038,118 +1275,358 @@ export default function PalcoPage() {
           ))}
         </section>
 
-        {/* resumen visual: dónde y cuándo (solo aire) */}
-        <section className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-              Dónde más se habla · por canal
+        {/* vs. competencia (hasta 3 rivales, independiente de watchlist) */}
+        {!isDemo && (
+          <section className="mt-6">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+                  Vs. competencia
+                </h2>
+                <p className="mt-1 text-[12px] text-slate-400">
+                  Quién ocupa más la conversación y con qué imagen
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/onboarding?edit=1&paso=competencia")}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600 hover:border-slate-400"
+              >
+                Editar competencia
+              </button>
+            </div>
+            {comparativa.length > 1 ? (
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wide text-slate-400">
+                      <th className="px-4 py-3 font-semibold">Nombre</th>
+                      <th className="px-4 py-3 font-semibold">Menciones</th>
+                      <th className="px-4 py-3 font-semibold">Imagen neg.</th>
+                      <th className="hidden px-4 py-3 font-semibold sm:table-cell">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparativa.map((f) => (
+                      <tr
+                        key={f.slug}
+                        className={`border-b border-slate-50 last:border-0 ${
+                          f.esVos ? "bg-[#fbebd6]/40" : ""
+                        }`}
+                      >
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSlug(f.slug);
+                              setTab("todas");
+                            }}
+                            className={`text-left font-semibold hover:underline ${
+                              f.esVos ? "" : "text-slate-800"
+                            }`}
+                            style={f.esVos ? { color: BRAND } : undefined}
+                          >
+                            {f.nombre}
+                          </button>
+                          {f.esVos && (
+                            <span className="ml-2 text-[10px] font-medium uppercase text-slate-400">
+                              vos
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 tabular-nums text-slate-700">
+                          {compact(f.menciones)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`tabular-nums font-medium ${
+                              f.negPct >= 40
+                                ? "text-red-600"
+                                : f.negPct <= 15
+                                  ? "text-emerald-600"
+                                  : "text-slate-600"
+                            }`}
+                          >
+                            {f.negPct}%
+                          </span>
+                        </td>
+                        <td className="hidden px-4 py-3 sm:table-cell">
+                          {f.crisis ? (
+                            <span className="text-[12px] font-medium text-red-600">🚨 crisis</span>
+                          ) : (
+                            <span className="text-[12px] text-slate-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center">
+                <p className="text-[14px] text-slate-600">
+                  Elegí hasta 3 rivales para comparar volumen e imagen en el streaming.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push("/onboarding?edit=1&paso=competencia")}
+                  className="mt-3 rounded-lg px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90"
+                  style={{ backgroundColor: BRAND }}
+                >
+                  Elegir competencia
+                </button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* alerta de crisis — arriba, antes de cruces y comentarios */}
+        {R.crisis && (
+          <section className="mt-6">
+            <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-red-600">
+              🚨 Alerta de crisis
             </h2>
-            <p className="mt-1 text-[12px] text-slate-400">
-              Solo lo dicho al aire (transcript de conductores). No suma la sala — el chat
-              {R.totals.chat_mentions > 0
-                ? ` (${compact(R.totals.chat_mentions)} menciones) va aparte en el detalle.`
-                : " va aparte cuando hay captura."}
-            </p>
-            <div className="mt-4 space-y-2">
-              {R.share_of_voice.slice(0, 8).map((s) => (
-                <div key={s.channel} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 truncate text-[12px] text-slate-600">{s.channel}</span>
-                  <div className="h-4 flex-1 overflow-hidden rounded bg-slate-100">
-                    <div
-                      className="h-full rounded"
-                      style={{ width: `${(s.mentions / maxSov) * 100}%`, backgroundColor: BRAND }}
+            <div className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
+              <div className="flex items-center justify-between bg-red-600 px-4 py-2 text-[12px] font-medium text-white">
+                <span>PALCO · CRISIS</span>
+                <span className="opacity-90">{fmtDay(R.crisis.date)}</span>
+              </div>
+              <div className="p-5">
+                <p className="text-[15px] font-semibold">
+                  {R.crisis.channel} · <span className="text-slate-500">{R.crisis.program}</span>
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {R.crisis.origen && ORIGEN[R.crisis.origen] && (
+                    <OrigenPill
+                      origen={ORIGEN[R.crisis.origen].origen}
+                      cls={ORIGEN[R.crisis.origen].cls}
+                      label={ORIGEN[R.crisis.origen].label}
                     />
-                  </div>
-                  <span className="w-8 shrink-0 text-right text-[12px] tabular-nums text-slate-500">
-                    {s.mentions}
-                  </span>
+                  )}
+                  {R.crisis.formato && (
+                    <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+                      {R.crisis.formato}
+                    </span>
+                  )}
                 </div>
+                <p className="mt-3 border-l-2 border-red-400 pl-3 text-[15px] italic text-slate-700">
+                  &ldquo;{R.crisis.quote}&rdquo;
+                </p>
+                <div className="mt-4 flex flex-wrap gap-4 text-[13px] text-slate-600">
+                  <span className="inline-flex items-center gap-1">
+                    <IconEye className="h-3.5 w-3.5" />
+                    <b className="tabular-nums text-slate-900">{compact(R.crisis.conc_at)}</b> en vivo
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <IconChat className="h-3.5 w-3.5" />
+                    chat{" "}
+                    <b className="tabular-nums" style={{ color: BRAND }}>
+                      ×{R.crisis.chat_ratio}
+                    </b>
+                  </span>
+                  <span>🕐 {R.crisis.t_label}</span>
+                  <span className="text-red-600">🔴 imagen negativa</span>
+                </div>
+                <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-[12px] text-slate-500">
+                  <b className="text-slate-700">Por qué es crisis:</b> mención + audiencia alta + chat
+                  disparado + imagen negativa, todo al mismo tiempo. Nadie más puede computar este cruce.
+                </p>
+                <a
+                  href={R.crisis.yt_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium text-white hover:opacity-90"
+                  style={{ backgroundColor: BRAND }}
+                >
+                  <IconPlay className="h-3.5 w-3.5" />
+                  {R.crisis.clip_label || "Ver clip en el minuto exacto"}
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* imagen + cómo viene en el tiempo */}
+        <section className="mt-4">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+                Imagen
+              </h2>
+              <p className="mt-1 text-[12px] text-slate-400">
+                Con qué imagen se habla · cuánto · y cómo viene
+              </p>
+            </div>
+            <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+              {(
+                [
+                  { id: "todo" as const, label: "Todo" },
+                  { id: "aire" as const, label: "Al aire" },
+                  { id: "chat" as const, label: "Chat" },
+                ] as const
+              ).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setImagenTab(t.id)}
+                  className={`rounded-md px-3 py-1 ${
+                    imagenTab === t.id
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {t.label}
+                </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          {tendencia && (
+            <div className="mb-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] text-slate-600">
+              <span className="font-semibold text-slate-800">vs. el día anterior · </span>
+              <span className="tabular-nums">
+                {compact(tendencia.prev.total)} → {compact(tendencia.ultimo.total)} menciones
+              </span>
+              <span className="text-slate-400"> · </span>
+              {tendencia.volDelta > 0 ? (
+                <span className="font-medium" style={{ color: BRAND }}>hablan más</span>
+              ) : tendencia.volDelta < 0 ? (
+                <span className="font-medium text-slate-600">hablan menos</span>
+              ) : (
+                <span className="text-slate-500">mismo volumen</span>
+              )}
+              <span className="text-slate-400"> · </span>
+              <span>
+                imagen negativa {tendencia.negPrev}% → {tendencia.negUlt}%
+              </span>
+              {tendencia.negUlt > tendencia.negPrev + 2 ? (
+                <span className="ml-1 font-medium text-red-600">(empeoró)</span>
+              ) : tendencia.negUlt < tendencia.negPrev - 2 ? (
+                <span className="ml-1 font-medium text-emerald-600">(mejoró)</span>
+              ) : (
+                <span className="ml-1 text-slate-400">(estable)</span>
+              )}
+            </div>
+          )}
+
+          {porDia.length > 0 ? (
+            <div className="mb-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                Cómo viene
+              </h3>
+              <p className="mt-1 text-[12px] text-slate-500">
+                Barras = cuánto se habló cada día · franja de color = imagen ese día
+              </p>
+              <div className="mt-5 flex h-48 gap-1.5">
+                {porDia.map((d) => {
+                  const volPct = d.total / maxDiaVol;
+                  return (
+                    <div
+                      key={d.day}
+                      className="flex min-w-0 flex-1 flex-col h-full"
+                      title={`${fmtDay(d.day)}: ${d.total} menciones · ${pctImagen(d, "neg")}% neg · ${pctImagen(d, "pos")}% pos`}
+                    >
+                      <span className="shrink-0 text-center text-[10px] tabular-nums text-slate-400">
+                        {compact(d.total)}
+                      </span>
+                      <div className="flex min-h-0 flex-1 items-end pt-1">
+                        <div
+                          className="w-full rounded-t"
+                          style={{
+                            height: `${Math.max(volPct * 100, d.total > 0 ? 6 : 0)}%`,
+                            minHeight: d.total > 0 ? 4 : 0,
+                            background: `linear-gradient(to top, ${BRAND}, #f0a44e)`,
+                          }}
+                        />
+                      </div>
+                      <div className="mt-1 shrink-0">
+                        <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-100">
+                          {d.total > 0 ? (
+                            <>
+                              <div
+                                className="bg-red-500"
+                                style={{ width: `${(d.neg / d.total) * 100}%` }}
+                              />
+                              <div
+                                className="bg-slate-400"
+                                style={{ width: `${(d.neu / d.total) * 100}%` }}
+                              />
+                              <div
+                                className="bg-emerald-500"
+                                style={{ width: `${(d.pos / d.total) * 100}%` }}
+                              />
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                      <span className="shrink-0 pt-1 text-center text-[9px] text-slate-400">
+                        {fmtDay(d.day)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          <ImagenThermo
+            title="Hoy en el período"
+            sub={imagenMeta[imagenTab].sub}
+            note={imagenMeta[imagenTab].note}
+            s={imagenActual}
+            baseLabel={imagenMeta[imagenTab].baseLabel}
+          />
+        </section>
+
+        {/* dónde más se habló · con qué imagen (por canal, conglomerado) */}
+        {porCanal.length > 0 && (
+          <section className="mt-4">
             <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-              Menciones por día
+              Dónde más se habló · con qué imagen
             </h2>
             <p className="mt-1 text-[12px] text-slate-400">
-              Misma base: menciones habladas al aire por día (sin chat).
+              {imagenTab === "todo"
+                ? "Por canal · aire y chat juntos"
+                : imagenTab === "aire"
+                  ? "Por canal · solo lo dicho al aire"
+                  : "Por canal · solo el chat de la audiencia"}
             </p>
-            <div className="mt-6 flex h-44 gap-1.5">
-              {R.by_day.slice(-14).map((d) => {
-                const pct = d.mentions / maxDay;
-                return (
-                  <div key={d.day} className="flex min-w-0 flex-1 flex-col h-full">
-                    <span className="shrink-0 text-center text-[10px] tabular-nums text-slate-400">
-                      {d.mentions}
-                    </span>
-                    <div className="flex min-h-0 flex-1 items-end pt-1">
-                      <div
-                        className="w-full rounded-t"
-                        style={{
-                          height: `${Math.max(pct * 100, d.mentions > 0 ? 6 : 0)}%`,
-                          minHeight: d.mentions > 0 ? 4 : 0,
-                          background: `linear-gradient(to top, ${BRAND}, #f0a44e)`,
-                        }}
-                        title={`${fmtDay(d.day)}: ${d.mentions} menciones`}
-                      />
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="space-y-3">
+                {porCanal.map((c) => {
+                  const dom = imagenDominante(c);
+                  return (
+                    <div key={c.channel} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="w-28 shrink-0 truncate text-[12px] font-medium text-slate-700">
+                        {c.channel}
+                      </span>
+                      <div className="h-3 w-20 shrink-0 overflow-hidden rounded bg-slate-100 sm:w-28">
+                        <div
+                          className="h-full rounded"
+                          style={{
+                            width: `${(c.total / maxCanal) * 100}%`,
+                            backgroundColor: BRAND,
+                          }}
+                        />
+                      </div>
+                      <span className="w-10 shrink-0 text-right text-[12px] tabular-nums text-slate-500">
+                        {compact(c.total)}
+                      </span>
+                      <MiniImagenBar s={c} />
+                      {dom && (
+                        <span
+                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${SENT[dom].cls}`}
+                        >
+                          {SENT[dom].dot} {dom === "neg" ? "negativa" : dom === "pos" ? "positiva" : "neutra"}
+                        </span>
+                      )}
                     </div>
-                    <span className="shrink-0 pt-1 text-center text-[9px] text-slate-400">
-                      {fmtDay(d.day)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* termómetros de tono: aire vs chat (separados a propósito) */}
-        <section className="mt-4 grid gap-3 md:grid-cols-2">
-          <ToneThermo
-            title="Tono en el aire"
-            sub="Lo que dijeron los programas"
-            note="Ojo: un medio puede estar alineado o pautado."
-            s={R.sentiment}
-            baseLabel={`sobre ${airProgs} programas`}
-          />
-          <ToneThermo
-            title="Tono en el chat"
-            sub="La reacción de la gente"
-            note="Más genuino: es lo que escribe la audiencia en vivo."
-            s={R.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 }}
-            baseLabel={`sobre ${chatScored} mensajes`}
-          />
-        </section>
-
-        {/* reacción de la sala: intensidad (cuánto, no qué tono) */}
-        <section className="mt-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">
-              Reacción de la sala · intensidad{" "}
-              <span style={{ color: BRAND }}>(único de Palco)</span>
-            </p>
-            {pico ? (
-              <div className="mt-3 flex items-end gap-8">
-                <div>
-                  <p className="text-3xl font-bold tabular-nums">{compact(pico.conc_at)}</p>
-                  <p className="text-[12px] text-slate-400">mirando en vivo · {pico.channel}</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold tabular-nums" style={{ color: BRAND }}>
-                    ×{pico.chat_ratio}
-                  </p>
-                  <p className="text-[12px] text-slate-400">chat vs. su ritmo normal</p>
-                </div>
+                  );
+                })}
               </div>
-            ) : (
-              <p className="mt-3 text-[13px] text-slate-400">
-                Todavía no hay chat en vivo capturado para esta entidad. La reacción de
-                la sala aparece cuando el programa donde se la nombra tiene chat activo.
-              </p>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
         {/* cruces con otras entidades (co-mención) */}
         {crucesPairs.length > 0 && (
@@ -1283,72 +1760,6 @@ export default function PalcoPage() {
           </section>
         )}
 
-        {/* alerta de crisis */}
-        {R.crisis && (
-          <section className="mt-6">
-            <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-red-600">
-              🚨 Alerta de crisis
-            </h2>
-            <div className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between bg-red-600 px-4 py-2 text-[12px] font-medium text-white">
-                <span>PALCO · CRISIS</span>
-                <span className="opacity-90">{fmtDay(R.crisis.date)}</span>
-              </div>
-              <div className="p-5">
-                <p className="text-[15px] font-semibold">
-                  {R.crisis.channel} · <span className="text-slate-500">{R.crisis.program}</span>
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {R.crisis.origen && ORIGEN[R.crisis.origen] && (
-                    <OrigenPill
-                      origen={ORIGEN[R.crisis.origen].origen}
-                      cls={ORIGEN[R.crisis.origen].cls}
-                      label={ORIGEN[R.crisis.origen].label}
-                    />
-                  )}
-                  {R.crisis.formato && (
-                    <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                      {R.crisis.formato}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-3 border-l-2 border-red-400 pl-3 text-[15px] italic text-slate-700">
-                  &ldquo;{R.crisis.quote}&rdquo;
-                </p>
-                <div className="mt-4 flex flex-wrap gap-4 text-[13px] text-slate-600">
-                  <span className="inline-flex items-center gap-1">
-                    <IconEye className="h-3.5 w-3.5" />
-                    <b className="tabular-nums text-slate-900">{compact(R.crisis.conc_at)}</b> en vivo
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <IconChat className="h-3.5 w-3.5" />
-                    chat{" "}
-                    <b className="tabular-nums" style={{ color: BRAND }}>
-                      ×{R.crisis.chat_ratio}
-                    </b>
-                  </span>
-                  <span>🕐 {R.crisis.t_label}</span>
-                  <span className="text-red-600">🔴 tono negativo</span>
-                </div>
-                <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-[12px] text-slate-500">
-                  <b className="text-slate-700">Por qué es crisis:</b> mención + audiencia alta + chat
-                  disparado + tono negativo, todo al mismo tiempo. Nadie más puede computar este cruce.
-                </p>
-                <a
-                  href={R.crisis.yt_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium text-white hover:opacity-90"
-                  style={{ backgroundColor: BRAND }}
-                >
-                  <IconPlay className="h-3.5 w-3.5" />
-                  {R.crisis.clip_label || "Ver clip en el minuto exacto"}
-                </a>
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* destacados: una cita por programa (resumen), no es el detalle completo */}
         <section className="mt-8">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
@@ -1379,7 +1790,7 @@ export default function PalcoPage() {
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
-                  {t === "todas" ? "Todas" : "Solo negativas"}
+                  {t === "todas" ? "Todas" : "Imagen negativa"}
                 </button>
               ))}
             </div>

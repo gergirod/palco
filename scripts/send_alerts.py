@@ -120,7 +120,7 @@ def collect_blocks(radar: dict, keys: set[str]) -> list[str]:
 
 
 def build_html(blocks: list[str]) -> str:
-    dash = env("PALCO_DASHBOARD_URL", required=False) or "https://palco.vercel.app/dashboard"
+    dash = env("PALCO_DASHBOARD_URL", required=False) or "https://palco-pi.vercel.app/dashboard"
     body = "\n".join(blocks)
     return f"""<!DOCTYPE html>
 <html><body style="font-family:system-ui,sans-serif;color:#16181d;max-width:640px;margin:0 auto;padding:24px;">

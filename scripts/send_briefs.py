@@ -136,7 +136,7 @@ def build_entity_section(radar: dict, kind: str) -> str:
 def build_html(kind: str, dataset: dict, slugs: list[str]) -> str:
     generated = dataset.get("generated_at", "")
     label = KIND_LABEL[kind]
-    dash = env("PALCO_DASHBOARD_URL", required=False) or "https://palco.vercel.app/dashboard"
+    dash = env("PALCO_DASHBOARD_URL", required=False) or "https://palco-pi.vercel.app/dashboard"
     sections: list[str] = []
 
     for slug in slugs:
