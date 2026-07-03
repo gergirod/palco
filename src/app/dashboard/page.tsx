@@ -18,6 +18,7 @@ import {
   type PalcoAccount,
   type TrialState,
 } from "@/lib/palco-account";
+import { APP_NAME } from "@/config/app";
 import { TRIAL_DIAS, PAGO, whatsappPagoUrl } from "@/config/trial";
 
 /* ---------- tipos ---------- */
@@ -161,7 +162,7 @@ const CATALOG_BY_SLUG = new Map(CATALOG.curated.map((c) => [c.slug, c]));
      crisis  #e11d48  (carmín)
      pos     emerald-600
 */
-const BRAND = "#b45309";
+const BRAND = "var(--signal)";
 
 /* ---------- helpers ---------- */
 function compact(n: number | null | undefined): string {
@@ -257,7 +258,7 @@ function OrigenBadge({ origen }: { origen: "aire" | "chat" | "hablado" | "ambos"
     <span
       className={`mt-0.5 flex w-11 shrink-0 flex-col items-center justify-center rounded-lg border py-1.5 ${
         esChat || esAmbos
-          ? "border-[#f0c99a] bg-[#fbebd6] text-[#b45309]"
+          ? "border-signal-line bg-signal-soft text-signal"
           : "border-slate-200 bg-slate-50 text-slate-600"
       }`}
     >
@@ -412,8 +413,8 @@ function mencionesRadar(radar: Radar): number {
 
 const ORIGEN: Record<string, { label: string; cls: string; origen: "hablado" | "ambos" | "chat" }> = {
   hablado: { label: "dicho al aire", cls: "text-slate-700 bg-slate-100 border-slate-200", origen: "hablado" },
-  ambos: { label: "aire y sala", cls: "text-[#b45309] bg-[#fbebd6] border-[#f0c99a]", origen: "ambos" },
-  chat: { label: "solo la sala", cls: "text-[#b45309] bg-[#fbebd6] border-[#f0c99a]", origen: "chat" },
+  ambos: { label: "aire y sala", cls: "text-signal bg-signal-soft border-signal-line", origen: "ambos" },
+  chat: { label: "solo la sala", cls: "text-signal bg-signal-soft border-signal-line", origen: "chat" },
 };
 
 /* ---------- página ---------- */
@@ -1155,7 +1156,7 @@ export default function PalcoPage() {
                 Escribir por WhatsApp
               </a>
               <a
-                href={`mailto:${PAGO.email}?subject=Palco%20-%20reactivar%20cuenta`}
+                href={`mailto:${PAGO.email}?subject=${encodeURIComponent(`${APP_NAME} - reactivar cuenta`)}`}
                 className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
               >
                 o escribinos a {PAGO.email}
@@ -1191,7 +1192,7 @@ export default function PalcoPage() {
                 href={whatsappPagoUrl(email)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium hover:opacity-90"
+                className="rounded-full border border-signal-line bg-signal-soft px-3 py-1 font-medium hover:opacity-90"
                 style={{ color: BRAND }}
                 title="Activar mi plan"
               >
@@ -1202,7 +1203,7 @@ export default function PalcoPage() {
               </a>
             ) : (
               plan && (
-                <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
+                <span className="hidden sm:inline-block rounded-full border border-signal-line bg-signal-soft px-3 py-1 font-medium" style={{ color: BRAND }}>
                   Plan {PLAN_LABEL[plan] || plan}
                 </span>
               )
@@ -1283,7 +1284,7 @@ export default function PalcoPage() {
                         onClick={() => setSensibilidad(s.id)}
                         className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition ${
                           active
-                            ? "border-[#b45309] bg-[#fbebd6] ring-2 ring-[#f5d9b0]"
+                            ? "border-signal bg-signal-soft ring-2 ring-signal-ring"
                             : "border-slate-200 bg-white hover:border-slate-400"
                         }`}
                       >
@@ -1317,7 +1318,7 @@ export default function PalcoPage() {
                   onClick={() => setSoloNegativo((v) => !v)}
                   className={`mt-2 flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition ${
                     soloNegativo
-                      ? "border-[#b45309] bg-[#fbebd6] ring-2 ring-[#f5d9b0]"
+                      ? "border-signal bg-signal-soft ring-2 ring-signal-ring"
                       : "border-slate-200 bg-white hover:border-slate-400"
                   }`}
                 >
@@ -1356,7 +1357,7 @@ export default function PalcoPage() {
                         onClick={() => setFrecuencia(f.id)}
                         className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition ${
                           active
-                            ? "border-[#b45309] bg-[#fbebd6] ring-2 ring-[#f5d9b0]"
+                            ? "border-signal bg-signal-soft ring-2 ring-signal-ring"
                             : "border-slate-200 bg-white hover:border-slate-400"
                         }`}
                       >
@@ -1384,7 +1385,7 @@ export default function PalcoPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-signal focus:ring-2 focus:ring-signal-ring sm:text-[14px]"
                 />
               </div>
 
@@ -1417,7 +1418,7 @@ export default function PalcoPage() {
                   }}
                   className={`rounded-full border px-3 py-1 text-[12px] transition ${
                     active
-                      ? "border-[#b45309] bg-[#fbebd6] text-[#b45309]"
+                      ? "border-signal bg-signal-soft text-signal"
                       : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                   }`}
                 >
@@ -1495,7 +1496,7 @@ export default function PalcoPage() {
                       }}
                       className={`rounded-full border px-3 py-1.5 text-left text-[12px] transition ${
                         active
-                          ? "border-[#b45309] bg-[#fbebd6] text-[#b45309]"
+                          ? "border-signal bg-signal-soft text-signal"
                           : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                       }`}
                     >
@@ -1536,7 +1537,7 @@ export default function PalcoPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Escribí un nombre — persona, marca, tema…"
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[15px]"
+                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] text-slate-900 placeholder-slate-400 outline-none focus:border-signal focus:ring-2 focus:ring-signal-ring sm:text-[15px]"
               />
               {cats.length > 1 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -1641,7 +1642,7 @@ export default function PalcoPage() {
                     }}
                     className={`rounded-full border px-3 py-1.5 text-left text-[12px] transition ${
                       active
-                        ? "border-[#b45309] bg-[#fbebd6] text-[#b45309]"
+                        ? "border-signal bg-signal-soft text-signal"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                     }`}
                   >
@@ -2358,7 +2359,7 @@ export default function PalcoPage() {
                       <tr
                         key={f.slug}
                         className={`border-b border-slate-50 last:border-0 ${
-                          f.esVos ? "bg-[#fbebd6]/40" : ""
+                          f.esVos ? "bg-signal-soft/40" : ""
                         }`}
                       >
                         <td className="px-4 py-3">
@@ -2414,7 +2415,7 @@ export default function PalcoPage() {
             ) : compView === "rubro" ? (
               <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center">
                 <p className="text-[14px] text-slate-600">
-                  Todavía no hay más nombres con radar activo en {R.type.toLowerCase()} para
+                  Todavía no hay más perfiles con radar activo en {R.type.toLowerCase()} para
                   comparar. En cuanto sumemos más entidades del rubro, aparecen acá solas.
                 </p>
               </div>
@@ -2691,7 +2692,7 @@ export default function PalcoPage() {
         </section>
 
         <footer className="mt-10 border-t border-slate-200 pt-4 text-[11px] text-slate-400">
-          Palco · datos capturados del streaming argentino en vivo
+          {APP_NAME} · datos capturados del streaming argentino en vivo
           <> · elegí otra entidad arriba para cambiar el radar</>
         </footer>
       </div>

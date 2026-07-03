@@ -5,8 +5,9 @@ import { PLANES, type PlanId } from "@/config/plans";
 import { TRIAL_DIAS, PAGO } from "@/config/trial";
 import type { PalcoAccount, WatchlistItem } from "@/lib/palco-account";
 import { savePlanChoice } from "@/lib/palco-account";
+import { APP_NAME } from "@/config/app";
 
-const BRAND = "#b45309";
+const BRAND = "var(--signal)";
 
 type Props = {
   account: PalcoAccount;
@@ -55,7 +56,7 @@ export function PaywallExpired({ account, email }: Props) {
   }
 
   const waMsg = encodeURIComponent(
-    `Hola! Se me terminó la prueba de Palco (${email}). Quiero el plan ${plan.nombre} (${plan.precio}).${
+    `Hola! Se me terminó la prueba de ${APP_NAME} (${email}). Quiero el plan ${plan.nombre} (${plan.precio}).${
       needsTrim
         ? ` Dejo estos nombres: ${keepRows.map((w) => w.nombre).join(", ")}.`
         : ` Mis nombres: ${account.watchlist.map((w) => w.nombre).join(", ")}.`
@@ -90,9 +91,9 @@ export function PaywallExpired({ account, email }: Props) {
                   setKeep(account.watchlist.slice(0, p.limite).map((w) => w.slug));
                 }}
                 className={`rounded-xl border p-4 text-left transition ${
-                  on ? "border-[#b45309] ring-2 ring-[#f5d9b0]" : "border-slate-200 hover:border-slate-400"
+                  on ? "border-signal ring-2 ring-signal-ring" : "border-slate-200 hover:border-slate-400"
                 }`}
-                style={on ? { backgroundColor: "#fbebd6" } : undefined}
+                style={on ? { backgroundColor: "var(--signal-soft)" } : undefined}
               >
                 <p className="font-semibold text-slate-900">{p.nombre}</p>
                 <p className="text-[12px] text-slate-500">{p.para}</p>
@@ -108,7 +109,7 @@ export function PaywallExpired({ account, email }: Props) {
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-[13px] font-medium text-amber-900">
               El plan {plan.nombre} permite {plan.limite}{" "}
-              {plan.limite === 1 ? "nombre" : "nombres"}. Elegí cuáles seguís:
+              {plan.limite === 1 ? "perfil" : "perfiles"}. Elegí cuáles seguís:
             </p>
             <div className="mt-3 space-y-2">
               {account.watchlist.map((w) => {
@@ -122,7 +123,7 @@ export function PaywallExpired({ account, email }: Props) {
                     onClick={() => toggleKeep(w.slug)}
                     className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[13px] ${
                       on
-                        ? "border-[#b45309] bg-white"
+                        ? "border-signal bg-white"
                         : bloq
                           ? "border-slate-200 opacity-40"
                           : "border-slate-200 bg-white hover:border-slate-400"
@@ -146,7 +147,7 @@ export function PaywallExpired({ account, email }: Props) {
               className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
               style={{ backgroundColor: BRAND }}
             >
-              {saving ? "Guardando…" : "Guardar elección de nombres"}
+              {saving ? "Guardando…" : "Guardar elección de perfiles"}
             </button>
           )}
           <a

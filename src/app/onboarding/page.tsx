@@ -19,16 +19,17 @@ import { buildCatalogBrowseRows, type CatalogBrowseRow } from "@/lib/palco-catal
 import { fetchDatasets } from "@/lib/supabase";
 import { displayAlias, matchesQuery } from "@/lib/palco-watchlist";
 import { TRIAL_DIAS, TRIAL_PLAN, TRIAL_LIMITE } from "@/config/trial";
+import { APP_NAME } from "@/config/app";
 
 /* ============================================================================
    Palco · Onboarding
    Flujo sin fricción: bienvenida → elegir a quién seguir → cómo lo dicen →
    avisos → listo. Sin planes ni precio: todos entran con una PRUEBA GRATIS
-   que simula el plan Pro (hasta 3 nombres). El corte lo maneja la DB
+   que simula el plan Pro (hasta 3 perfiles). El corte lo maneja la DB
    (palco_accounts.trial_ends_at). Path inicial: /onboarding
 ============================================================================ */
 
-const BRAND = "#b45309";
+const BRAND = "var(--signal)";
 
 type IndexRow = {
   slug: string;
@@ -85,8 +86,8 @@ const BUNDLED_ROWS = buildCatalogBrowseRows(
 );
 
 /* ---------- planes (modelo self-serve tipo Podscan: precio transparente,
-   se paga por cuántos nombres/temas seguís. Cada nombre = una persona, marca
-   o tema con sus variantes. Escalás sumando nombres → subís de plan). ---------- */
+   se paga por cuántos perfiles/temas seguís. Cada perfil = una persona, marca
+   o tema con sus variantes. Escalás sumando perfiles → subís de plan). ---------- */
 type Plan = {
   id: "esencial" | "profesional" | "enterprise";
   nombre: string;
@@ -102,12 +103,12 @@ const PLANES: Plan[] = [
   {
     id: "esencial",
     nombre: "Individual",
-    para: "Un nombre",
+    para: "Un perfil",
     limite: 1,
     precio: "USD 90/mes",
-    bajada: "Seguí un nombre o tema y no te pierdas nada de lo que se dice.",
+    bajada: "Seguí un perfil o tema y no te pierdas nada de lo que se dice.",
     incluye: [
-      "1 nombre o tema",
+      "1 perfil o tema",
       "Tablero actualizado cada día",
       "Resumen diario por mail",
       "Avisos de crisis apenas los detectamos",
@@ -116,12 +117,12 @@ const PLANES: Plan[] = [
   {
     id: "profesional",
     nombre: "Pro",
-    para: "Hasta 3 nombres",
+    para: "Hasta 3 perfiles",
     limite: 3,
     precio: "USD 250/mes",
     bajada: "Seguí tu principal, un rival y un tema — todo junto.",
     incluye: [
-      "Hasta 3 nombres o temas",
+      "Hasta 3 perfiles o temas",
       "Avisos de crisis apenas los detectamos",
       "Resumen diario por mail",
       "Reporte semanal curado, listo para presentar",
@@ -135,9 +136,9 @@ const PLANES: Plan[] = [
     limite: 999,
     precio: "Hablemos",
     aMedida: true,
-    bajada: "Todos los nombres que necesites, con reportes a tu marca y API.",
+    bajada: "Todos los perfiles que necesites, con reportes a tu marca y API.",
     incluye: [
-      "Nombres o temas ilimitados",
+      "Perfiles o temas ilimitados",
       "Reporte semanal curado",
       "Reportes con tu marca + API",
       "Soporte dedicado",
@@ -293,7 +294,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [isEdit, setIsEdit] = useState(false);
   const [paso, setPaso] = useState<Paso>("bienvenida");
-  // Sin selección de plan: todos entran con la prueba que simula Pro (3 nombres).
+  // Sin selección de plan: todos entran con la prueba que simula Pro (3 perfiles).
   const [planId, setPlanId] = useState<Plan["id"]>(TRIAL_PLAN as Plan["id"]);
   const [sel, setSel] = useState<string[]>([]);
   // Competencia: 1 por cada entidad de la watchlist → mapa entidad→rival.
@@ -637,31 +638,35 @@ export default function OnboardingPage() {
       selRows.map((r) => (
         <span
           key={r.slug}
-          className="rounded-full bg-[#fbebd6] px-2.5 py-0.5 text-[12px] font-medium"
+          className="rounded-full bg-signal-soft px-2.5 py-0.5 text-[12px] font-medium"
           style={{ color: BRAND }}
         >
           {r.name}
         </span>
       ))
     ) : (
-      <span className="text-[12px] text-slate-400">Elegí al menos 1 nombre</span>
+      <span className="text-[12px] text-slate-400">Elegí al menos 1 perfil</span>
     );
 
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
       {/* barra superior */}
       <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-[1000px] items-center justify-between px-5 py-3">
+        <div className="mx-auto flex max-w-[1000px] flex-wrap items-center justify-between gap-y-1 px-5 py-3">
           <div className="flex items-center gap-3">
             {isEdit ? (
               <>
-                <span className="text-[13px] font-medium text-slate-600">Editar a quién monitoreo</span>
+                <span className="text-[13px] font-medium text-slate-600">
+                  <span className="sm:hidden">Editar</span>
+                  <span className="hidden sm:inline">Editar a quién monitoreo</span>
+                </span>
                 <button
                   type="button"
                   onClick={volverAlTablero}
                   className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
                 >
-                  ← Volver al tablero
+                  <span className="sm:hidden">← Volver</span>
+                  <span className="hidden sm:inline">← Volver al tablero</span>
                 </button>
               </>
             ) : (
@@ -673,7 +678,7 @@ export default function OnboardingPage() {
                   className="inline-block h-2 w-2 animate-pulse rounded-full"
                   style={{ backgroundColor: BRAND }}
                 />
-                PALCO
+                {APP_NAME.toUpperCase()}
               </span>
             )}
           </div>
@@ -708,13 +713,13 @@ export default function OnboardingPage() {
         {!isEdit && paso === "bienvenida" && (
           <section className="mx-auto max-w-[680px] text-center">
             <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-              Bienvenido a Palco
+              Bienvenido a {APP_NAME}
             </p>
             <h1 className="mt-2 text-3xl sm:text-4xl font-bold leading-tight">
               Enterate de todo lo que se dice en el streaming, sin escuchar horas de vivo.
             </h1>
             <p className="mt-4 text-[16px] leading-relaxed text-slate-600">
-              Palco escucha los programas en vivo de Argentina las 24 horas. Cada vez
+              {APP_NAME} escucha los programas en vivo de Argentina las 24 horas. Cada vez
               que nombran a alguien que te importa, lo anotamos: qué dijeron, cuánta
               gente lo estaba escuchando y cómo reaccionó la gente en el chat.
             </p>
@@ -752,7 +757,7 @@ export default function OnboardingPage() {
               Empezar gratis →
             </button>
             <p className="mt-3 text-[12px] text-slate-400">
-              {TRIAL_DIAS} días de prueba · hasta {TRIAL_LIMITE} nombres · sin tarjeta
+              {TRIAL_DIAS} días de prueba · hasta {TRIAL_LIMITE} perfiles · sin tarjeta
             </p>
           </section>
         )}
@@ -764,8 +769,8 @@ export default function OnboardingPage() {
               <div>
                 <h1 className="text-3xl font-bold">¿A quién querés seguir?</h1>
                 <p className="mt-2 text-[15px] text-slate-600">
-                  En tu prueba gratis seguís hasta <b>{plan.limite} nombres</b>.
-                  Elegí entre <b>{radarCount}</b> nombres con radar listo en streaming
+                  En tu prueba gratis seguís hasta <b>{plan.limite} perfiles</b>.
+                  Elegí entre <b>{radarCount}</b> perfiles con radar listo en streaming
                   argentino — buscá por apodo o filtrá por categoría.
                 </p>
               </div>
@@ -776,7 +781,7 @@ export default function OnboardingPage() {
                 <p className="text-lg font-bold tabular-nums">
                   {sel.length}
                   <span className="ml-1 text-[13px] font-medium text-slate-400">
-                    {plan.aMedida ? "nombres" : `/ ${plan.limite}`}
+                    {plan.aMedida ? "perfiles" : `/ ${plan.limite}`}
                   </span>
                 </p>
               </div>
@@ -788,7 +793,7 @@ export default function OnboardingPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar por nombre o apodo…"
-                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-signal focus:ring-2 focus:ring-signal-ring sm:text-[14px]"
               />
               <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
                 {CATS.map((c) => (
@@ -815,13 +820,13 @@ export default function OnboardingPage() {
             </p>
 
             {lleno && (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#f0c99a] bg-[#fbebd6] px-4 py-2.5 text-[13px]">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-signal-line bg-signal-soft px-4 py-2.5 text-[13px]">
                 <span className="text-slate-700">
                   Llegaste al tope de la prueba ({plan.limite}{" "}
-                  {plan.limite === 1 ? "nombre" : "nombres"}). ¿Necesitás más?
+                  {plan.limite === 1 ? "perfil" : "perfiles"}). ¿Necesitás más?
                 </span>
                 <a
-                  href="mailto:german@knownfy.ai?subject=Palco%20-%20quiero%20seguir%20m%C3%A1s%20nombres"
+                  href={`mailto:german@knownfy.ai?subject=${encodeURIComponent(`${APP_NAME} - quiero seguir más perfiles`)}`}
                   className="font-semibold hover:underline"
                   style={{ color: BRAND }}
                 >
@@ -844,12 +849,12 @@ export default function OnboardingPage() {
                     disabled={bloq}
                     className={`flex flex-col rounded-xl border p-4 text-left shadow-sm transition ${
                       on
-                        ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                        ? "border-signal ring-2 ring-signal-ring"
                         : bloq
                         ? "border-slate-200 bg-white opacity-40"
                         : "border-slate-200 bg-white hover:border-slate-400"
                     }`}
-                    style={on ? { backgroundColor: "#fbebd6" } : undefined}
+                    style={on ? { backgroundColor: "var(--signal-soft)" } : undefined}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -944,7 +949,7 @@ export default function OnboardingPage() {
               <div>
                 <h1 className="text-3xl font-bold">¿Con quién comparás a cada uno?</h1>
                 <p className="mt-2 text-[15px] text-slate-600">
-                  Elegí <b>1 competencia por cada nombre</b> que seguís. En el tablero
+                  Elegí <b>1 competencia por cada perfil</b> que seguís. En el tablero
                   vas a medir a cada uno contra su rival.
                 </p>
               </div>
@@ -974,10 +979,10 @@ export default function OnboardingPage() {
                     onClick={() => setCompActiveEntity(r.slug)}
                     className={`flex flex-col rounded-xl border px-4 py-2 text-left transition ${
                       activa
-                        ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                        ? "border-signal ring-2 ring-signal-ring"
                         : "border-slate-200 bg-white hover:border-slate-400"
                     }`}
-                    style={activa ? { backgroundColor: "#fbebd6" } : undefined}
+                    style={activa ? { backgroundColor: "var(--signal-soft)" } : undefined}
                   >
                     <span className="text-[14px] font-semibold">{r.name}</span>
                     <span className="text-[12px] text-slate-500">
@@ -998,7 +1003,7 @@ export default function OnboardingPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar competencia por nombre…"
-                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-signal focus:ring-2 focus:ring-signal-ring sm:text-[14px]"
               />
               <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
                 {CATS.map((c) => (
@@ -1081,7 +1086,7 @@ export default function OnboardingPage() {
               <h1 className="text-3xl font-bold">¿Cómo lo dicen en la tele?</h1>
               <p className="mt-2 text-[15px] text-slate-600">
                 En streaming casi nadie dice el nombre completo. Agregá apodos y apellidos —
-                Palco busca <b>todas</b> las formas, pero cuenta como <b>una sola</b> entidad.
+                {APP_NAME} busca <b>todas</b> las formas, pero cuenta como <b>una sola</b> entidad.
               </p>
             </div>
 
@@ -1134,7 +1139,7 @@ export default function OnboardingPage() {
                             }
                           }}
                           placeholder="agregar…"
-                          className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[16px] outline-none focus:border-[#b45309] sm:text-[13px]"
+                          className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[16px] outline-none focus:border-signal sm:text-[13px]"
                         />
                         <button
                           type="button"
@@ -1145,7 +1150,7 @@ export default function OnboardingPage() {
                         </button>
                       </div>
                     </div>
-                    <p className="mt-4 rounded-lg bg-[#fbebd6] px-3 py-2 text-[13px] text-slate-700">
+                    <p className="mt-4 rounded-lg bg-signal-soft px-3 py-2 text-[13px] text-slate-700">
                       Con estos términos: <b className="tabular-nums">{compact(row.mentions)}</b>{" "}
                       menciones en el corpus capturado.
                     </p>
@@ -1255,7 +1260,7 @@ export default function OnboardingPage() {
                               }
                             }}
                             placeholder="agregar…"
-                            className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[16px] outline-none focus:border-[#b45309] sm:text-[13px]"
+                            className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[16px] outline-none focus:border-signal sm:text-[13px]"
                           />
                           <button
                             type="button"
@@ -1312,10 +1317,10 @@ export default function OnboardingPage() {
                       onClick={() => setSensibilidad(s.id)}
                       className={`relative flex flex-col rounded-2xl border p-4 text-left shadow-sm transition ${
                         active
-                          ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                          ? "border-signal ring-2 ring-signal-ring"
                           : "border-slate-200 bg-white hover:border-slate-400"
                       }`}
-                      style={active ? { backgroundColor: "#fbebd6" } : undefined}
+                      style={active ? { backgroundColor: "var(--signal-soft)" } : undefined}
                     >
                       {s.reco && (
                         <span
@@ -1344,10 +1349,10 @@ export default function OnboardingPage() {
                 onClick={() => setSoloNegativo((v) => !v)}
                 className={`mt-3 flex w-full items-center justify-between rounded-2xl border p-4 text-left shadow-sm transition ${
                   soloNegativo
-                    ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                    ? "border-signal ring-2 ring-signal-ring"
                     : "border-slate-200 bg-white hover:border-slate-400"
                 }`}
-                style={soloNegativo ? { backgroundColor: "#fbebd6" } : undefined}
+                style={soloNegativo ? { backgroundColor: "var(--signal-soft)" } : undefined}
               >
                 <div>
                   <p className="text-[15px] font-semibold">Avisame solo lo negativo</p>
@@ -1385,10 +1390,10 @@ export default function OnboardingPage() {
                       onClick={() => setFrecuencia(f.id)}
                       className={`flex flex-col rounded-2xl border p-4 text-left shadow-sm transition ${
                         active
-                          ? "border-[#b45309] ring-2 ring-[#f5d9b0]"
+                          ? "border-signal ring-2 ring-signal-ring"
                           : "border-slate-200 bg-white hover:border-slate-400"
                       }`}
-                      style={active ? { backgroundColor: "#fbebd6" } : undefined}
+                      style={active ? { backgroundColor: "var(--signal-soft)" } : undefined}
                     >
                       <p className="text-[15px] font-semibold">{f.titulo}</p>
                       <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
@@ -1414,7 +1419,7 @@ export default function OnboardingPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
+                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-signal focus:ring-2 focus:ring-signal-ring sm:text-[14px]"
               />
               <p className="mt-2 text-[12px] text-slate-400">
                 Ahí te llegan los avisos y el{" "}

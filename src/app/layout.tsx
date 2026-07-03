@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthHashHandler } from "@/components/AuthHashHandler";
+import { APP_NAME } from "@/config/app";
 
 export const metadata: Metadata = {
-  title: "Palco — inteligencia de reputación en streaming",
+  title: `${APP_NAME} — inteligencia de reputación en streaming`,
   description:
     "Monitoreo de narrativa y reputación sobre el streaming en vivo argentino. Enterás cuándo, dónde y cómo se habla de vos.",
 };

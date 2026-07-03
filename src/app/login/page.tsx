@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { sendMagicLink, authEnabled } from "@/lib/supabase-auth";
+import { APP_NAME } from "@/config/app";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,7 +27,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex flex-col">
       <header className="px-6 py-5">
         <Link href="/" className="font-display text-xl font-semibold tracking-tight">
-          Palco<span className="text-signal">.</span>
+          {APP_NAME}<span className="text-signal">.</span>
         </Link>
       </header>
 

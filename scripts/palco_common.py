@@ -8,6 +8,7 @@ import re
 import sys
 import urllib.error
 import urllib.request
+from html import escape
 from typing import Any
 
 
@@ -112,6 +113,19 @@ def send_resend(to: str, subject: str, html: str) -> None:
         },
         body={"from": from_addr, "to": [to], "subject": subject, "html": html},
     )
+
+
+def mail_head(title: str) -> str:
+    """<head> mínimo para que el mail se lea bien en el celular:
+    ancho real (no zoom-to-fit desktop) y sin que el dark mode del
+    cliente de mail invierta los colores de marca."""
+    return f"""<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>{escape(title)}</title>
+</head>"""
 
 
 def mail_footer(dash: str) -> str:

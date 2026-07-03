@@ -1,4 +1,4 @@
-/** Planes comerciales de Palco (límite = nombres en watchlist). */
+/** Planes comerciales de Palco (límite = perfiles en watchlist). */
 export type PlanId = "esencial" | "profesional" | "enterprise";
 
 export type PlanDef = {
@@ -17,12 +17,12 @@ export const PLANES: PlanDef[] = [
   {
     id: "esencial",
     nombre: "Individual",
-    para: "Un nombre",
+    para: "Un perfil",
     limite: 1,
     precio: "USD 90/mes",
-    bajada: "Seguí un nombre o tema y no te pierdas nada de lo que se dice.",
+    bajada: "Seguí un perfil o tema y no te pierdas nada de lo que se dice.",
     incluye: [
-      "1 nombre o tema",
+      "1 perfil o tema",
       "Tablero actualizado cada día",
       "Resumen diario por mail",
       "Avisos de crisis apenas los detectamos",
@@ -31,12 +31,12 @@ export const PLANES: PlanDef[] = [
   {
     id: "profesional",
     nombre: "Pro",
-    para: "Hasta 3 nombres",
+    para: "Hasta 3 perfiles",
     limite: 3,
     precio: "USD 250/mes",
     bajada: "Seguí tu principal, un rival y un tema — todo junto.",
     incluye: [
-      "Hasta 3 nombres o temas",
+      "Hasta 3 perfiles o temas",
       "Avisos de crisis apenas los detectamos",
       "Resumen diario por mail",
       "Reporte semanal curado, listo para presentar",
@@ -50,9 +50,9 @@ export const PLANES: PlanDef[] = [
     limite: 999,
     precio: "Hablemos",
     aMedida: true,
-    bajada: "Todos los nombres que necesites, con reportes a tu marca y API.",
+    bajada: "Todos los perfiles que necesites, con reportes a tu marca y API.",
     incluye: [
-      "Nombres o temas ilimitados",
+      "Perfiles o temas ilimitados",
       "Reporte semanal curado",
       "Reportes con tu marca + API",
       "Soporte dedicado",

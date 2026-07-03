@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { flushPendingAccount, resolvePostAuthPath } from "@/lib/palco-account";
 import { authEnabled, getSupabase } from "@/lib/supabase-auth";
+import { APP_NAME } from "@/config/app";
 
 function AuthCallbackInner() {
   const router = useRouter();
@@ -88,7 +89,7 @@ function AuthCallbackInner() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6">
-      <p className="text-sm text-muted">Entrando a Palco…</p>
+      <p className="text-sm text-muted">Entrando a {APP_NAME}…</p>
     </main>
   );
 }
@@ -98,7 +99,7 @@ export default function AuthCallbackPage() {
     <Suspense
       fallback={
         <main className="min-h-screen flex flex-col items-center justify-center px-6">
-          <p className="text-sm text-muted">Entrando a Palco…</p>
+          <p className="text-sm text-muted">Entrando a {APP_NAME}…</p>
         </main>
       }
     >

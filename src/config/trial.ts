@@ -2,11 +2,13 @@
 // El corte del trial lo maneja la DB (palco_accounts.trial_ends_at); acá solo
 // vive lo que ve el usuario y a dónde lo mandás a pagar.
 
+import { APP_NAME } from "@/config/app";
+
 /** Días de prueba. Es solo informativo para los textos de la UI.
  *  El vencimiento real lo define trial_ends_at en la DB (se setea al terminar onboarding). */
 export const TRIAL_DIAS = 2;
 
-/** Plan que simulamos durante la prueba (Pro = hasta 3 nombres). */
+/** Plan que simulamos durante la prueba (Pro = hasta 3 perfiles). */
 export const TRIAL_PLAN = "profesional";
 export const TRIAL_LIMITE = 3;
 
@@ -26,7 +28,7 @@ export const PAGO = {
 /** Mensaje pre-armado de WhatsApp. */
 export function whatsappPagoUrl(email?: string): string {
   const txt = encodeURIComponent(
-    `Hola! Se me terminó la prueba de Palco${email ? ` (${email})` : ""}. Quiero activar mi plan.`
+    `Hola! Se me terminó la prueba de ${APP_NAME}${email ? ` (${email})` : ""}. Quiero activar mi plan.`
   );
   return `https://wa.me/${PAGO.whatsapp}?text=${txt}`;
 }

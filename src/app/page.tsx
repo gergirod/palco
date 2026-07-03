@@ -1,5 +1,6 @@
 import Link from "next/link";
 import bundled from "@/data/palco_entities.json";
+import { APP_NAME } from "@/config/app";
 
 /** Cifra real del catálogo (palco_entities → catalog_summary.candidates_count). */
 const CANDIDATOS_COUNT: number = (bundled as any)?.catalog_summary?.candidates_count ?? 0;
@@ -26,22 +27,22 @@ const EJEMPLO = {
 const PLANES = [
   {
     nombre: "Individual",
-    para: "Un nombre",
-    bajada: "Seguí un nombre o tema y no te pierdas nada de lo que se dice.",
-    incluye: ["1 nombre o tema", "Tablero al día", "Resumen diario", "Avisos de crisis"],
+    para: "Un perfil",
+    bajada: "Seguí un perfil o tema y no te pierdas nada de lo que se dice.",
+    incluye: ["1 perfil o tema", "Tablero al día", "Resumen diario", "Avisos de crisis"],
   },
   {
     nombre: "Pro",
-    para: "Hasta 3 nombres",
+    para: "Hasta 3 perfiles",
     bajada: "Seguí tu principal, un rival y un tema — todo junto.",
-    incluye: ["Hasta 3 nombres", "Avisos de crisis", "Resumen diario", "Reporte semanal curado"],
+    incluye: ["Hasta 3 perfiles", "Avisos de crisis", "Resumen diario", "Reporte semanal curado"],
     destacado: true,
   },
   {
     nombre: "A medida",
     para: "Sin límite",
-    bajada: "Todos los nombres que necesites, con reportes a tu marca y API.",
-    incluye: ["Nombres ilimitados", "Reportes con tu marca", "API", "Soporte dedicado"],
+    bajada: "Todos los perfiles que necesites, con reportes a tu marca y API.",
+    incluye: ["Perfiles ilimitados", "Reportes con tu marca", "API", "Soporte dedicado"],
   },
 ];
 
@@ -51,8 +52,8 @@ const PUNTOS = [
     d: "Medimos cómo reacciona la audiencia y el chat en el momento. Si algo empieza a escalar, te llega marcado como posible crisis — no cuando ya es tendencia.",
   },
   {
-    t: "Los nombres que vos elegís",
-    d: "Cargás las personas o empresas que gestionás — tu candidato, tu marca, un vocero, la competencia — y Palco los escucha en todo el aire.",
+    t: "Los perfiles que vos elegís",
+    d: `Cargás las personas o empresas que gestionás — tu candidato, tu marca, un vocero, la competencia — y ${APP_NAME} los escucha en todo el aire.`,
   },
   {
     t: "El mismo día, no el resumen de la semana",
@@ -67,7 +68,7 @@ export default function Landing() {
       <header className="sticky top-0 z-30 backdrop-blur bg-paper/80 border-b border-line">
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
           <Link href="/" className="font-display text-xl font-semibold tracking-tight">
-            Palco<span className="text-signal-bright">.</span>
+            {APP_NAME}<span className="text-signal-bright">.</span>
           </Link>
           <nav className="flex items-center gap-2">
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
@@ -91,10 +92,10 @@ export default function Landing() {
               <span className="text-signal">personas y empresas</span> que te importan.
             </h1>
             <p className="mt-5 text-lg text-ink font-medium">
-              Palco escucha {CANALES.length} canales del streaming en vivo argentino.
+              {APP_NAME} escucha {CANALES.length} canales del streaming en vivo argentino.
             </p>
             <p className="mt-3 text-lg text-muted">
-              Vos cargás los nombres. Palco te avisa el mismo día en qué programa se
+              Vos cargás los perfiles. {APP_NAME} te avisa el mismo día en qué programa se
               habló, qué se dijo y con qué tono — y si conviene prender una alarma.
             </p>
             {CANDIDATOS_COUNT > 0 && (
@@ -156,7 +157,7 @@ export default function Landing() {
         <div className="text-center">
           <p className="eyebrow mb-3">Planes</p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
-            Elegí según cuántos nombres seguís.
+            Elegí según cuántos perfiles seguís.
           </h2>
           <p className="mt-3 text-muted">
             Empezás con una prueba gratis. El plan lo armamos con vos según lo que necesites.
@@ -214,7 +215,7 @@ export default function Landing() {
       <footer className="mt-auto border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted">
           <span className="font-display text-ink font-semibold">
-            Palco<span className="text-signal-bright">.</span>
+            {APP_NAME}<span className="text-signal-bright">.</span>
           </span>
           <span>Monitoreo del streaming en vivo · Argentina</span>
           <Link href="/login" className="text-signal font-medium">

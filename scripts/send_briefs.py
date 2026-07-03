@@ -22,6 +22,7 @@ from palco_common import (
     fetch_dataset,
     fmt_day,
     mail_footer,
+    mail_head,
     parse_slugs,
     send_resend,
     truncate,
@@ -151,7 +152,9 @@ def build_html(kind: str, dataset: dict, slugs: list[str]) -> str:
     body = "\n".join(sections) if sections else "<p>Sin entidades en la watchlist.</p>"
 
     return f"""<!DOCTYPE html>
-<html><body style="font-family:system-ui,sans-serif;color:#16181d;max-width:640px;margin:0 auto;padding:24px;">
+<html>
+{mail_head(label)}
+<body style="font-family:system-ui,sans-serif;color:#16181d;max-width:640px;margin:0 auto;padding:24px;">
   <p style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#b45309;font-weight:600;">Palco</p>
   <h1 style="margin:8px 0 4px;font-size:24px;">{escape(label)}</h1>
   <p style="margin:0 0 20px;color:#565d6b;font-size:14px;">
