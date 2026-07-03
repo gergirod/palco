@@ -1,11 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { sendMagicLink, authEnabled } from "@/lib/supabase-auth";
 import { APP_NAME } from "@/config/app";
 
-export default function LoginPage() {
+const AUTH_ERRORS: Record<string, string> = {
+  otp_expired:
+    "El link del mail expiró o ya fue usado. Pedí uno nuevo abajo — llega al instante y dura ~1 hora.",
+  access_denied:
+    "No se pudo completar el ingreso con ese link. Pedí uno nuevo.",
+  auth_error: "Hubo un problema con el link de acceso. Pedí uno nuevo.",
+};
+
+function LoginForm() {
+  const params = useSearchParams();
+  const authError = params.get("error");
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [msg, setMsg] = useState("");
@@ -43,10 +54,22 @@ export default function LoginPage() {
               prueba gratis de 2 días. Sin contraseñas.
             </p>
 
+            {authError && state !== "sent" && (
+              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                {AUTH_ERRORS[authError] ??
+                  decodeURIComponent(authError.replace(/\+/g, " ")) ??
+                  AUTH_ERRORS.auth_error}
+              </div>
+            )}
+
             {state === "sent" ? (
               <div className="rounded-xl bg-signal-soft border border-line p-4 text-sm">
                 Listo. Revisá <span className="font-medium">{email}</span> y abrí el link.
                 El siguiente paso es elegir tus nombres y abrir el panel.
+                <p className="mt-2 text-xs text-muted">
+                  Si no llega en 2 minutos, revisá spam. Usá el link apenas llegue — vence en
+                  ~1 hora y solo funciona una vez.
+                </p>
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-3">
@@ -83,5 +106,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
