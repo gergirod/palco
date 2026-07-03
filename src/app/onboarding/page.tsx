@@ -655,7 +655,7 @@ export default function OnboardingPage() {
           <div className="flex items-center gap-3">
             {isEdit ? (
               <>
-                <span className="text-[13px] font-medium text-slate-600">Editar watchlist</span>
+                <span className="text-[13px] font-medium text-slate-600">Editar a quién monitoreo</span>
                 <button
                   type="button"
                   onClick={volverAlTablero}
@@ -788,7 +788,7 @@ export default function OnboardingPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar por nombre o apodo…"
-                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
               />
               <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
                 {CATS.map((c) => (
@@ -998,7 +998,7 @@ export default function OnboardingPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar competencia por nombre…"
-                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
               />
               <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[13px]">
                 {CATS.map((c) => (
@@ -1134,7 +1134,7 @@ export default function OnboardingPage() {
                             }
                           }}
                           placeholder="agregar…"
-                          className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[13px] outline-none focus:border-[#b45309]"
+                          className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[16px] outline-none focus:border-[#b45309] sm:text-[13px]"
                         />
                         <button
                           type="button"
@@ -1207,7 +1207,7 @@ export default function OnboardingPage() {
             {/* watchlist + alias */}
             <div className="mt-8">
               <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
-                Tu watchlist ({selRows.length})
+                A quién monitoreo ({selRows.length})
               </p>
               <div className="mt-3 space-y-3">
                 {sel.map((slug) => {
@@ -1255,7 +1255,7 @@ export default function OnboardingPage() {
                               }
                             }}
                             placeholder="agregar…"
-                            className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[13px] outline-none focus:border-[#b45309]"
+                            className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[16px] outline-none focus:border-[#b45309] sm:text-[13px]"
                           />
                           <button
                             type="button"
@@ -1414,7 +1414,7 @@ export default function OnboardingPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
               />
               <p className="mt-2 text-[12px] text-slate-400">
                 Ahí te llegan los avisos y el{" "}

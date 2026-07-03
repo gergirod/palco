@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import bundled from "@/data/palco_entities.json";
 import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
+import Sheet from "@/components/Sheet";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { fetchDataset } from "@/lib/supabase";
 import { PaywallExpired } from "@/components/palco/PaywallExpired";
@@ -489,30 +490,13 @@ export default function PalcoPage() {
   const [canalAbierto, setCanalAbierto] = useState<string | null>(null);
   const [imagenTab, setImagenTab] = useState<ImagenTab>("todo");
   const [rango, setRango] = useState<Rango>("max");
-  const [isDemo, setIsDemo] = useState(false);
   const [accountReady, setAccountReady] = useState(false);
   const [palcoAccount, setPalcoAccount] = useState<PalcoAccount | null>(null);
   // Acceso: prueba vigente / pagó / vencida. Lo calcula trialState() desde la DB.
   const [trial, setTrial] = useState<TrialState | null>(null);
 
-  // Lee URL (?demo, ?e=…) o la cuenta guardada en Supabase.
+  // Lee la cuenta guardada en Supabase.
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const demo = p.get("demo") === "1";
-    setIsDemo(demo);
-    if (demo) {
-      const e = (p.get("e") || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => D.radars[s]);
-      if (e.length) {
-        setWatch([e[0]]);
-        setSlug(e[0]);
-      }
-      setAccountReady(true);
-      return;
-    }
-
     let alive = true;
 
     (async () => {
@@ -1145,8 +1129,7 @@ export default function PalcoPage() {
   }
 
   // PAYWALL: la prueba venció (o la cuenta está cortada) y no pagó → bloqueamos.
-  // El demo (?demo=1) nunca se bloquea.
-  if (!isDemo && trial && !trial.ok) {
+  if (trial && !trial.ok) {
     if (trial.kind === "blocked") {
       return (
         <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9] px-5 py-10 text-slate-900">
@@ -1203,90 +1186,89 @@ export default function PalcoPage() {
             PALCO
           </div>
           <div className="flex items-center gap-2 sm:gap-3 text-[13px]">
-            {isDemo ? (
-              <>
-                <span className="hidden sm:inline-block rounded-full border border-slate-200 bg-slate-50 px-3 py-1 font-medium text-slate-500">
-                  Panel de ejemplo
-                </span>
-                <Link
-                  href="/onboarding"
-                  className="rounded-lg px-3 py-1.5 font-semibold text-white hover:opacity-90"
-                  style={{ backgroundColor: BRAND }}
-                >
-                  Pedir demo con tus nombres
-                </Link>
-              </>
+            {trial?.kind === "trial" ? (
+              <a
+                href={whatsappPagoUrl(email)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium hover:opacity-90"
+                style={{ color: BRAND }}
+                title="Activar mi plan"
+              >
+                Prueba
+                {trial.diasRestantes > 0
+                  ? ` · ${trial.diasRestantes} día${trial.diasRestantes === 1 ? "" : "s"}`
+                  : ""}
+              </a>
             ) : (
-              <>
-                {trial?.kind === "trial" ? (
-                  <a
-                    href={whatsappPagoUrl(email)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium hover:opacity-90"
-                    style={{ color: BRAND }}
-                    title="Activar mi plan"
-                  >
-                    Prueba
-                    {trial.diasRestantes > 0
-                      ? ` · ${trial.diasRestantes} día${trial.diasRestantes === 1 ? "" : "s"}`
-                      : ""}
-                  </a>
-                ) : (
-                  plan && (
-                    <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
-                      Plan {PLAN_LABEL[plan] || plan}
-                    </span>
-                  )
-                )}
-                <button
-                  onClick={() => setShowAvisos(true)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
-                >
-                  ⚙ Avisos
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const p = new URLSearchParams(window.location.search);
-                    p.set("edit", "1");
-                    router.push(`/onboarding?${p.toString()}`);
-                  }}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
-                >
-                  <span className="sm:hidden">Editar</span>
-                  <span className="hidden sm:inline">Editar watchlist</span>
-                </button>
-              </>
+              plan && (
+                <span className="hidden sm:inline-block rounded-full border border-[#f0c99a] bg-[#fbebd6] px-3 py-1 font-medium" style={{ color: BRAND }}>
+                  Plan {PLAN_LABEL[plan] || plan}
+                </span>
+              )
             )}
+            <button
+              onClick={() => setShowAvisos(true)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-400"
+            >
+              ⚙ Ajustes
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ---------- panel de Avisos (gobernanza / settings) ---------- */}
-      {showAvisos && (
-        <div
-          className="fixed inset-0 z-50 flex justify-end bg-slate-900/30"
-          onClick={() => setShowAvisos(false)}
-        >
-          <div
-            className="h-full w-full max-w-[440px] overflow-y-auto bg-[#f6f7f9] shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+      {/* ---------- panel de Avisos (gobernanza / settings) ----------
+          Sheet: bottom sheet en mobile (sube desde abajo, con handle),
+          drawer lateral en desktop — ver src/components/Sheet.tsx. */}
+      <Sheet open={showAvisos} onClose={() => setShowAvisos(false)}>
             <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
               <div>
-                <h2 className="text-[16px] font-bold">Avisos</h2>
-                <p className="text-[12px] text-slate-500">Vos decidís cuándo te molestamos.</p>
+                <h2 className="text-[16px] font-bold">Ajustes</h2>
+                <p className="text-[12px] text-slate-500">A quién monitoreo y cuándo te avisamos.</p>
               </div>
               <button
                 onClick={() => setShowAvisos(false)}
-                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[13px] text-slate-500 hover:border-slate-400"
+                className="hidden rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[13px] text-slate-500 hover:border-slate-400 sm:block"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-6 p-5">
+              {/* a quién monitoreo */}
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
+                  A quién monitoreo
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
+                  <div className="flex flex-1 flex-wrap gap-1.5">
+                    {watch.map((s) => {
+                      const row = D.index.find((r) => r.slug === s);
+                      if (!row) return null;
+                      return (
+                        <span
+                          key={s}
+                          className="rounded-full bg-slate-100 px-2.5 py-1 text-[12px] font-medium text-slate-600"
+                        >
+                          {row.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const p = new URLSearchParams(window.location.search);
+                      p.set("edit", "1");
+                      router.push(`/onboarding?${p.toString()}`);
+                    }}
+                    className="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600 hover:border-slate-400"
+                  >
+                    Editar
+                  </button>
+                </div>
+              </div>
+
               {/* cuánto */}
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
@@ -1402,7 +1384,7 @@ export default function PalcoPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[14px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[14px]"
                 />
               </div>
 
@@ -1415,15 +1397,13 @@ export default function PalcoPage() {
                 Guardar
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </Sheet>
 
       <div className="mx-auto max-w-[1100px] px-5 py-8">
-        {/* rail de watchlist (viene del onboarding) */}
-        {!isDemo && watch.length > 0 && (
+        {/* rail de a quién monitoreo (viene del onboarding) */}
+        {watch.length > 0 && (
           <div className="mb-5 flex flex-wrap items-center gap-2">
-            <span className="text-[12px] font-medium text-slate-400">Tu watchlist:</span>
+            <span className="text-[12px] font-medium text-slate-400">Monitoreo:</span>
             {watch.map((s) => {
               const row = D.index.find((r) => r.slug === s);
               const active = s === slug;
@@ -1463,15 +1443,11 @@ export default function PalcoPage() {
                 <button
                   key={rr.slug}
                   type="button"
-                  disabled={isDemo}
                   onClick={() => {
-                    if (isDemo) return;
                     setSlug(rr.slug);
                     setTab("neg");
                   }}
-                  className={`flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-left ${
-                    isDemo ? "cursor-default" : "hover:border-red-300"
-                  }`}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-left hover:border-red-300"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-slate-800">
@@ -1497,12 +1473,12 @@ export default function PalcoPage() {
           </section>
         )}
 
-        {/* selector de entidad (oculto en panel de ejemplo y cuando solo hay
-            una entidad en la watchlist — con una sola opción, el buscador
-            era puro ruido antes de llegar a la respuesta). Con varias, alcanza
-            con chips para cambiar rápido; el buscador completo (input +
-            categorías + "no lo encontramos") queda colapsado a pedido. */}
-        {!isDemo && watch.length > 1 && (
+        {/* selector de entidad (oculto cuando solo hay una entidad en el
+            monitoreo — con una sola opción, el buscador era puro ruido antes
+            de llegar a la respuesta). Con varias, alcanza con chips para
+            cambiar rápido; el buscador completo (input + categorías +
+            "no lo encontramos") queda colapsado a pedido. */}
+        {watch.length > 1 && (
         <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           {!buscarAbierto ? (
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1560,7 +1536,7 @@ export default function PalcoPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Escribí un nombre — persona, marca, tema…"
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[15px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[16px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0] sm:text-[15px]"
               />
               {cats.length > 1 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -1684,7 +1660,7 @@ export default function PalcoPage() {
         )}
 
         {/* header entidad */}
-        <header className={`flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-6 ${isDemo ? "mt-4" : "mt-6"}`}>
+        <header className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-6 mt-6">
           <div>
             <p className="text-[12px] uppercase tracking-wide text-slate-400">{R.type}</p>
             <h1 className="mt-1 text-3xl font-bold leading-tight">
@@ -1695,7 +1671,7 @@ export default function PalcoPage() {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">Watchlist activa</p>
+            <p className="text-[11px] uppercase tracking-wide text-slate-400">Monitoreo activo</p>
             <div className="mt-1">
               <WatchlistTerms radar={R} />
             </div>
@@ -1806,21 +1782,23 @@ export default function PalcoPage() {
                   </button>
                 ))}
               </div>
-              <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
-                {RANGO_OPTS.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setRango(r.id)}
-                    className={`rounded-md px-3 py-1 ${
-                      rango === r.id
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
+              <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+                <div className="flex w-max gap-1">
+                  {RANGO_OPTS.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setRango(r.id)}
+                      className={`shrink-0 rounded-md px-3 py-1 ${
+                        rango === r.id
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -1923,7 +1901,16 @@ export default function PalcoPage() {
                 <p className="mt-1 text-[12px] text-slate-500">
                   Barras = cuánto se habló cada día · franja de color = imagen ese día
                 </p>
-                <div className="mt-5 flex h-48 gap-1.5">
+                {/* Con rangos largos (30 días o "máximo") hay demasiadas barras para
+                    achicarlas a lo ancho de un teléfono sin que queden ilegibles.
+                    A partir de 15 barras, en vez de comprimir todo, les damos un
+                    ancho mínimo fijo y dejamos que este bloque scrollee horizontal
+                    (patrón mobile: scroll lateral en vez de apretar contenido). */}
+                <div className="mt-5 overflow-x-auto">
+                  <div
+                    className={`flex h-48 gap-1.5 ${porDia.length > 14 ? "" : "w-full"}`}
+                    style={porDia.length > 14 ? { minWidth: `${porDia.length * 18}px` } : undefined}
+                  >
                   {(() => {
                     // Con rangos largos (30 días o "máximo") hay demasiadas barras
                     // para poner un número y una fecha arriba/abajo de cada una sin
@@ -1937,7 +1924,11 @@ export default function PalcoPage() {
                       return (
                         <div
                           key={d.day}
-                          className="flex min-w-0 flex-1 flex-col h-full"
+                          className={
+                            denso
+                              ? "flex w-[16px] shrink-0 flex-col h-full"
+                              : "flex min-w-0 flex-1 flex-col h-full"
+                          }
                           title={`${fmtDay(d.day)}: ${d.total} menciones · ${pctImagen(d, "neg")}% neg · ${pctImagen(d, "pos")}% pos`}
                         >
                           {!denso && (
@@ -1982,6 +1973,7 @@ export default function PalcoPage() {
                       );
                     });
                   })()}
+                  </div>
                 </div>
               </div>
             )}
@@ -2195,11 +2187,16 @@ export default function PalcoPage() {
                           <span
                             className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${SENT[dom].cls}`}
                           >
-                            {SENT[dom].dot} {dom === "neg" ? "negativa" : dom === "pos" ? "positiva" : "neutra"}
+                            {SENT[dom].dot}
+                            <span className="hidden sm:inline">
+                              {" "}
+                              {dom === "neg" ? "negativa" : dom === "pos" ? "positiva" : "neutra"}
+                            </span>
                           </span>
                         )}
                         <span className="ml-auto shrink-0 text-[11px] text-slate-400">
-                          {abierto ? "ocultar citas ▲" : "ver citas ▼"}
+                          <span className="sm:hidden">{abierto ? "▲" : "▼"}</span>
+                          <span className="hidden sm:inline">{abierto ? "ocultar citas ▲" : "ver citas ▼"}</span>
                         </span>
                       </button>
                       {abierto && (
@@ -2257,7 +2254,6 @@ export default function PalcoPage() {
             Contexto secundario: cómo estoy vs. el rubro / mi competencia, y
             cruces con otras entidades. Responden otra pregunta ("cómo estoy
             vs. otros"), no "qué pasó con esta persona" — quedan más abajo. */}
-        {!isDemo && (
           <section className="mt-12 border-t border-slate-200 pt-8">
             <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
               <div>
@@ -2270,7 +2266,7 @@ export default function PalcoPage() {
                     : "Cuánto se habla de cada uno y con qué imagen (rojo = negativa · verde = positiva)"}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
                   <button
                     type="button"
@@ -2343,8 +2339,8 @@ export default function PalcoPage() {
               </div>
             )}
             {filasActivas.length > 1 ? (
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <table className="w-full text-left text-[13px]">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full min-w-[480px] text-left text-[13px]">
                   <thead>
                     <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wide text-slate-400">
                       <th className="px-4 py-3 font-semibold">Nombre</th>
@@ -2438,7 +2434,6 @@ export default function PalcoPage() {
               </div>
             )}
           </section>
-        )}
 
         {/* cruces con otras entidades (co-mención) */}
         {crucesPairs.length > 0 && (
@@ -2696,18 +2691,8 @@ export default function PalcoPage() {
         </section>
 
         <footer className="mt-10 border-t border-slate-200 pt-4 text-[11px] text-slate-400">
-          Palco · demo sobre corpus real · datos capturados del streaming argentino en vivo
-          {isDemo ? (
-            <>
-              {" "}
-              ·{" "}
-              <Link href="/onboarding" className="font-medium hover:underline" style={{ color: BRAND }}>
-                Pedí tu panel con tus nombres
-              </Link>
-            </>
-          ) : (
-            <> · elegí otra entidad arriba para cambiar el radar</>
-          )}
+          Palco · datos capturados del streaming argentino en vivo
+          <> · elegí otra entidad arriba para cambiar el radar</>
         </footer>
       </div>
     </div>

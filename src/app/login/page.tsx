@@ -55,7 +55,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="vos@empresa.com"
-                  className="w-full rounded-full border border-line bg-white px-5 py-3 text-sm outline-none focus:border-signal"
+                  className="w-full rounded-full border border-line bg-white px-5 py-3 text-[16px] outline-none focus:border-signal sm:text-sm"
                 />
                 <button
                   type="submit"

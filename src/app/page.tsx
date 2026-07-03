@@ -105,10 +105,7 @@ export default function Landing() {
             )}
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/login" className="btn-signal">
-                Probar gratis con tus nombres
-              </Link>
-              <Link href={`/dashboard?demo=1&e=${EJEMPLO.slug}`} className="btn-ghost">
-                Ver un panel de ejemplo
+                Probar gratis
               </Link>
             </div>
             <p className="mt-5 text-sm text-muted">
@@ -208,7 +205,7 @@ export default function Landing() {
         </h2>
         <div className="mt-7">
           <Link href="/login" className="btn-signal">
-            Probar gratis con tus nombres
+            Probar gratis
           </Link>
         </div>
       </section>
