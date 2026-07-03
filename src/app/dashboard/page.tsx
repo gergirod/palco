@@ -808,6 +808,18 @@ export default function PalcoPage() {
     return rows;
   }, [R, imagenTab, rango, D]);
   const maxDiaVol = Math.max(...porDia.map((d) => d.total), 1);
+  // Volumen REAL del rango elegido (todos los días, incluidos los sinDato) —
+  // es lo que "Máximo"/"Semana"/etc. tienen que responder cuando alguien
+  // pregunta "cuánto se habló en total". imagenTotalActual, en cambio, es
+  // solo la porción con tono ya clasificado (puede ser mucho más chica si la
+  // clasificación de sentimiento va atrás del volumen crudo) — mezclar los
+  // dos números en un solo "sobre X menciones" hacía parecer que el rango
+  // elegido no se estaba respetando (mostraba solo el día con clasificación,
+  // no el total del período).
+  const volumenTotalRango = useMemo(
+    () => porDia.reduce((acc, d) => acc + d.total, 0),
+    [porDia]
+  );
   // Igual que porDia pero SIN recortar por rango: hace falta el historial
   // completo (día a día) para poder comparar el período elegido (24h/48h/
   // semana/mes) contra el período inmediatamente anterior de igual duración.
@@ -1803,8 +1815,16 @@ export default function PalcoPage() {
               <p className={`text-2xl font-bold ${veredictoActual.cls}`}>{veredictoActual.texto}</p>
               <p className="text-[12px] text-slate-400">
                 {imagenTotalActual
-                  ? `sobre ${imagenTotalActual} ${imagenTab === "chat" ? "mensajes" : "menciones"} · ${rangoLabel}`
-                  : "sin datos aún"}
+                  ? volumenTotalRango > imagenTotalActual
+                    ? `${compact(volumenTotalRango)} menciones · imagen sobre ${compact(
+                        imagenTotalActual
+                      )} ya clasificadas (${Math.round(
+                        (imagenTotalActual / volumenTotalRango) * 100
+                      )}%) · ${rangoLabel}`
+                    : `sobre ${imagenTotalActual} ${imagenTab === "chat" ? "mensajes" : "menciones"} · ${rangoLabel}`
+                  : volumenTotalRango > 0
+                    ? `${compact(volumenTotalRango)} menciones · todavía sin imagen clasificada · ${rangoLabel}`
+                    : "sin datos aún"}
               </p>
             </div>
 
