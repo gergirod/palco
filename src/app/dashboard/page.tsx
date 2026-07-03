@@ -452,6 +452,23 @@ const RANGO_OPTS: { id: Rango; label: string }[] = [
   { id: "30d", label: "1 mes" },
   { id: "max", label: "Máximo" },
 ];
+
+/** Filtra menciones por ventana temporal (misma lógica que Imagen / Dónde se habla). */
+function mencionesEnRango(menc: Mencion[], rango: Rango, liveSince: string): Mencion[] {
+  const base = menc.filter((m) => {
+    const day = m.date?.slice(0, 8);
+    return Boolean(day) && day >= liveSince;
+  });
+  if (rango === "max" || !base.length) return base;
+  let ultimoDia = base[0].date!.slice(0, 8);
+  for (const m of base) {
+    const day = m.date!.slice(0, 8);
+    if (day > ultimoDia) ultimoDia = day;
+  }
+  const desde = parseYmd(ultimoDia);
+  desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+  return base.filter((m) => parseYmd(m.date!.slice(0, 8)) >= desde);
+}
 type Sensibilidad = "menos" | "equilibrado" | "mas";
 type Frecuencia = "al-toque" | "diario" | "semanal";
 const SENS_OPTS: { id: Sensibilidad; titulo: string; bajada: string; reco?: boolean }[] = [
@@ -480,7 +497,8 @@ export default function PalcoPage() {
   const [buscarAbierto, setBuscarAbierto] = useState(false);
   const [tab, setTab] = useState<"todas" | "neg">("todas");
   const [logOrigen, setLogOrigen] = useState<"todas" | "aire" | "chat">("todas");
-  const [logShow, setLogShow] = useState(30); // paginado del detalle
+  const [logRango, setLogRango] = useState<Rango>("7d");
+  const [logShow, setLogShow] = useState(20); // paginado del detalle
   const [feedShow, setFeedShow] = useState(6); // destacados por programa (resumen)
   const [solicitadas, setSolicitadas] = useState<string[]>([]); // catálogo: pedidas para seguir
   const [watch, setWatch] = useState<string[]>([]);
@@ -1141,11 +1159,23 @@ export default function PalcoPage() {
   const feed = tab === "neg" ? feedPeriodo.filter((f) => f.sentiment === "neg") : feedPeriodo;
   const feedVisible = feed.slice(0, feedShow);
 
-  // Detalle fino: TODO lo que se dijo (aire + chat), nuevo→viejo, con filtro por origen.
+  // Detalle fino: menciones del período elegido (aire + chat), nuevo→viejo.
   const logAll = R.menciones ?? [];
-  const logFiltered =
-    logOrigen === "todas" ? logAll : logAll.filter((m) => m.origen === logOrigen);
+  const logRangoLabel = RANGO_OPTS.find((r) => r.id === logRango)?.label ?? "el período";
+  const logEnRango = useMemo(() => {
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    return mencionesEnRango(logAll, logRango, liveSince);
+  }, [logAll, logRango, D.live_since]);
+  const logFiltered = useMemo(() => {
+    return logOrigen === "todas"
+      ? logEnRango
+      : logEnRango.filter((m) => m.origen === logOrigen);
+  }, [logEnRango, logOrigen]);
   const logVisible = logFiltered.slice(0, logShow);
+  const logCorpusTotal =
+    (R.menciones_total?.aire ?? 0) + (R.menciones_total?.chat ?? 0);
+  const logLoadedCount = logAll.length;
+  const logTruncated = logCorpusTotal > logLoadedCount;
 
   // Co-menciones: pares donde esta entidad cruza con otra (mismo programa / bloque 10 min).
   const crucesPairs = useMemo(() => {
@@ -1901,6 +1931,20 @@ export default function PalcoPage() {
                     <span className="text-slate-400">({imagenActual.pos}) · ver citas →</span>
                   </button>
                 </div>
+                {/* Cobertura baja: la mayoría del volumen de este período todavía
+                    no tiene tono clasificado (barras grises abajo). Sin esto, el
+                    veredicto de arriba parece "roto" — en realidad está bien
+                    calculado, pero sobre una muestra chica del total. */}
+                {volumenTotalRango > imagenTotalActual * 1.5 && (
+                  <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
+                    ⚠ El veredicto de arriba se calcula solo sobre{" "}
+                    {compact(imagenTotalActual)} de {compact(volumenTotalRango)} menciones (
+                    {Math.round((imagenTotalActual / volumenTotalRango) * 100)}%) — las que ya
+                    tienen tono clasificado. El resto ({compact(volumenTotalRango - imagenTotalActual)}
+                    ) todavía no fue procesado por el clasificador de sentimiento; por eso las
+                    barras grises abajo no suman al %.
+                  </p>
+                )}
               </>
             ) : (
               <p className="mt-4 text-[13px] text-slate-400">
@@ -2284,10 +2328,10 @@ export default function PalcoPage() {
                 <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                   Comparación
                 </h2>
-                <p className="mt-1 text-[12px] text-slate-400">
+                <p className="mt-1 max-w-xl text-[12px] text-slate-400">
                   {compView === "rubro"
-                    ? `Cuánto se habla de cada ${R.type.toLowerCase()} y con qué imagen (rojo = negativa · verde = positiva)`
-                    : "Cuánto se habla de cada uno y con qué imagen (rojo = negativa · verde = positiva)"}
+                    ? `Cuánto se habla de cada ${R.type.toLowerCase()} y con qué tono (histórico completo). Cada fila muestra su propio reparto: % negativo, neutro y positivo.`
+                    : "Cuánto se habla de cada uno y con qué tono (histórico completo). Cada fila muestra su propio reparto de menciones."}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -2335,31 +2379,46 @@ export default function PalcoPage() {
               <div className="mb-3 grid gap-2 sm:grid-cols-2">
                 <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                   <div className="text-[11px] uppercase tracking-wide text-slate-400">
-                    Mejor imagen
+                    Mejor imagen en este set
                   </div>
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                     <span className="text-[15px] font-semibold text-slate-800">
                       {imagenRanking.mejor.nombre}
                     </span>
-                    <span className="text-[12px] text-slate-400">
-                      · {imagenRanking.mejor.posPct}% positiva
-                    </span>
                   </div>
+                  <p className="mt-1 text-[12px] text-slate-500">
+                    {imagenRanking.mejor.posPct}% positivo · {imagenRanking.mejor.negPct}% negativo
+                    <span className="text-emerald-600 font-medium">
+                      {" "}
+                      · balance +{imagenRanking.mejor.net} pts
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    Gana quien tiene mayor diferencia positivo − negativo.
+                  </p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                   <div className="text-[11px] uppercase tracking-wide text-slate-400">
-                    Peor imagen
+                    Peor imagen en este set
                   </div>
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                     <span className="text-[15px] font-semibold text-slate-800">
                       {imagenRanking.peor.nombre}
                     </span>
-                    <span className="text-[12px] text-slate-400">
-                      · {imagenRanking.peor.negPct}% negativa
-                    </span>
                   </div>
+                  <p className="mt-1 text-[12px] text-slate-500">
+                    {imagenRanking.peor.negPct}% negativo · {imagenRanking.peor.posPct}% positivo
+                    <span className="text-red-600 font-medium">
+                      {" "}
+                      · balance {imagenRanking.peor.net >= 0 ? "+" : ""}
+                      {imagenRanking.peor.net} pts
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    Pierde quien acumula más negativo que positivo.
+                  </p>
                 </div>
               </div>
             )}
@@ -2372,8 +2431,8 @@ export default function PalcoPage() {
                       <th className="px-4 py-3 font-semibold" title="Cuánto se habla de cada uno: menciones totales y qué parte de la charla del set comparado se lleva.">
                         Se habla de
                       </th>
-                      <th className="px-4 py-3 font-semibold" title="Cómo se habla de cada uno: rojo = negativo, gris = neutro, verde = positivo (base = sus propias menciones).">
-                        Imagen
+                      <th className="px-4 py-3 font-semibold" title="Reparto del tono en sus menciones: % negativo, neutro y positivo (histórico). La etiqueta usa el % negativo; el ranking mejor/peor usa positivo − negativo.">
+                        Imagen (tono)
                       </th>
                       <th className="hidden px-4 py-3 font-semibold sm:table-cell">Estado</th>
                     </tr>
@@ -2415,13 +2474,41 @@ export default function PalcoPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex h-2 w-28 overflow-hidden rounded-full bg-slate-100">
-                            <div className="h-full bg-red-500" style={{ width: `${f.negPct}%` }} />
-                            <div className="h-full bg-slate-300" style={{ width: `${f.neuPct}%` }} />
-                            <div className="h-full bg-emerald-500" style={{ width: `${f.posPct}%` }} />
+                          <div
+                            className="flex w-36 justify-between text-[10px] tabular-nums leading-none"
+                            title={`${f.negPct}% negativo · ${f.neuPct}% neutro · ${f.posPct}% positivo`}
+                          >
+                            <span className="font-medium text-red-600">{f.negPct}%</span>
+                            <span className="text-slate-400">{f.neuPct}%</span>
+                            <span className="font-medium text-emerald-600">{f.posPct}%</span>
                           </div>
-                          <div className={`mt-1 text-[12px] font-medium ${f.verdictoCls}`}>
-                            {f.verdicto}
+                          <div
+                            className="mt-1 flex h-2.5 w-36 overflow-hidden rounded-full bg-slate-100"
+                            title="Rojo = negativo · gris = neutro · verde = positivo"
+                          >
+                            {f.negPct > 0 && (
+                              <div className="h-full bg-red-500" style={{ width: `${f.negPct}%` }} />
+                            )}
+                            {f.neuPct > 0 && (
+                              <div className="h-full bg-slate-300" style={{ width: `${f.neuPct}%` }} />
+                            )}
+                            {f.posPct > 0 && (
+                              <div
+                                className="h-full bg-emerald-500"
+                                style={{ width: `${f.posPct}%` }}
+                              />
+                            )}
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px]">
+                            <span className={`font-medium ${f.verdictoCls}`}>{f.verdicto}</span>
+                            <span className="text-slate-400">·</span>
+                            <span className="text-slate-500 tabular-nums">
+                              balance {f.net >= 0 ? "+" : ""}
+                              {f.net}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            neg · neutro · pos
                           </div>
                         </td>
                         <td className="hidden px-4 py-3 sm:table-cell">
@@ -2435,6 +2522,12 @@ export default function PalcoPage() {
                     ))}
                   </tbody>
                 </table>
+                <p className="border-t border-slate-100 px-4 py-2.5 text-[11px] text-slate-400">
+                  Cada fila es independiente: los % suman 100 sobre las menciones clasificadas de
+                  esa persona. &ldquo;Positiva&rdquo; = menos del 25% negativo; &ldquo;Negativa&rdquo;
+                  = 40% o más negativo. Mejor/peor del set = mayor/menor balance (positivo −
+                  negativo).
+                </p>
               </div>
             ) : compView === "rubro" ? (
               <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center">
@@ -2599,27 +2692,66 @@ export default function PalcoPage() {
               <h2 className="text-[15px] font-semibold text-slate-800">
                 Todo lo que se dijo
               </h2>
-              <p className="mt-0.5 text-[13px] text-slate-500">
-                Cada mención, textual, del más nuevo al más viejo — al aire y en el chat.
-                A diferencia de los destacados de arriba, acá no hay una sola cita por programa:
-                aparece todo, una por una.
-                {R.menciones_total && (
+              <p className="mt-0.5 max-w-2xl text-[13px] text-slate-500">
+                Menciones del período elegido ({logRangoLabel}), del más nuevo al más viejo — al
+                aire y en el chat. Una cita por ocurrencia (no una sola por programa como arriba).
+                {logCorpusTotal > 0 && (
                   <>
                     {" "}
                     <span className="text-slate-400">
-                      ({R.menciones_total.aire} al aire · {R.menciones_total.chat} en el chat)
+                      Corpus: {compact(logCorpusTotal)} totales
+                      {R.menciones_total && (
+                        <>
+                          {" "}
+                          ({compact(R.menciones_total.aire)} al aire ·{" "}
+                          {compact(R.menciones_total.chat)} en el chat)
+                        </>
+                      )}
+                      {logLoadedCount > 0 && (
+                        <>
+                          {" "}
+                          · acá ves las {compact(logLoadedCount)} más recientes cargadas
+                        </>
+                      )}
+                      .
                     </span>
                   </>
                 )}
               </p>
+              {logTruncated && (
+                <p className="mt-2 max-w-2xl rounded-lg bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
+                  No entran todas en el panel: el dataset trae las {compact(logLoadedCount)} más
+                  nuevas de {compact(logCorpusTotal)}. Los totales de arriba sí usan el corpus
+                  completo; este listado es una muestra reciente para navegar citas.
+                </p>
+              )}
             </div>
-            <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+                {RANGO_OPTS.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      setLogRango(r.id);
+                      setLogShow(20);
+                    }}
+                    className={`rounded-md px-2.5 py-1 ${
+                      logRango === r.id
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
               {(["todas", "aire", "chat"] as const).map((o) => (
                 <button
                   key={o}
                   onClick={() => {
                     setLogOrigen(o);
-                    setLogShow(30);
+                    setLogShow(20);
                   }}
                   className={`rounded-md px-3 py-1 ${
                     logOrigen === o
@@ -2640,12 +2772,13 @@ export default function PalcoPage() {
                   )}
                 </button>
               ))}
+              </div>
             </div>
           </div>
 
           {logVisible.length === 0 ? (
             <p className="mt-4 rounded-xl border border-slate-200 bg-white p-6 text-center text-[13px] text-slate-400">
-              No hay menciones para mostrar en este filtro.
+              No hay menciones en {logRangoLabel.toLowerCase()} para este filtro.
             </p>
           ) : (
             <ol className="mt-4 space-y-1.5">
@@ -2706,13 +2839,24 @@ export default function PalcoPage() {
           {logFiltered.length > logShow && (
             <div className="mt-4 text-center">
               <button
-                onClick={() => setLogShow((n) => n + 40)}
+                onClick={() => setLogShow((n) => n + 20)}
                 className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-[13px] font-medium text-slate-700 hover:border-slate-400"
               >
-                Ver más ({logFiltered.length - logShow} restantes)
+                Ver más ({logFiltered.length - logShow} restantes en {logRangoLabel.toLowerCase()})
               </button>
             </div>
           )}
+
+          {logFiltered.length > 0 &&
+            logFiltered.length <= logShow &&
+            logTruncated &&
+            logRango === "max" &&
+            logOrigen === "todas" && (
+              <p className="mt-4 text-center text-[12px] text-slate-400">
+                Llegaste al tope de lo cargado ({compact(logLoadedCount)}). Quedan{" "}
+                {compact(logCorpusTotal - logLoadedCount)} menciones más antiguas fuera del panel.
+              </p>
+            )}
         </section>
 
         <footer className="mt-10 border-t border-slate-200 pt-4 text-[11px] text-slate-400">
