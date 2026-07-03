@@ -367,7 +367,18 @@ function MiniImagenBar({ s }: { s: { neg: number; neu: number; pos: number } }) 
   );
 }
 
-type DiaRow = { day: string; total: number; neg: number; neu: number; pos: number };
+type DiaRow = {
+  day: string;
+  total: number;
+  neg: number;
+  neu: number;
+  pos: number;
+  /** true = tenemos volumen (se habló) pero todavía no hay muestra de tono para
+   *  ese día (ni menciones individuales ni by_day enriquecido). Se muestra en
+   *  el gráfico como barra gris (volumen real), pero se excluye de los % de
+   *  Imagen agregados para no diluirlos con un "neutro" inventado. */
+  sinDato?: boolean;
+};
 
 function pctImagen(d: DiaRow, k: "neg" | "pos") {
   return d.total ? Math.round((d[k] / d.total) * 100) : 0;
@@ -752,9 +763,13 @@ export default function PalcoPage() {
     );
     // 3) por día: volumen autoritativo + split de sentimiento proporcional.
     //    Si el día no tiene muestra de sentimiento (ni menciones individuales
-    //    ni by_day enriquecido), se excluye de Imagen en vez de asumirlo 100%
-    //    neutro — ese default falso diluía días de mucho volumen (ej. picos
-    //    de crisis) a "neutro" solo por no estar cubiertos por la muestra.
+    //    ni by_day enriquecido), no inventamos un tono — pero SÍ mostramos la
+    //    barra con el volumen real (marcada sinDato), porque "cuánto se habló"
+    //    es un dato de volumen, no de imagen. Antes se excluía el día entero
+    //    del gráfico, y con datasets donde la sentimentización va atrás del
+    //    volumen (normal en un pipeline en vivo) el "Máximo" terminaba
+    //    mostrando 1 sola barra pese a haber muchos días trackeados. Los días
+    //    sinDato sí se excluyen del cálculo de % de Imagen más abajo.
     let rows: DiaRow[] = [];
     for (const day of dias) {
       const menc = desdeMenc.get(day);
@@ -764,6 +779,7 @@ export default function PalcoPage() {
       let neg = 0;
       let pos = 0;
       let neu = 0;
+      let sinDato = false;
       if (menc && menc.total > 0) {
         neg = Math.round((total * menc.neg) / menc.total);
         pos = Math.round((total * menc.pos) / menc.total);
@@ -773,10 +789,10 @@ export default function PalcoPage() {
         pos = bd.pos;
         neu = Math.max(0, total - neg - pos);
       } else {
-        // Sin muestra de sentimiento para este día: no lo contamos en Imagen.
-        continue;
+        neu = total;
+        sinDato = true;
       }
-      rows.push({ day, total, neg, neu, pos });
+      rows.push({ day, total, neg, neu, pos, sinDato });
     }
     rows.sort((a, b) => a.day.localeCompare(b.day));
     // 4) piso: solo el tracking en vivo con chat. El VOD backfilleado más viejo
@@ -849,14 +865,16 @@ export default function PalcoPage() {
   // elegido arriba, lo que contradecía al gráfico "Cómo viene" de al lado.
   const imagenActual = useMemo(
     () =>
-      porDia.reduce(
-        (acc, d) => ({
-          neg: acc.neg + d.neg,
-          neu: acc.neu + d.neu,
-          pos: acc.pos + d.pos,
-        }),
-        { neg: 0, neu: 0, pos: 0 }
-      ),
+      porDia
+        .filter((d) => !d.sinDato)
+        .reduce(
+          (acc, d) => ({
+            neg: acc.neg + d.neg,
+            neu: acc.neu + d.neu,
+            pos: acc.pos + d.pos,
+          }),
+          { neg: 0, neu: 0, pos: 0 }
+        ),
     [porDia]
   );
   // Veredicto grande del hero ("Imagen positiva/negativa/mixta"), sobre el
@@ -1035,9 +1053,9 @@ export default function PalcoPage() {
 
   // Comparación dinámica: contra todas las entidades del mismo rubro (D.index
   // ya trae el type de cada una), no solo el rival fijo elegido en el
-  // onboarding. Muestra vos + hasta 7 más, priorizando por volumen de
-  // menciones, y guarda tu posición real dentro de todo el rubro (no solo
-  // dentro de las 8 que se ven en la tabla).
+  // onboarding. Muestra la entidad en foco + hasta 7 más, priorizando por
+  // volumen de menciones para el subset visible; la posición (ranking) se
+  // calcula por imagen negativa contra TODO el rubro (no solo las 8 visibles).
   const comparativaRubro = useMemo(() => {
     const mismoRubro = D.index.filter((r) => r.type === R.type && D.radars[r.slug]);
     const otras = mismoRubro
@@ -1068,9 +1086,14 @@ export default function PalcoPage() {
     const filasConSov = filas
       .map((f) => ({ ...f, sovPct: Math.round((f.menciones / totalSet) * 100) }))
       .sort((a, b) => b.menciones - a.menciones);
+    // Ranking por imagen negativa dentro de TODO el rubro (no solo el subset
+    // de hasta 8 que se ve en la tabla de abajo): es la métrica que le
+    // importa a un asesor de imagen y a los medios argentinos — cuánto
+    // negativo hay, no cuánto se habla. Puesto 1 = menos negativa.
     const posicion =
       [...mismoRubro]
-        .sort((a, b) => mencionesRadar(D.radars[b.slug]!) - mencionesRadar(D.radars[a.slug]!))
+        .map((r) => ({ slug: r.slug, negPct: imagenBreakdownRadar(D.radars[r.slug]!).negPct }))
+        .sort((a, b) => a.negPct - b.negPct)
         .findIndex((r) => r.slug === slug) + 1;
     return { filas: filasConSov, posicion, totalRubro: mismoRubro.length, rubro: R.type };
   }, [D, R, slug]);
@@ -1872,6 +1895,7 @@ export default function PalcoPage() {
                 </h3>
                 <p className="mt-1 text-[12px] text-slate-500">
                   Barras = cuánto se habló cada día · franja de color = imagen ese día
+                  {porDia.some((d) => d.sinDato) && " · gris = todavía sin dato de imagen"}
                 </p>
                 {/* Con rangos largos (30 días o "máximo") hay demasiadas barras para
                     achicarlas a lo ancho de un teléfono sin que queden ilegibles.
@@ -1901,7 +1925,11 @@ export default function PalcoPage() {
                               ? "flex w-[16px] shrink-0 flex-col h-full"
                               : "flex min-w-0 flex-1 flex-col h-full"
                           }
-                          title={`${fmtDay(d.day)}: ${d.total} menciones · ${pctImagen(d, "neg")}% neg · ${pctImagen(d, "pos")}% pos`}
+                          title={
+                            d.sinDato
+                              ? `${fmtDay(d.day)}: ${d.total} menciones · imagen: sin datos todavía`
+                              : `${fmtDay(d.day)}: ${d.total} menciones · ${pctImagen(d, "neg")}% neg · ${pctImagen(d, "pos")}% pos`
+                          }
                         >
                           {!denso && (
                             <span className="shrink-0 text-center text-[10px] tabular-nums text-slate-400">
@@ -1914,13 +1942,17 @@ export default function PalcoPage() {
                               style={{
                                 height: `${Math.max(volPct * 100, d.total > 0 ? 6 : 0)}%`,
                                 minHeight: d.total > 0 ? 4 : 0,
-                                background: `linear-gradient(to top, ${BRAND}, #f0a44e)`,
+                                background: d.sinDato
+                                  ? "linear-gradient(to top, #94a3b8, #cbd5e1)"
+                                  : `linear-gradient(to top, ${BRAND}, #f0a44e)`,
                               }}
                             />
                           </div>
                           <div className="mt-1 shrink-0">
                             <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-100">
-                              {d.total > 0 ? (
+                              {d.sinDato ? (
+                                <div className="w-full bg-slate-200" />
+                              ) : d.total > 0 ? (
                                 <>
                                   <div
                                     className="bg-red-500"
@@ -2272,10 +2304,11 @@ export default function PalcoPage() {
             </div>
             {compView === "rubro" && comparativaRubro.totalRubro > 1 && (
               <p className="mb-3 text-[13px] text-slate-600">
-                Estás en el puesto <b className="tabular-nums">{comparativaRubro.posicion}</b> de{" "}
-                <b className="tabular-nums">{comparativaRubro.totalRubro}</b> en volumen de
-                menciones dentro de {R.type.toLowerCase()}. Se muestran vos y los 7 con más
-                volumen del rubro.
+                <b>{R.entity}</b> está en el puesto{" "}
+                <b className="tabular-nums">{comparativaRubro.posicion}</b> de{" "}
+                <b className="tabular-nums">{comparativaRubro.totalRubro}</b> en imagen negativa
+                dentro de {R.type.toLowerCase()} (puesto 1 = menos negativa). Se muestran{" "}
+                {R.entity} y los 7 con más volumen del rubro.
               </p>
             )}
             {filasActivas.length > 1 && imagenRanking && (
@@ -2349,7 +2382,7 @@ export default function PalcoPage() {
                           </button>
                           {f.esVos && (
                             <span className="ml-2 text-[10px] font-medium uppercase text-slate-400">
-                              vos
+                              en foco
                             </span>
                           )}
                         </td>
