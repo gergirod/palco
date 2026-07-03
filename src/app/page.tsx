@@ -70,12 +70,15 @@ export default function Landing() {
           <Link href="/" className="font-display text-xl font-semibold tracking-tight">
             {APP_NAME}<span className="text-signal-bright">.</span>
           </Link>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-3 sm:gap-2">
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
               Ingresar
             </Link>
+            <Link href="/login" className="text-sm font-medium text-muted sm:hidden">
+              Ingresar
+            </Link>
             <Link href="/login" className="btn-signal">
-              Probar gratis
+              Probalo gratis
             </Link>
           </nav>
         </div>
@@ -106,7 +109,7 @@ export default function Landing() {
             )}
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/login" className="btn-signal">
-                Probar gratis
+                Probalo gratis
               </Link>
             </div>
             <p className="mt-5 text-sm text-muted">
@@ -206,7 +209,7 @@ export default function Landing() {
         </h2>
         <div className="mt-7">
           <Link href="/login" className="btn-signal">
-            Probar gratis
+            Probalo gratis
           </Link>
         </div>
       </section>
