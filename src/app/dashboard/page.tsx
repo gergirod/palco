@@ -1401,35 +1401,6 @@ export default function PalcoPage() {
       </Sheet>
 
       <div className="mx-auto max-w-[1100px] px-5 py-8">
-        {/* rail de a quién monitoreo (viene del onboarding) */}
-        {watch.length > 0 && (
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            <span className="text-[12px] font-medium text-slate-400">Monitoreo:</span>
-            {watch.map((s) => {
-              const row = D.index.find((r) => r.slug === s);
-              const active = s === slug;
-              if (!row) return null;
-              return (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setSlug(s);
-                    setTab("todas");
-                  }}
-                  className={`rounded-full border px-3 py-1 text-[12px] transition ${
-                    active
-                      ? "border-signal bg-signal-soft text-signal"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
-                  }`}
-                >
-                  {row.name}
-                  {D.radars[s]?.crisis && <span className="ml-1">🚨</span>}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
         {/* panel de alertas */}
         {alertas.length > 0 && (
           <section className="mb-5 rounded-2xl border border-red-200 bg-white p-4 shadow-sm">

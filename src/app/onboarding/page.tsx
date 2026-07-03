@@ -184,7 +184,7 @@ function OnboardingStepFooter({
           {backLabel}
         </button>
         {summary ? (
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 overflow-hidden">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {summary}
           </div>
         ) : (
@@ -638,7 +638,7 @@ export default function OnboardingPage() {
       selRows.map((r) => (
         <span
           key={r.slug}
-          className="rounded-full bg-signal-soft px-2.5 py-0.5 text-[12px] font-medium"
+          className="shrink-0 rounded-full bg-signal-soft px-2.5 py-0.5 text-[12px] font-medium"
           style={{ color: BRAND }}
         >
           {r.name}
