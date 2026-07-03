@@ -1,5 +1,12 @@
-// Cliente de auth de Palco (magic link). Distinto de lib/supabase.ts,
-// que solo lee datasets vía REST. Acá usamos @supabase/supabase-js para el login.
+// Cliente de auth de Palco (login con código OTP por mail). Distinto de
+// lib/supabase.ts, que solo lee datasets vía REST. Acá usamos
+// @supabase/supabase-js para el login.
+//
+// Nota: el mail que manda Supabase usa la plantilla "Magic Link" del
+// dashboard, pero acá no usamos el link — le pedimos al usuario que tipee
+// el código de 6 dígitos. Para que el mail muestre el código hay que editar
+// esa plantilla en Supabase (Authentication → Email Templates → Magic Link)
+// y agregar {{ .Token }} en el cuerpo.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,17 +26,22 @@ export function getSupabase(): SupabaseClient | null {
   return _client;
 }
 
-/** Envía el magic link al mail. redirectTo pasa por /auth/callback. */
-export async function sendMagicLink(email: string): Promise<{ ok: boolean; error?: string }> {
+/** Envía el código de acceso al mail (login o alta, según corresponda). */
+export async function sendLoginCode(email: string): Promise<{ ok: boolean; error?: string }> {
   const sb = getSupabase();
   if (!sb) return { ok: false, error: "Auth no configurado (falta NEXT_PUBLIC_SUPABASE_*)." };
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const { error } = await sb.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
-    },
-  });
+  const { error } = await sb.auth.signInWithOtp({ email });
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+/** Confirma el código de 6 dígitos y abre la sesión. */
+export async function verifyLoginCode(
+  email: string,
+  token: string
+): Promise<{ ok: boolean; error?: string }> {
+  const sb = getSupabase();
+  if (!sb) return { ok: false, error: "Auth no configurado (falta NEXT_PUBLIC_SUPABASE_*)." };
+  const { error } = await sb.auth.verifyOtp({ email, token, type: "email" });
   return error ? { ok: false, error: error.message } : { ok: true };
 }
 
