@@ -151,6 +151,57 @@ function compact(n: number): string {
   return String(n);
 }
 const CATS = ["Todas", "Político", "Deporte", "Música", "Empresa"] as const;
+/** Sin búsqueda/filtro: mostramos un lote y "Ver todas" para no renderizar 400+ cards de golpe. */
+const CATALOG_BATCH = 48;
+
+/* ---------- barra fija abajo: Seguir siempre visible sin scrollear todo el catálogo ---------- */
+function OnboardingStepFooter({
+  backLabel,
+  onBack,
+  nextLabel,
+  onNext,
+  nextDisabled,
+  nextLoading,
+  summary,
+}: {
+  backLabel: string;
+  onBack: () => void;
+  nextLabel: string;
+  onNext: () => void;
+  nextDisabled?: boolean;
+  nextLoading?: boolean;
+  summary?: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-sm shadow-[0_-8px_30px_rgba(15,23,42,0.08)]">
+      <div className="mx-auto flex max-w-[1000px] items-center gap-3 px-5 py-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="shrink-0 text-[14px] text-slate-500 hover:text-slate-800"
+        >
+          {backLabel}
+        </button>
+        {summary ? (
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 overflow-hidden">
+            {summary}
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={nextDisabled || nextLoading}
+          className="shrink-0 rounded-lg px-6 py-2.5 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          style={{ backgroundColor: BRAND }}
+        >
+          {nextLoading ? "Guardando…" : nextLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ---------- UI: barra de sentimiento mini ---------- */
 function MiniSent({ r }: { r: { neg: number; neu: number; pos: number } }) {
@@ -263,6 +314,7 @@ export default function OnboardingPage() {
   const [browseRows, setBrowseRows] = useState<CatalogBrowseRow[]>(BUNDLED_ROWS);
   const [comenciones, setComenciones] = useState(COMENCIONES_BUNDLED);
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [showAllCatalog, setShowAllCatalog] = useState(false);
 
   const browseBySlug = useMemo(
     () => new Map(browseRows.map((r) => [r.slug, r])),
@@ -428,6 +480,19 @@ export default function OnboardingPage() {
     });
   }, [query, cat, browseRows]);
 
+  // Sin búsqueda: lote inicial + "Ver todas". Con búsqueda/filtro: todo el match.
+  useEffect(() => {
+    setShowAllCatalog(false);
+  }, [query, cat]);
+
+  const catalogBrowsing = !query.trim() && cat === "Todas";
+  const catalogVisible = useMemo(() => {
+    if (!catalogBrowsing || showAllCatalog) return filtered;
+    return filtered.slice(0, CATALOG_BATCH);
+  }, [filtered, catalogBrowsing, showAllCatalog]);
+  const catalogHasMore =
+    catalogBrowsing && !showAllCatalog && filtered.length > CATALOG_BATCH;
+
   const comencionesSel = useMemo(() => {
     if (sel.length < 2) return [];
     const set = new Set(sel);
@@ -566,6 +631,22 @@ export default function OnboardingPage() {
     .map((s) => browseBySlug.get(s))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
+  const stickyFooter = ["entidades", "competencia", "alias", "confirmar"].includes(paso);
+  const selSummary =
+    selRows.length > 0 ? (
+      selRows.map((r) => (
+        <span
+          key={r.slug}
+          className="rounded-full bg-[#fbebd6] px-2.5 py-0.5 text-[12px] font-medium"
+          style={{ color: BRAND }}
+        >
+          {r.name}
+        </span>
+      ))
+    ) : (
+      <span className="text-[12px] text-slate-400">Elegí al menos 1 nombre</span>
+    );
+
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
       {/* barra superior */}
@@ -622,7 +703,7 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1000px] px-5 py-10">
+      <div className={`mx-auto max-w-[1000px] px-5 py-10 ${stickyFooter ? "pb-28" : ""}`}>
         {/* ---------------- BIENVENIDA ---------------- */}
         {!isEdit && paso === "bienvenida" && (
           <section className="mx-auto max-w-[680px] text-center">
@@ -725,9 +806,12 @@ export default function OnboardingPage() {
               </div>
             </div>
             <p className="mt-2 text-[12px] text-slate-500">
-              Mostrando {filtered.length} de {browseRows.length} entidades
+              {catalogBrowsing && !showAllCatalog
+                ? `Mostrando ${catalogVisible.length} de ${browseRows.length} (las más nombradas)`
+                : `Mostrando ${catalogVisible.length} de ${browseRows.length} entidades`}
               {catalogLoading ? " · actualizando catálogo…" : ""}
               {query.trim() || cat !== "Todas" ? " (filtradas)" : ""}
+              {" · "}buscá por apodo para encontrar cualquiera
             </p>
 
             {lleno && (
@@ -748,7 +832,7 @@ export default function OnboardingPage() {
 
             {/* grilla de entidades */}
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((r) => {
+              {catalogVisible.map((r) => {
                 const on = sel.includes(r.slug);
                 const bloq = !on && lleno;
                 const aliasHint = r.alias.slice(0, 3).join(" · ");
@@ -826,28 +910,30 @@ export default function OnboardingPage() {
               })}
             </div>
 
+            {catalogHasMore && (
+              <button
+                type="button"
+                onClick={() => setShowAllCatalog(true)}
+                className="mt-4 w-full rounded-xl border border-slate-200 bg-white py-3 text-[14px] font-medium text-slate-600 hover:border-slate-400"
+              >
+                Ver las {filtered.length} entidades
+              </button>
+            )}
+
             {filtered.length === 0 && (
               <p className="mt-6 rounded-xl border border-slate-200 bg-white p-6 text-center text-[14px] text-slate-500">
                 No encontramos ese nombre. Probá otro apodo o cambiá el filtro de categoría.
               </p>
             )}
 
-            <div className="mt-8 flex items-center justify-between">
-              <button
-                onClick={() => (isEdit ? volverAlTablero() : setPaso("bienvenida"))}
-                className="text-[14px] text-slate-500 hover:text-slate-800"
-              >
-                {isEdit ? "← Cancelar" : "← Volver"}
-              </button>
-              <button
-                onClick={() => setPaso(isEdit ? "alias" : "confirmar")}
-                disabled={sel.length === 0}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ backgroundColor: BRAND }}
-              >
-                Seguir →
-              </button>
-            </div>
+            <OnboardingStepFooter
+              backLabel={isEdit ? "← Cancelar" : "← Volver"}
+              onBack={() => (isEdit ? volverAlTablero() : setPaso("bienvenida"))}
+              nextLabel="Seguir →"
+              onNext={() => setPaso(isEdit ? "alias" : "confirmar")}
+              nextDisabled={sel.length === 0}
+              summary={selSummary}
+            />
           </section>
         )}
 
@@ -931,7 +1017,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered
+              {catalogVisible
                 .filter((r) => r.slug !== compActiveEntity)
                 .map((r) => {
                   const on = compByEntity[compActiveEntity] === r.slug;
@@ -963,23 +1049,28 @@ export default function OnboardingPage() {
                 })}
             </div>
 
-            <div className="mt-8 flex items-center justify-between">
+            {catalogHasMore && (
               <button
                 type="button"
-                onClick={() => setPaso("entidades")}
-                className="text-[14px] text-slate-500 hover:text-slate-800"
+                onClick={() => setShowAllCatalog(true)}
+                className="mt-4 w-full rounded-xl border border-slate-200 bg-white py-3 text-[14px] font-medium text-slate-600 hover:border-slate-400"
               >
-                ← Volver
+                Ver las {filtered.length} entidades
               </button>
-              <button
-                type="button"
-                onClick={() => (isEdit ? entrar() : setPaso("alias"))}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ backgroundColor: BRAND }}
-              >
-                {isEdit ? "Guardar cambios" : "Seguir →"}
-              </button>
-            </div>
+            )}
+
+            <OnboardingStepFooter
+              backLabel="← Volver"
+              onBack={() => setPaso("entidades")}
+              nextLabel={isEdit ? "Guardar cambios" : "Seguir →"}
+              onNext={() => (isEdit ? void entrar() : setPaso("alias"))}
+              nextLoading={isEdit && entrarLoading}
+              summary={
+                <span className="text-[12px] text-slate-500">
+                  {sel.filter((s) => compByEntity[s]).length}/{sel.length} competencias asignadas
+                </span>
+              }
+            />
           </section>
         )}
 
@@ -1085,21 +1176,14 @@ export default function OnboardingPage() {
               En el piloto, estos términos los confirma el operador en tu cuenta.
             </p>
 
-            <div className="mt-8 flex items-center justify-between">
-              <button
-                onClick={() => setPaso("entidades")}
-                className="text-[14px] text-slate-500 hover:text-slate-800"
-              >
-                ← Volver
-              </button>
-              <button
-                onClick={() => (isEdit ? entrar() : setPaso("confirmar"))}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
-                style={{ backgroundColor: BRAND }}
-              >
-                {isEdit ? "Guardar cambios" : "Seguir →"}
-              </button>
-            </div>
+            <OnboardingStepFooter
+              backLabel="← Volver"
+              onBack={() => setPaso("entidades")}
+              nextLabel={isEdit ? "Guardar cambios" : "Seguir →"}
+              onNext={() => (isEdit ? void entrar() : setPaso("confirmar"))}
+              nextLoading={isEdit && entrarLoading}
+              summary={selSummary}
+            />
           </section>
         )}
 
@@ -1342,27 +1426,21 @@ export default function OnboardingPage() {
               Tu prueba gratis de <b>{TRIAL_DIAS} días</b> arranca cuando abras el panel.
             </p>
 
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                onClick={() => setPaso("entidades")}
-                className="text-[14px] text-slate-500 hover:text-slate-800"
-              >
-                ← Volver
-              </button>
-              <button
-                type="button"
-                onClick={() => void entrar()}
-                disabled={entrarLoading || !/^\S+@\S+\.\S+$/.test(email.trim())}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ backgroundColor: BRAND }}
-              >
-                {entrarLoading
+            <OnboardingStepFooter
+              backLabel="← Volver"
+              onBack={() => setPaso("entidades")}
+              nextLabel={
+                entrarLoading
                   ? "Guardando…"
                   : authEnabled
                     ? `Empezar prueba gratis · ${TRIAL_DIAS} días →`
-                    : "Ver mi tablero →"}
-              </button>
-            </div>
+                    : "Ver mi tablero →"
+              }
+              onNext={() => void entrar()}
+              nextDisabled={!/^\S+@\S+\.\S+$/.test(email.trim())}
+              nextLoading={entrarLoading}
+              summary={selSummary}
+            />
           </section>
         )}
       </div>

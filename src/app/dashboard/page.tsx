@@ -765,7 +765,11 @@ export default function PalcoPage() {
     const byDayMap = new Map(
       (imagenTab === "chat" ? [] : R.by_day ?? []).map((b) => [b.day, b]),
     );
-    // 3) por día: volumen autoritativo + split de sentimiento proporcional
+    // 3) por día: volumen autoritativo + split de sentimiento proporcional.
+    //    Si el día no tiene muestra de sentimiento (ni menciones individuales
+    //    ni by_day enriquecido), se excluye de Imagen en vez de asumirlo 100%
+    //    neutro — ese default falso diluía días de mucho volumen (ej. picos
+    //    de crisis) a "neutro" solo por no estar cubiertos por la muestra.
     let rows: DiaRow[] = [];
     for (const day of dias) {
       const menc = desdeMenc.get(day);
@@ -774,7 +778,7 @@ export default function PalcoPage() {
       if (total <= 0) continue;
       let neg = 0;
       let pos = 0;
-      let neu = total;
+      let neu = 0;
       if (menc && menc.total > 0) {
         neg = Math.round((total * menc.neg) / menc.total);
         pos = Math.round((total * menc.pos) / menc.total);
@@ -783,6 +787,9 @@ export default function PalcoPage() {
         neg = bd.neg;
         pos = bd.pos;
         neu = Math.max(0, total - neg - pos);
+      } else {
+        // Sin muestra de sentimiento para este día: no lo contamos en Imagen.
+        continue;
       }
       rows.push({ day, total, neg, neu, pos });
     }
@@ -832,7 +839,7 @@ export default function PalcoPage() {
       if (total <= 0) continue;
       let neg = 0;
       let pos = 0;
-      let neu = total;
+      let neu = 0;
       if (menc && menc.total > 0) {
         neg = Math.round((total * menc.neg) / menc.total);
         pos = Math.round((total * menc.pos) / menc.total);
@@ -841,6 +848,9 @@ export default function PalcoPage() {
         neg = bd.neg;
         pos = bd.pos;
         neu = Math.max(0, total - neg - pos);
+      } else {
+        // Sin muestra de sentimiento para este día: no lo contamos en Imagen.
+        continue;
       }
       rows.push({ day, total, neg, neu, pos });
     }
