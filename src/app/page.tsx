@@ -1,4 +1,8 @@
 import Link from "next/link";
+import bundled from "@/data/palco_entities.json";
+
+/** Cifra real del catálogo (palco_entities → catalog_summary.candidates_count). */
+const CANDIDATOS_COUNT: number = (bundled as any)?.catalog_summary?.candidates_count ?? 0;
 
 const CANALES = [
   "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana Play", "Neura",
@@ -43,16 +47,16 @@ const PLANES = [
 
 const PUNTOS = [
   {
-    t: "Personas y empresas que te importan",
-    d: "Cargás los nombres que gestionás — tu candidato, tu marca, un vocero, la competencia — y Palco los escucha en todo el aire.",
+    t: "Te enterás antes de que se prenda del todo",
+    d: "Medimos cómo reacciona la audiencia y el chat en el momento. Si algo empieza a escalar, te llega marcado como posible crisis — no cuando ya es tendencia.",
   },
   {
-    t: "El mismo día, no cuando ya es tendencia",
-    d: "Escuchamos horas de aire que nadie puede seguir a mano. Cada mención te llega el mismo día: en qué programa, qué se dijo y con qué tono. No cuando ya llegó al recorte de la tele.",
+    t: "Los nombres que vos elegís",
+    d: "Cargás las personas o empresas que gestionás — tu candidato, tu marca, un vocero, la competencia — y Palco los escucha en todo el aire.",
   },
   {
-    t: "Con la reacción de la audiencia",
-    d: "Cuánta gente lo estaba escuchando y cómo lo tomó el chat. Si algo se prende, te lo marcamos como posible crisis.",
+    t: "El mismo día, no el resumen de la semana",
+    d: "Escuchamos horas de aire que nadie puede seguir a mano. Cada mención: en qué programa, qué se dijo y con qué tono.",
   },
 ];
 
@@ -70,7 +74,7 @@ export default function Landing() {
               Ingresar
             </Link>
             <Link href="/login" className="btn-signal">
-              Pedir una demo
+              Probar gratis
             </Link>
           </nav>
         </div>
@@ -90,14 +94,18 @@ export default function Landing() {
               Palco escucha {CANALES.length} canales del streaming en vivo argentino.
             </p>
             <p className="mt-3 text-lg text-muted">
-              Cada día, durante horas, en el streaming en vivo se habla de todo — y es
-              imposible seguirlo a mano. Palco lo escucha por vos y te muestra cada vez
-              que nombran a una persona o empresa que te importa: en qué programa, qué se
-              dijo, con qué tono y cómo lo tomó la audiencia.
+              Vos cargás los nombres. Palco te avisa el mismo día en qué programa se
+              habló, qué se dijo y con qué tono — y si conviene prender una alarma.
             </p>
+            {CANDIDATOS_COUNT > 0 && (
+              <p className="mt-3 text-sm font-medium text-signal">
+                {CANDIDATOS_COUNT} personas y empresas ya identificadas en el streaming
+                argentino, en vivo, todos los días.
+              </p>
+            )}
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/login" className="btn-signal">
-                Pedir una demo con tus nombres
+                Probar gratis con tus nombres
               </Link>
               <Link href={`/dashboard?demo=1&e=${EJEMPLO.slug}`} className="btn-ghost">
                 Ver un panel de ejemplo
@@ -200,7 +208,7 @@ export default function Landing() {
         </h2>
         <div className="mt-7">
           <Link href="/login" className="btn-signal">
-            Pedir una demo con tus nombres
+            Probar gratis con tus nombres
           </Link>
         </div>
       </section>
