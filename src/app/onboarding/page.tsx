@@ -203,18 +203,38 @@ const FRECUENCIAS: { id: Frecuencia; titulo: string; bajada: string }[] = [
 ];
 
 /* ---------- pasos ---------- */
-type Paso = "bienvenida" | "plan" | "entidades" | "competencia" | "alias" | "avisos" | "listo";
+type Paso =
+  | "bienvenida"
+  | "plan"
+  | "entidades"
+  | "competencia"
+  | "alias"
+  | "avisos"
+  | "confirmar"
+  | "listo";
+// "competencia" queda afuera del alta nueva: es una decisión que se toma
+// mejor con datos en pantalla, no a ciegas antes de ver el tablero. Sigue
+// disponible desde el dashboard ("Editar competencia" → deep link directo a
+// ?edit=1&paso=competencia).
+// "alias" + "avisos" + "listo" se fusionan en un único paso "confirmar" en
+// el alta nueva: para la mayoría de los usuarios no hay nada que decidir ahí
+// (alias viene precargado, avisos ya trae defaults recomendados), así que
+// tres pantallas de solo-mirar-y-avanzar pasan a ser una sola pantalla
+// editable con un solo botón al final. "alias" sigue existiendo como paso
+// propio solo para el flujo de edición (PASOS_EDIT abajo).
 const PASOS: { id: Paso; label: string }[] = [
   { id: "bienvenida", label: "Bienvenida" },
   { id: "entidades", label: "A quién seguir" },
-  { id: "competencia", label: "Competencia" },
-  { id: "alias", label: "Cómo lo dicen" },
-  { id: "avisos", label: "Avisos" },
-  { id: "listo", label: "Listo" },
+  { id: "confirmar", label: "Confirmar" },
 ];
+// "competencia" no forma parte de PASOS_EDIT: "Editar watchlist" (entrada
+// genérica desde el tablero) va directo de entidades a alias, sin forzar
+// asignar rival a cada entidad solo para guardar un cambio menor (ej. un
+// alias). "competencia" sigue siendo un paso válido — se llega ahí solo por
+// el deep link explícito "Editar competencia", que setea paso=competencia
+// directamente (ver el useEffect de ?edit=1 más abajo).
 const PASOS_EDIT: { id: Paso; label: string }[] = [
   { id: "entidades", label: "A quién seguir" },
-  { id: "competencia", label: "Competencia" },
   { id: "alias", label: "Cómo lo dicen" },
 ];
 
@@ -385,9 +405,10 @@ export default function OnboardingPage() {
     router.push(q ? `/dashboard?${q}` : "/dashboard");
   }
 
-  // Pre-carga alias del catálogo al entrar al paso "Cómo lo dicen".
+  // Pre-carga alias del catálogo al entrar al paso "Cómo lo dicen" (edición)
+  // o al paso "Confirmar" (alta nueva, donde alias vive fusionado).
   useEffect(() => {
-    if (paso !== "alias" || sel.length === 0) return;
+    if ((paso !== "alias" && paso !== "confirmar") || sel.length === 0) return;
     setAliasCfg((prev) => {
       const next = { ...prev };
       for (const slug of sel) {
@@ -436,8 +457,9 @@ export default function OnboardingPage() {
       return { ...cur, [compActiveEntity]: compSlug };
     });
   }
-  // Toda entidad de la watchlist tiene su competencia elegida.
-  const compCompleto = sel.length > 0 && sel.every((s) => compByEntity[s]);
+  // (Antes había un "compCompleto" que gateaba "Guardar cambios" hasta
+  // asignar rival a cada entidad de la watchlist; se sacó el bloqueo — ver
+  // comentario en PASOS_EDIT: competencia pasa a ser un paso opcional.)
 
   // Mantiene la entidad activa dentro de la watchlist y poda competencias
   // de entidades que se hayan sacado.
@@ -543,17 +565,6 @@ export default function OnboardingPage() {
   const selRows = sel
     .map((s) => browseBySlug.get(s))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
-  // Pares entidad → su competencia, para el resumen final.
-  const compPares = sel
-    .map((entidadSlug) => {
-      const entidad = browseBySlug.get(entidadSlug);
-      const rival = compByEntity[entidadSlug]
-        ? browseBySlug.get(compByEntity[entidadSlug])
-        : undefined;
-      if (!entidad || !rival) return null;
-      return { entidad, rival };
-    })
-    .filter((p): p is NonNullable<typeof p> => p !== null);
 
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
@@ -829,7 +840,7 @@ export default function OnboardingPage() {
                 {isEdit ? "← Cancelar" : "← Volver"}
               </button>
               <button
-                onClick={() => setPaso("competencia")}
+                onClick={() => setPaso(isEdit ? "alias" : "confirmar")}
                 disabled={sel.length === 0}
                 className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ backgroundColor: BRAND }}
@@ -963,7 +974,6 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => (isEdit ? entrar() : setPaso("alias"))}
-                disabled={!compCompleto}
                 className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ backgroundColor: BRAND }}
               >
@@ -1077,13 +1087,13 @@ export default function OnboardingPage() {
 
             <div className="mt-8 flex items-center justify-between">
               <button
-                onClick={() => setPaso("competencia")}
+                onClick={() => setPaso("entidades")}
                 className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Volver
               </button>
               <button
-                onClick={() => (isEdit ? entrar() : setPaso("avisos"))}
+                onClick={() => (isEdit ? entrar() : setPaso("confirmar"))}
                 className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
                 style={{ backgroundColor: BRAND }}
               >
@@ -1093,19 +1103,119 @@ export default function OnboardingPage() {
           </section>
         )}
 
-        {/* ---------------- AVISOS (gobernanza) ---------------- */}
-        {!isEdit && paso === "avisos" && (
+        {/* ---------------- CONFIRMAR (alias + avisos + resumen, todo junto) ----------------
+            Fusiona lo que antes eran 3 pantallas ("Cómo lo dicen", "Avisos", "Listo") en una
+            sola: para la mayoría de los usuarios no hay nada que decidir en alias (viene
+            precargado del catálogo) ni en avisos (defaults recomendados ya aplicados), así
+            que en vez de tres pantallas de solo-mirar-y-avanzar queda una sola vista editable
+            con un único botón al final. */}
+        {!isEdit && paso === "confirmar" && (
           <section className="mx-auto max-w-[720px]">
             <div className="text-center">
-              <h1 className="text-3xl font-bold">¿Cuándo querés que te avisemos?</h1>
+              <h1 className="text-3xl font-bold">Último paso: revisá y confirmá</h1>
               <p className="mt-2 text-[15px] text-slate-600">
-                Vos decidís cuánto te molestamos. Podés cambiar todo esto cuando
-                quieras desde tu tablero.
+                Ya viene todo con una configuración recomendada. Ajustá lo que
+                quieras y arrancá — esto lo volvés a cambiar cuando quieras
+                desde tu tablero.
+              </p>
+            </div>
+
+            {/* watchlist + alias */}
+            <div className="mt-8">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
+                Tu watchlist ({selRows.length})
+              </p>
+              <div className="mt-3 space-y-3">
+                {sel.map((slug) => {
+                  const row = browseBySlug.get(slug);
+                  if (!row) return null;
+                  const alias = aliasCfg[slug] ?? [];
+                  const w = { nombre: row.name, alias };
+                  const shown = displayAlias(w);
+                  return (
+                    <div
+                      key={slug}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                    >
+                      <p className="text-[15px] font-bold">{row.name}</p>
+                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        También buscar como
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {shown.map((a) => (
+                          <span
+                            key={a}
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[13px] text-slate-700"
+                          >
+                            {a}
+                            <button
+                              type="button"
+                              onClick={() => removeAlias(slug, a)}
+                              className="ml-0.5 text-slate-400 hover:text-slate-700"
+                              aria-label={`Quitar ${a}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                        <div className="flex items-center gap-1">
+                          <input
+                            value={aliasDraft[slug] ?? ""}
+                            onChange={(e) =>
+                              setAliasDraft((d) => ({ ...d, [slug]: e.target.value }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addAlias(slug);
+                              }
+                            }}
+                            placeholder="agregar…"
+                            className="w-28 rounded-full border border-slate-200 px-3 py-1 text-[13px] outline-none focus:border-[#b45309]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addAlias(slug)}
+                            className="rounded-full border border-slate-200 px-2 py-1 text-[12px] text-slate-600 hover:border-slate-400"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {planId === "profesional" && comencionesSel.length > 0 && (
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    Nombrados juntos al aire (Pro)
+                  </p>
+                  <div className="mt-2 space-y-2">
+                    {comencionesSel.map((p) => (
+                      <p key={p.par.join("-")} className="text-[14px] text-slate-700">
+                        <b>{p.nombres[0]}</b> × <b>{p.nombres[1]}</b>
+                        <span className="ml-2 text-[13px] text-slate-500">
+                          {p.cruces_total} cruces
+                        </span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 border-t border-slate-200 pt-6">
+              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
+                Avisos
+              </h2>
+              <p className="mt-1 text-[12px] text-slate-500">
+                Ya vienen con la config recomendada. Cambiala si querés.
               </p>
             </div>
 
             {/* sensibilidad */}
-            <div className="mt-8">
+            <div className="mt-4">
               <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-400">
                 Cuánto avisar
               </p>
@@ -1228,141 +1338,28 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div className="mt-8 flex items-center justify-between">
+            <p className="mt-6 text-center text-[12px] text-slate-400">
+              Tu prueba gratis de <b>{TRIAL_DIAS} días</b> arranca cuando abras el panel.
+            </p>
+
+            <div className="mt-4 flex items-center justify-between">
               <button
-                onClick={() => setPaso("alias")}
+                onClick={() => setPaso("entidades")}
                 className="text-[14px] text-slate-500 hover:text-slate-800"
               >
                 ← Volver
               </button>
               <button
-                onClick={() => setPaso("listo")}
-                disabled={!/^\S+@\S+\.\S+$/.test(email.trim())}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ backgroundColor: BRAND }}
-              >
-                Seguir →
-              </button>
-            </div>
-          </section>
-        )}
-
-        {/* ---------------- LISTO ---------------- */}
-        {!isEdit && paso === "listo" && (
-          <section className="mx-auto max-w-[680px]">
-            <div className="text-center">
-              <div
-                className="mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white"
-                style={{ backgroundColor: BRAND }}
-              >
-                ✓
-              </div>
-              <h1 className="mt-4 text-3xl font-bold">Todo listo.</h1>
-              <p className="mt-2 text-[15px] text-slate-600">
-                Tu prueba gratis de <b>{TRIAL_DIAS} días</b> arranca cuando abras el panel.
-                Así te queda configurado:
-              </p>
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-[13px] text-slate-500">Prueba gratis</span>
-                <span className="text-[14px] font-semibold">
-                  {TRIAL_DIAS} días · hasta {plan.limite} nombres
-                </span>
-              </div>
-              <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-                Tu watchlist ({selRows.length})
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {selRows.map((r) => {
-                  const alias = displayAlias({
-                    nombre: r.name,
-                    alias: aliasCfg[r.slug] ?? r.alias ?? [],
-                  });
-                  return (
-                    <div
-                      key={r.slug}
-                      className="rounded-xl border border-[#f0c99a] bg-[#fbebd6] px-3 py-2 text-[13px]"
-                      style={{ color: BRAND }}
-                    >
-                      <p className="font-semibold">{r.name}</p>
-                      {alias.length > 0 && (
-                        <p className="mt-0.5 text-[11px] text-slate-500">
-                          buscando: {alias.join(" · ")}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              {compPares.length > 0 && (
-                <>
-                  <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-                    Comparaciones ({compPares.length})
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {compPares.map(({ entidad, rival }) => (
-                      <div
-                        key={entidad.slug}
-                        className="rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-[13px] text-slate-700"
-                      >
-                        <p className="font-semibold">
-                          {entidad.name}{" "}
-                          <span className="font-normal text-slate-500">vs</span>{" "}
-                          {rival.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-              <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-slate-400">
-                Tus avisos
-              </p>
-              <div className="mt-2 grid gap-2 text-[13px] text-slate-600">
-                <p className="flex gap-2">
-                  <span style={{ color: BRAND }}>✓</span>{" "}
-                  {SENSIBILIDADES.find((s) => s.id === sensibilidad)!.titulo} ·{" "}
-                  {soloNegativo ? "solo lo negativo" : "todo (bueno, neutro y malo)"}
-                </p>
-                <p className="flex gap-2">
-                  <span style={{ color: BRAND }}>✓</span>{" "}
-                  {FRECUENCIAS.find((f) => f.id === frecuencia)!.titulo} a{" "}
-                  <b className="text-slate-700">{email.trim()}</b>
-                </p>
-                <p className="flex gap-2">
-                  <span style={{ color: BRAND }}>✓</span> Avisos de crisis apenas los detectamos
-                </p>
-                {planId === "enterprise" && (
-                  <p className="flex gap-2">
-                    <span style={{ color: BRAND }}>✓</span> Reportes exportables con tu marca
-                  </p>
-                )}
-              </div>
-              <p className="mt-3 text-[12px] text-slate-400">
-                Todo esto lo cambiás cuando quieras desde <b>Avisos</b> en tu tablero.
-              </p>
-            </div>
-
-            <div className="mt-8 flex items-center justify-between">
-              <button
-                onClick={() => setPaso("avisos")}
-                className="text-[14px] text-slate-500 hover:text-slate-800"
-              >
-                ← Ajustar
-              </button>
-              <button
                 type="button"
                 onClick={() => void entrar()}
-                disabled={entrarLoading}
-                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                disabled={entrarLoading || !/^\S+@\S+\.\S+$/.test(email.trim())}
+                className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ backgroundColor: BRAND }}
               >
                 {entrarLoading
                   ? "Guardando…"
                   : authEnabled
-                    ? `Abrir mi panel · ${TRIAL_DIAS} días gratis →`
+                    ? `Empezar prueba gratis · ${TRIAL_DIAS} días →`
                     : "Ver mi tablero →"}
               </button>
             </div>

@@ -461,6 +461,10 @@ export default function PalcoPage() {
   const [slug, setSlug] = useState<string>(BUNDLED.default);
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<string>("todas");
+  // El buscador completo (input + categorías + "no lo encontramos") solo se
+  // abre a pedido. Por default va colapsado: con una sola entidad no tiene
+  // sentido mostrarlo, y con varias alcanza con los chips para cambiar rápido.
+  const [buscarAbierto, setBuscarAbierto] = useState(false);
   const [tab, setTab] = useState<"todas" | "neg">("todas");
   const [logOrigen, setLogOrigen] = useState<"todas" | "aire" | "chat">("todas");
   const [logShow, setLogShow] = useState(30); // paginado del detalle
@@ -469,6 +473,9 @@ export default function PalcoPage() {
   const [watch, setWatch] = useState<string[]>([]);
   // Competencia por entidad: mapa entidad→rival (1 por cada nombre seguido).
   const [compByEntity, setCompByEntity] = useState<Record<string, string>>({});
+  // Comparación: por defecto contra todo el rubro (dinámico); "fija" muestra
+  // solo el rival elegido a mano en el onboarding.
+  const [compView, setCompView] = useState<"rubro" | "fija">("rubro");
   const [plan, setPlan] = useState<string>("");
   // gobernanza de avisos (settings del tablero)
   const [showAvisos, setShowAvisos] = useState(false);
@@ -477,6 +484,9 @@ export default function PalcoPage() {
   const [frecuencia, setFrecuencia] = useState<Frecuencia>("diario");
   const [email, setEmail] = useState("");
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
+  // Canal abierto en "Dónde se habla más": al hacer click se despliegan las
+  // citas reales que arman ese número (trazabilidad número → fuente).
+  const [canalAbierto, setCanalAbierto] = useState<string | null>(null);
   const [imagenTab, setImagenTab] = useState<ImagenTab>("todo");
   const [rango, setRango] = useState<Rango>("max");
   const [isDemo, setIsDemo] = useState(false);
@@ -558,6 +568,7 @@ export default function PalcoPage() {
   useEffect(() => {
     setCruceShow({});
     setImagenTab("todo");
+    setCanalAbierto(null);
   }, [slug]);
 
   // Trae la última versión del dataset desde Supabase (fallback: el bundle).
@@ -657,50 +668,33 @@ export default function PalcoPage() {
     setShowAvisos(false);
   }
 
-  const airProgs = R.sentiment.neg + R.sentiment.neu + R.sentiment.pos;
-  const chatScored = R.chat_scored ?? 0;
-  const imagenCombinada = useMemo(
-    () => ({
-      neg: R.sentiment.neg + (R.sentiment_chat?.neg ?? 0),
-      neu: R.sentiment.neu + (R.sentiment_chat?.neu ?? 0),
-      pos: R.sentiment.pos + (R.sentiment_chat?.pos ?? 0),
-    }),
-    [R]
-  );
-  const imagenActual =
-    imagenTab === "todo"
-      ? imagenCombinada
-      : imagenTab === "aire"
-        ? R.sentiment
-        : (R.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 });
-  const imagenMeta: Record<
-    ImagenTab,
-    { sub: string; note: string; baseLabel: string }
-  > = {
-    todo: {
-      sub: "Lo dicho al aire y la reacción del chat, en conjunto",
-      note: "La imagen completa: programas + audiencia en vivo.",
-      baseLabel: `sobre ${imagenCombinada.neg + imagenCombinada.neu + imagenCombinada.pos} menciones`,
-    },
-    aire: {
-      sub: "Lo que dijeron los programas en vivo",
-      note: "Ojo: un medio puede estar alineado o pautado.",
-      baseLabel: `sobre ${airProgs} programas`,
-    },
-    chat: {
-      sub: "La reacción de la gente en la sala",
-      note: "Más genuino: es lo que escribe la audiencia en vivo.",
-      baseLabel: `sobre ${chatScored} mensajes`,
-    },
-  };
+  // Mismo filtro de ventana temporal que porDia (rango + live_since), para que
+  // "Dónde más se habló" no muestre el acumulado histórico mientras el resto
+  // de la sección Imagen ya está filtrada por el rango elegido arriba.
   const porCanal = useMemo(() => {
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    const menc = (R.menciones ?? []).filter((m) => {
+      if (imagenTab === "aire" && m.origen !== "aire") return false;
+      if (imagenTab === "chat" && m.origen !== "chat") return false;
+      const day = m.date?.slice(0, 8);
+      return Boolean(day) && day >= liveSince;
+    });
+    let filtradas = menc;
+    if (rango !== "max" && menc.length) {
+      let ultimoDia = menc[0].date!.slice(0, 8);
+      for (const m of menc) {
+        const day = m.date!.slice(0, 8);
+        if (day > ultimoDia) ultimoDia = day;
+      }
+      const desde = parseYmd(ultimoDia);
+      desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+      filtradas = menc.filter((m) => parseYmd(m.date!.slice(0, 8)) >= desde);
+    }
     const map = new Map<
       string,
       { channel: string; total: number; neg: number; neu: number; pos: number }
     >();
-    for (const m of R.menciones ?? []) {
-      if (imagenTab === "aire" && m.origen !== "aire") continue;
-      if (imagenTab === "chat" && m.origen !== "chat") continue;
+    for (const m of filtradas) {
       const ch = m.channel || "?";
       const row = map.get(ch) ?? { channel: ch, total: 0, neg: 0, neu: 0, pos: 0 };
       row.total++;
@@ -710,8 +704,39 @@ export default function PalcoPage() {
       map.set(ch, row);
     }
     return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 10);
-  }, [R, imagenTab]);
+  }, [R, imagenTab, rango, D]);
   const maxCanal = Math.max(...porCanal.map((c) => c.total), 1);
+  // Mismo filtro que porCanal, pero conservando las menciones individuales
+  // (no agregadas) para poder mostrar citas reales al abrir un canal en
+  // "Dónde se habla más" — trazabilidad: del número a la cita que lo compone.
+  const mencionesPorCanalMap = useMemo(() => {
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    const menc = (R.menciones ?? []).filter((m) => {
+      if (imagenTab === "aire" && m.origen !== "aire") return false;
+      if (imagenTab === "chat" && m.origen !== "chat") return false;
+      const day = m.date?.slice(0, 8);
+      return Boolean(day) && day >= liveSince;
+    });
+    let filtradas = menc;
+    if (rango !== "max" && menc.length) {
+      let ultimoDia = menc[0].date!.slice(0, 8);
+      for (const m of menc) {
+        const day = m.date!.slice(0, 8);
+        if (day > ultimoDia) ultimoDia = day;
+      }
+      const desde = parseYmd(ultimoDia);
+      desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+      filtradas = menc.filter((m) => parseYmd(m.date!.slice(0, 8)) >= desde);
+    }
+    const map = new Map<string, Mencion[]>();
+    for (const m of filtradas) {
+      const ch = m.channel || "?";
+      const arr = map.get(ch) ?? [];
+      arr.push(m);
+      map.set(ch, arr);
+    }
+    return map;
+  }, [R, imagenTab, rango, D]);
   // Historial completo del día 0. El volumen de fondo sale de by_day (todo el
   // corpus trackeado, no solo las menciones recientes que vienen capadas); el
   // sentimiento se toma de las menciones cuando existen (preciso y por pestaña),
@@ -775,20 +800,207 @@ export default function PalcoPage() {
     return rows;
   }, [R, imagenTab, rango, D]);
   const maxDiaVol = Math.max(...porDia.map((d) => d.total), 1);
+  // Igual que porDia pero SIN recortar por rango: hace falta el historial
+  // completo (día a día) para poder comparar el período elegido (24h/48h/
+  // semana/mes) contra el período inmediatamente anterior de igual duración.
+  const porDiaCompleto = useMemo(() => {
+    const desdeMenc = new Map<string, DiaRow>();
+    for (const m of R.menciones ?? []) {
+      if (imagenTab === "aire" && m.origen !== "aire") continue;
+      if (imagenTab === "chat" && m.origen !== "chat") continue;
+      const day = m.date?.slice(0, 8);
+      if (!day) continue;
+      const row = desdeMenc.get(day) ?? { day, total: 0, neg: 0, neu: 0, pos: 0 };
+      row.total++;
+      if (m.sentiment === "neg") row.neg++;
+      else if (m.sentiment === "pos") row.pos++;
+      else row.neu++;
+      desdeMenc.set(day, row);
+    }
+    const dias = new Set<string>(desdeMenc.keys());
+    if (imagenTab !== "chat") {
+      for (const b of R.by_day ?? []) if (b.day) dias.add(b.day);
+    }
+    const byDayMap = new Map(
+      (imagenTab === "chat" ? [] : R.by_day ?? []).map((b) => [b.day, b]),
+    );
+    let rows: DiaRow[] = [];
+    for (const day of dias) {
+      const menc = desdeMenc.get(day);
+      const bd = byDayMap.get(day);
+      const total = bd ? bd.mentions : menc ? menc.total : 0;
+      if (total <= 0) continue;
+      let neg = 0;
+      let pos = 0;
+      let neu = total;
+      if (menc && menc.total > 0) {
+        neg = Math.round((total * menc.neg) / menc.total);
+        pos = Math.round((total * menc.pos) / menc.total);
+        neu = Math.max(0, total - neg - pos);
+      } else if (bd && typeof bd.neg === "number" && typeof bd.pos === "number") {
+        neg = bd.neg;
+        pos = bd.pos;
+        neu = Math.max(0, total - neg - pos);
+      }
+      rows.push({ day, total, neg, neu, pos });
+    }
+    rows.sort((a, b) => a.day.localeCompare(b.day));
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    return rows.filter((d) => d.day >= liveSince);
+  }, [R, imagenTab, D]);
+  // Imagen del período seleccionado: se arma sumando porDia (que ya respeta
+  // imagenTab + rango + live_since), no R.sentiment/R.sentiment_chat crudos.
+  // Antes esta tarjeta mostraba el acumulado histórico sin importar el rango
+  // elegido arriba, lo que contradecía al gráfico "Cómo viene" de al lado.
+  const imagenActual = useMemo(
+    () =>
+      porDia.reduce(
+        (acc, d) => ({
+          neg: acc.neg + d.neg,
+          neu: acc.neu + d.neu,
+          pos: acc.pos + d.pos,
+        }),
+        { neg: 0, neu: 0, pos: 0 }
+      ),
+    [porDia]
+  );
+  // Veredicto grande del hero ("Imagen positiva/negativa/mixta"), sobre el
+  // mismo período ya filtrado que imagenActual (no el acumulado histórico
+  // crudo de R.sentiment). Mismos umbrales que imagenBreakdownRadar, para que
+  // el hero y la tabla de Comparación cuenten la misma historia.
+  const imagenTotalActual = imagenActual.neg + imagenActual.neu + imagenActual.pos;
+  const negPctActual = imagenTotalActual
+    ? Math.round((imagenActual.neg / imagenTotalActual) * 100)
+    : 0;
+  const posPctActual = imagenTotalActual
+    ? Math.round((imagenActual.pos / imagenTotalActual) * 100)
+    : 0;
+  const neuPctActual = imagenTotalActual ? Math.max(0, 100 - negPctActual - posPctActual) : 0;
+  const veredictoActual = !imagenTotalActual
+    ? { texto: "Todavía sin datos", cls: "text-slate-400" }
+    : negPctActual >= 55
+      ? { texto: "Imagen muy negativa", cls: "text-red-600" }
+      : negPctActual >= 40
+        ? { texto: "Imagen negativa", cls: "text-red-600" }
+        : negPctActual >= 25
+          ? { texto: "Imagen mixta", cls: "text-amber-600" }
+          : { texto: "Imagen positiva", cls: "text-emerald-600" };
+  const rangoLabel = RANGO_OPTS.find((r) => r.id === rango)?.label ?? "el período";
+  // Desglose de volumen del período elegido arriba (mismo rango que todo lo
+  // demás en "Imagen"), siempre sobre los DOS orígenes juntos — no cambia con
+  // la pestaña Todo/Aire/Chat, que solo filtra qué sentimiento se juzga en el
+  // veredicto. Antes esta fila usaba R.totals (acumulado histórico de toda la
+  // vida del radar), que no coincidía con "sobre X menciones · 24 h" de arriba.
+  const statsPeriodo = useMemo(() => {
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    const dias = (R.by_day ?? []).filter((b) => b.day && b.day >= liveSince);
+    let diasVentana = dias;
+    if (rango !== "max" && dias.length) {
+      let ultimoDia = dias[0].day;
+      for (const d of dias) if (d.day > ultimoDia) ultimoDia = d.day;
+      const desde = parseYmd(ultimoDia);
+      desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+      diasVentana = dias.filter((d) => parseYmd(d.day) >= desde);
+    }
+    const aire = diasVentana.reduce((acc, d) => acc + (d.mentions || 0), 0);
+
+    const menc = (R.menciones ?? []).filter((m) => {
+      const day = m.date?.slice(0, 8);
+      return Boolean(day) && day >= liveSince;
+    });
+    let mencVentana = menc;
+    if (rango !== "max" && menc.length) {
+      let ultimoDia = menc[0].date!.slice(0, 8);
+      for (const m of menc) {
+        const day = m.date!.slice(0, 8);
+        if (day > ultimoDia) ultimoDia = day;
+      }
+      const desde = parseYmd(ultimoDia);
+      desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+      mencVentana = menc.filter((m) => parseYmd(m.date!.slice(0, 8)) >= desde);
+    }
+    const programas = new Set<string>();
+    const canales = new Set<string>();
+    let chat = 0;
+    for (const m of mencVentana) {
+      if (m.program) programas.add(m.program);
+      if (m.channel) canales.add(m.channel);
+      if (m.origen === "chat") chat++;
+    }
+    return { aire, chat, programas: programas.size, canales: canales.size };
+  }, [R, rango, D]);
+  const imagenMeta: Record<
+    ImagenTab,
+    { sub: string; note: string; baseLabel: string }
+  > = {
+    todo: {
+      sub: "Lo dicho al aire y la reacción del chat, en conjunto",
+      note: "La imagen completa: programas + audiencia en vivo.",
+      baseLabel: `sobre ${imagenActual.neg + imagenActual.neu + imagenActual.pos} menciones · ${rangoLabel}`,
+    },
+    aire: {
+      sub: "Lo que dijeron los programas en vivo",
+      note: "Ojo: un medio puede estar alineado o pautado.",
+      baseLabel: `sobre ${imagenActual.neg + imagenActual.neu + imagenActual.pos} menciones · ${rangoLabel}`,
+    },
+    chat: {
+      sub: "La reacción de la gente en la sala",
+      note: "Más genuino: es lo que escribe la audiencia en vivo.",
+      baseLabel: `sobre ${imagenActual.neg + imagenActual.neu + imagenActual.pos} mensajes · ${rangoLabel}`,
+    },
+  };
+  // Compara el período elegido arriba (24h/48h/semana/mes) contra el período
+  // inmediatamente anterior de igual duración (no solo "ayer vs hoy"), para
+  // que la tendencia hable el mismo idioma que el filtro de rango.
+  // "Máximo" no tiene una duración fija, así que no hay período anterior con
+  // el que comparar.
   const tendencia = useMemo(() => {
-    if (porDia.length < 2) return null;
-    const ultimo = porDia[porDia.length - 1];
-    const prev = porDia[porDia.length - 2];
+    if (rango === "max" || !porDiaCompleto.length) return null;
+    const dias = RANGO_DIAS[rango];
+    const hastaActual = parseYmd(porDiaCompleto[porDiaCompleto.length - 1].day);
+    const desdeActual = new Date(hastaActual);
+    desdeActual.setDate(desdeActual.getDate() - (dias - 1));
+    const hastaPrevio = new Date(desdeActual);
+    hastaPrevio.setDate(hastaPrevio.getDate() - 1);
+    const desdePrevio = new Date(hastaPrevio);
+    desdePrevio.setDate(desdePrevio.getDate() - (dias - 1));
+
+    const sumar = (desde: Date, hasta: Date) =>
+      porDiaCompleto.reduce(
+        (acc, d) => {
+          const day = parseYmd(d.day);
+          if (day < desde || day > hasta) return acc;
+          return {
+            total: acc.total + d.total,
+            neg: acc.neg + d.neg,
+            neu: acc.neu + d.neu,
+            pos: acc.pos + d.pos,
+          };
+        },
+        { total: 0, neg: 0, neu: 0, pos: 0 }
+      );
+
+    const actual = sumar(desdeActual, hastaActual);
+    const previo = sumar(desdePrevio, hastaPrevio);
+    if (!previo.total) return null;
+    const pct = (row: typeof actual, k: "neg" | "pos") =>
+      row.total ? Math.round((row[k] / row.total) * 100) : 0;
     return {
-      ultimo,
-      prev,
-      volDelta: ultimo.total - prev.total,
-      negUlt: pctImagen(ultimo, "neg"),
-      negPrev: pctImagen(prev, "neg"),
-      posUlt: pctImagen(ultimo, "pos"),
-      posPrev: pctImagen(prev, "pos"),
+      actual,
+      previo,
+      volDelta: actual.total - previo.total,
+      negActual: pct(actual, "neg"),
+      negPrevio: pct(previo, "neg"),
+      posActual: pct(actual, "pos"),
+      posPrevio: pct(previo, "pos"),
     };
-  }, [porDia]);
+  }, [porDiaCompleto, rango]);
+  const TENDENCIA_LABEL: Record<Exclude<Rango, "max">, string> = {
+    "24h": "vs. las 24 hs anteriores",
+    "48h": "vs. las 48 hs anteriores",
+    "7d": "vs. la semana anterior",
+    "30d": "vs. el mes anterior",
+  };
   const comparativa = useMemo(() => {
     // Cada entidad se compara contra su propia competencia (1 por entidad).
     const rival = compByEntity[slug];
@@ -825,14 +1037,78 @@ export default function PalcoPage() {
       .map((f) => ({ ...f, sovPct: Math.round((f.menciones / totalSet) * 100) }))
       .sort((a, b) => b.menciones - a.menciones);
   }, [slug, compByEntity, D]);
-  // Mejor / peor imagen del set: rankeo por net (pos − neg). Responde de una
-  // "¿quién tiene mejor y peor imagen?" sin leer toda la tabla.
+
+  // Comparación dinámica: contra todas las entidades del mismo rubro (D.index
+  // ya trae el type de cada una), no solo el rival fijo elegido en el
+  // onboarding. Muestra vos + hasta 7 más, priorizando por volumen de
+  // menciones, y guarda tu posición real dentro de todo el rubro (no solo
+  // dentro de las 8 que se ven en la tabla).
+  const comparativaRubro = useMemo(() => {
+    const mismoRubro = D.index.filter((r) => r.type === R.type && D.radars[r.slug]);
+    const otras = mismoRubro
+      .filter((r) => r.slug !== slug)
+      .map((r) => ({ slug: r.slug, menciones: mencionesRadar(D.radars[r.slug]!) }))
+      .sort((a, b) => b.menciones - a.menciones)
+      .slice(0, 7)
+      .map((r) => r.slug);
+    const slugsSet = Array.from(new Set([slug, ...otras])).filter((s) => D.radars[s]);
+    const filas = slugsSet.map((s) => {
+      const radar = D.radars[s]!;
+      const img = imagenBreakdownRadar(radar);
+      return {
+        slug: s,
+        nombre: radar.entity,
+        esVos: s === slug,
+        menciones: mencionesRadar(radar),
+        negPct: img.negPct,
+        neuPct: img.neuPct,
+        posPct: img.posPct,
+        net: img.net,
+        verdicto: img.verdicto,
+        verdictoCls: img.cls,
+        crisis: Boolean(radar.crisis),
+      };
+    });
+    const totalSet = filas.reduce((acc, f) => acc + f.menciones, 0) || 1;
+    const filasConSov = filas
+      .map((f) => ({ ...f, sovPct: Math.round((f.menciones / totalSet) * 100) }))
+      .sort((a, b) => b.menciones - a.menciones);
+    const posicion =
+      [...mismoRubro]
+        .sort((a, b) => mencionesRadar(D.radars[b.slug]!) - mencionesRadar(D.radars[a.slug]!))
+        .findIndex((r) => r.slug === slug) + 1;
+    return { filas: filasConSov, posicion, totalRubro: mismoRubro.length, rubro: R.type };
+  }, [D, R, slug]);
+
+  const filasActivas = compView === "rubro" ? comparativaRubro.filas : comparativa;
+  // Mejor / peor imagen del set activo: rankeo por net (pos − neg). Responde de
+  // una "¿quién tiene mejor y peor imagen?" sin leer toda la tabla.
   const imagenRanking = useMemo(() => {
-    if (comparativa.length < 2) return null;
-    const orden = [...comparativa].sort((a, b) => b.net - a.net);
+    if (filasActivas.length < 2) return null;
+    const orden = [...filasActivas].sort((a, b) => b.net - a.net);
     return { mejor: orden[0], peor: orden[orden.length - 1] };
-  }, [comparativa]);
-  const feed = tab === "neg" ? R.feed.filter((f) => f.sentiment === "neg") : R.feed;
+  }, [filasActivas]);
+  // Mismo recorte de fechas que el resto de "Imagen" (porDia/porCanal): sin
+  // esto, "Qué se dice" podía mostrar citas de meses atrás aunque el hero de
+  // arriba diga "24 h" — rompía la promesa de trazabilidad (click en el % →
+  // ver las citas que arman ESE número, no citas de cualquier momento).
+  const feedPeriodo = useMemo(() => {
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    const cards = (R.feed ?? []).filter((c) => {
+      const day = c.date?.slice(0, 8);
+      return Boolean(day) && day >= liveSince;
+    });
+    if (rango === "max" || !cards.length) return cards;
+    let ultimoDia = cards[0].date.slice(0, 8);
+    for (const c of cards) {
+      const day = c.date.slice(0, 8);
+      if (day > ultimoDia) ultimoDia = day;
+    }
+    const desde = parseYmd(ultimoDia);
+    desde.setDate(desde.getDate() - (RANGO_DIAS[rango] - 1));
+    return cards.filter((c) => parseYmd(c.date.slice(0, 8)) >= desde);
+  }, [R, rango, D]);
+  const feed = tab === "neg" ? feedPeriodo.filter((f) => f.sentiment === "neg") : feedPeriodo;
   const feedVisible = feed.slice(0, feedShow);
 
   // Detalle fino: TODO lo que se dijo (aire + chat), nuevo→viejo, con filtro por origen.
@@ -1211,39 +1487,92 @@ export default function PalcoPage() {
           </section>
         )}
 
-        {/* selector de entidad (oculto en panel de ejemplo) */}
-        {!isDemo && (
-        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <label className="text-[12px] font-medium text-slate-500">
-            ¿A quién querés monitorear?
-          </label>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Escribí un nombre — persona, marca, tema…"
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[15px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
-          />
-          {cats.length > 1 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {["todas", ...cats].map((c) => {
-                const on = cat === c;
-                return (
-                  <button
-                    key={c}
-                    onClick={() => setCat(c)}
-                    className={`rounded-full border px-3 py-1 text-[12px] transition ${
-                      on
-                        ? "border-slate-800 bg-slate-800 text-white"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-400"
-                    }`}
-                  >
-                    {c === "todas" ? "Todas" : c}
-                  </button>
-                );
-              })}
+        {/* selector de entidad (oculto en panel de ejemplo y cuando solo hay
+            una entidad en la watchlist — con una sola opción, el buscador
+            era puro ruido antes de llegar a la respuesta). Con varias, alcanza
+            con chips para cambiar rápido; el buscador completo (input +
+            categorías + "no lo encontramos") queda colapsado a pedido. */}
+        {!isDemo && watch.length > 1 && (
+        <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          {!buscarAbierto ? (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                {baseIndex.map((r) => {
+                  const active = r.slug === slug;
+                  return (
+                    <button
+                      key={r.slug}
+                      onClick={() => {
+                        setSlug(r.slug);
+                        setTab("todas");
+                        setFeedShow(6);
+                      }}
+                      className={`rounded-full border px-3 py-1.5 text-left text-[12px] transition ${
+                        active
+                          ? "border-[#b45309] bg-[#fbebd6] text-[#b45309]"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                      }`}
+                    >
+                      <span className="font-medium">{r.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => setBuscarAbierto(true)}
+                className="shrink-0 text-[12px] font-medium hover:underline"
+                style={{ color: BRAND }}
+              >
+                + buscar otra
+              </button>
             </div>
-          )}
-          {notFound ? (
+          ) : (
+            <>
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-[12px] font-medium text-slate-500">
+                  ¿A quién querés monitorear?
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBuscarAbierto(false);
+                    setQuery("");
+                    setCat("todas");
+                  }}
+                  className="text-[12px] font-medium text-slate-400 hover:text-slate-700"
+                >
+                  cerrar ✕
+                </button>
+              </div>
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Escribí un nombre — persona, marca, tema…"
+                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-[15px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#b45309] focus:ring-2 focus:ring-[#f5d9b0]"
+              />
+              {cats.length > 1 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["todas", ...cats].map((c) => {
+                    const on = cat === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setCat(c)}
+                        className={`rounded-full border px-3 py-1 text-[12px] transition ${
+                          on
+                            ? "border-slate-800 bg-slate-800 text-white"
+                            : "border-slate-200 bg-white text-slate-500 hover:border-slate-400"
+                        }`}
+                      >
+                        {c === "todas" ? "Todas" : c}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {notFound ? (
             catalogMatches.length > 0 ? (
               <div className="mt-3">
                 <p className="text-[12px] text-slate-500">
@@ -1319,6 +1648,8 @@ export default function PalcoPage() {
                     onClick={() => {
                       setSlug(r.slug);
                       setQuery("");
+                      setCat("todas");
+                      setBuscarAbierto(false);
                       setTab("todas");
                       setFeedShow(6);
                     }}
@@ -1336,6 +1667,8 @@ export default function PalcoPage() {
                 );
               })}
             </div>
+          )}
+            </>
           )}
         </section>
         )}
@@ -1359,166 +1692,7 @@ export default function PalcoPage() {
           </div>
         </header>
 
-        {/* KPIs */}
-        <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { k: "Menciones habladas", v: compact(R.totals.transcript_mentions), s: "en transcripción" },
-            { k: "Menciones en chat", v: compact(R.totals.chat_mentions), s: "la sala hablando" },
-            { k: "Programas", v: String(R.totals.programs_with_mentions), s: "lo nombraron" },
-            { k: "Canales", v: String(R.totals.channels), s: "cobertura" },
-          ].map((kpi) => (
-            <div key={kpi.k} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">{kpi.k}</p>
-              <p className="mt-1 text-3xl font-bold tabular-nums">{kpi.v}</p>
-              <p className="text-[12px] text-slate-400">{kpi.s}</p>
-            </div>
-          ))}
-        </section>
-
-        {/* vs. competencia (hasta 3 rivales, independiente de watchlist) */}
-        {!isDemo && (
-          <section className="mt-6">
-            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-                  Vs. competencia
-                </h2>
-                <p className="mt-1 text-[12px] text-slate-400">
-                  Cuánto se habla de cada uno y con qué imagen (rojo = negativa · verde = positiva)
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push("/onboarding?edit=1&paso=competencia")}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600 hover:border-slate-400"
-              >
-                Editar competencia
-              </button>
-            </div>
-            {comparativa.length > 1 && imagenRanking && (
-              <div className="mb-3 grid gap-2 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
-                    Mejor imagen
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                    <span className="text-[15px] font-semibold text-slate-800">
-                      {imagenRanking.mejor.nombre}
-                    </span>
-                    <span className="text-[12px] text-slate-400">
-                      · {imagenRanking.mejor.posPct}% positiva
-                    </span>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
-                    Peor imagen
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                    <span className="text-[15px] font-semibold text-slate-800">
-                      {imagenRanking.peor.nombre}
-                    </span>
-                    <span className="text-[12px] text-slate-400">
-                      · {imagenRanking.peor.negPct}% negativa
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-            {comparativa.length > 1 ? (
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <table className="w-full text-left text-[13px]">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wide text-slate-400">
-                      <th className="px-4 py-3 font-semibold">Nombre</th>
-                      <th className="px-4 py-3 font-semibold" title="Cuánto se habla de cada uno: menciones totales y qué parte de la charla del set comparado se lleva.">
-                        Se habla de
-                      </th>
-                      <th className="px-4 py-3 font-semibold" title="Cómo se habla de cada uno: rojo = negativo, gris = neutro, verde = positivo (base = sus propias menciones).">
-                        Imagen
-                      </th>
-                      <th className="hidden px-4 py-3 font-semibold sm:table-cell">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comparativa.map((f) => (
-                      <tr
-                        key={f.slug}
-                        className={`border-b border-slate-50 last:border-0 ${
-                          f.esVos ? "bg-[#fbebd6]/40" : ""
-                        }`}
-                      >
-                        <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSlug(f.slug);
-                              setTab("todas");
-                            }}
-                            className={`text-left font-semibold hover:underline ${
-                              f.esVos ? "" : "text-slate-800"
-                            }`}
-                            style={f.esVos ? { color: BRAND } : undefined}
-                          >
-                            {f.nombre}
-                          </button>
-                          {f.esVos && (
-                            <span className="ml-2 text-[10px] font-medium uppercase text-slate-400">
-                              vos
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="tabular-nums font-medium text-slate-800">
-                            {compact(f.menciones)}
-                          </div>
-                          <div className="text-[11px] text-slate-400">
-                            {f.sovPct}% de la charla
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex h-2 w-28 overflow-hidden rounded-full bg-slate-100">
-                            <div className="h-full bg-red-500" style={{ width: `${f.negPct}%` }} />
-                            <div className="h-full bg-slate-300" style={{ width: `${f.neuPct}%` }} />
-                            <div className="h-full bg-emerald-500" style={{ width: `${f.posPct}%` }} />
-                          </div>
-                          <div className={`mt-1 text-[12px] font-medium ${f.verdictoCls}`}>
-                            {f.verdicto}
-                          </div>
-                        </td>
-                        <td className="hidden px-4 py-3 sm:table-cell">
-                          {f.crisis ? (
-                            <span className="text-[12px] font-medium text-red-600">🚨 crisis</span>
-                          ) : (
-                            <span className="text-[12px] text-slate-400">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center">
-                <p className="text-[14px] text-slate-600">
-                  Elegí hasta 3 rivales para comparar volumen e imagen en el streaming.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => router.push("/onboarding?edit=1&paso=competencia")}
-                  className="mt-3 rounded-lg px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90"
-                  style={{ backgroundColor: BRAND }}
-                >
-                  Elegir competencia
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* alerta de crisis — arriba, antes de cruces y comentarios */}
+        {/* alerta de crisis — lo más urgente, antes que cualquier otra lectura */}
         {R.crisis && (
           <section className="mt-6">
             <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-red-600">
@@ -1584,159 +1758,387 @@ export default function PalcoPage() {
           </section>
         )}
 
-        {/* imagen + cómo viene en el tiempo */}
-        <section className="mt-4">
+        {/* ---------------------------------------------------------------
+            HERO: responde "qué pasó con esta persona" en un solo bloque —
+            veredicto de imagen, tendencia vs. ayer, evolución día a día y
+            volumen. La barra de imagen es clickeable: lleva a "Qué se dice"
+            ya filtrado por tono (trazabilidad: del % a la cita real). ---- */}
+        <section className="mt-6">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                 Imagen
               </h2>
               <p className="mt-1 text-[12px] text-slate-400">
-                Con qué imagen se habla · cuánto · y cómo viene
+                Qué pasó, con qué imagen y cómo viene en el tiempo
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+                {(
+                  [
+                    { id: "todo" as const, label: "Todo" },
+                    { id: "aire" as const, label: "Al aire" },
+                    { id: "chat" as const, label: "Chat" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setImagenTab(t.id)}
+                    className={`rounded-md px-3 py-1 ${
+                      imagenTab === t.id
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+                {RANGO_OPTS.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setRango(r.id)}
+                    className={`rounded-md px-3 py-1 ${
+                      rango === r.id
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className={`text-2xl font-bold ${veredictoActual.cls}`}>{veredictoActual.texto}</p>
+              <p className="text-[12px] text-slate-400">
+                {imagenTotalActual
+                  ? `sobre ${imagenTotalActual} ${imagenTab === "chat" ? "mensajes" : "menciones"} · ${rangoLabel}`
+                  : "sin datos aún"}
+              </p>
+            </div>
+
+            {tendencia && (
+              <p className="mt-1 text-[13px] text-slate-600">
+                <span className="tabular-nums">
+                  {compact(tendencia.previo.total)} → {compact(tendencia.actual.total)} menciones
+                </span>{" "}
+                {tendencia.volDelta > 0 ? (
+                  <span className="font-medium" style={{ color: BRAND }}>
+                    (hablan más)
+                  </span>
+                ) : tendencia.volDelta < 0 ? (
+                  <span className="font-medium text-slate-600">(hablan menos)</span>
+                ) : (
+                  <span className="text-slate-500">(mismo volumen)</span>
+                )}
+                {" · "}
+                {TENDENCIA_LABEL[rango as Exclude<Rango, "max">]}
+                {", imagen negativa "}
+                <span className="tabular-nums">
+                  {tendencia.negPrevio}% → {tendencia.negActual}%
+                </span>
+                {tendencia.negActual > tendencia.negPrevio + 2 ? (
+                  <span className="ml-1 font-medium text-red-600">empeoró</span>
+                ) : tendencia.negActual < tendencia.negPrevio - 2 ? (
+                  <span className="ml-1 font-medium text-emerald-600">mejoró</span>
+                ) : (
+                  <span className="ml-1 text-slate-400">estable</span>
+                )}
+              </p>
+            )}
+
+            {imagenTotalActual > 0 ? (
+              <>
+                <div
+                  className="mt-4 flex h-4 w-full overflow-hidden rounded-full bg-slate-100"
+                  title="Imagen del período: rojo negativa, gris neutra, verde positiva"
+                >
+                  <div className="h-full bg-red-500" style={{ width: `${negPctActual}%` }} />
+                  <div className="h-full bg-slate-400" style={{ width: `${neuPctActual}%` }} />
+                  <div className="h-full bg-emerald-500" style={{ width: `${posPctActual}%` }} />
+                </div>
+                <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 text-[12px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTab("neg");
+                      setFeedShow(6);
+                      document
+                        .getElementById("que-se-dice")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="text-slate-600 hover:underline"
+                  >
+                    🔴 {negPctActual}% negativa{" "}
+                    <span className="text-slate-400">({imagenActual.neg}) · ver citas →</span>
+                  </button>
+                  <span className="text-slate-500">
+                    ⚪ {neuPctActual}% neutra <span className="text-slate-400">({imagenActual.neu})</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTab("todas");
+                      setFeedShow(6);
+                      document
+                        .getElementById("que-se-dice")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="text-slate-600 hover:underline"
+                  >
+                    🟢 {posPctActual}% positiva{" "}
+                    <span className="text-slate-400">({imagenActual.pos}) · ver citas →</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="mt-4 text-[13px] text-slate-400">
+                Todavía sin mensajes clasificados para este período.
+              </p>
+            )}
+
+            {porDia.length > 0 && (
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  Cómo evolucionó
+                </h3>
+                <p className="mt-1 text-[12px] text-slate-500">
+                  Barras = cuánto se habló cada día · franja de color = imagen ese día
+                </p>
+                <div className="mt-5 flex h-48 gap-1.5">
+                  {(() => {
+                    // Con rangos largos (30 días o "máximo") hay demasiadas barras
+                    // para poner un número y una fecha arriba/abajo de cada una sin
+                    // que se pisen — se ve sucio. A partir de 15 barras se apoya
+                    // solo en la altura + el tooltip, y se muestran ~8 fechas guía.
+                    const denso = porDia.length > 14;
+                    const pasoFecha = denso ? Math.ceil(porDia.length / 8) : 1;
+                    return porDia.map((d, i) => {
+                      const volPct = d.total / maxDiaVol;
+                      const mostrarFecha = !denso || i % pasoFecha === 0 || i === porDia.length - 1;
+                      return (
+                        <div
+                          key={d.day}
+                          className="flex min-w-0 flex-1 flex-col h-full"
+                          title={`${fmtDay(d.day)}: ${d.total} menciones · ${pctImagen(d, "neg")}% neg · ${pctImagen(d, "pos")}% pos`}
+                        >
+                          {!denso && (
+                            <span className="shrink-0 text-center text-[10px] tabular-nums text-slate-400">
+                              {compact(d.total)}
+                            </span>
+                          )}
+                          <div className="flex min-h-0 flex-1 items-end pt-1">
+                            <div
+                              className="w-full rounded-t"
+                              style={{
+                                height: `${Math.max(volPct * 100, d.total > 0 ? 6 : 0)}%`,
+                                minHeight: d.total > 0 ? 4 : 0,
+                                background: `linear-gradient(to top, ${BRAND}, #f0a44e)`,
+                              }}
+                            />
+                          </div>
+                          <div className="mt-1 shrink-0">
+                            <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-100">
+                              {d.total > 0 ? (
+                                <>
+                                  <div
+                                    className="bg-red-500"
+                                    style={{ width: `${(d.neg / d.total) * 100}%` }}
+                                  />
+                                  <div
+                                    className="bg-slate-400"
+                                    style={{ width: `${(d.neu / d.total) * 100}%` }}
+                                  />
+                                  <div
+                                    className="bg-emerald-500"
+                                    style={{ width: `${(d.pos / d.total) * 100}%` }}
+                                  />
+                                </>
+                              ) : null}
+                            </div>
+                          </div>
+                          <span className="shrink-0 pt-1 text-center text-[9px] text-slate-400">
+                            {mostrarFecha ? fmtDay(d.day) : ""}
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            )}
+
+            <p className="mt-4 text-[11px] text-slate-400">{imagenMeta[imagenTab].note}</p>
+          </div>
+
+          {/* contexto de volumen del mismo período — secundario, no compite
+              con el veredicto, pero ahora sí cuenta la misma historia */}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { k: "Al aire", v: compact(statsPeriodo.aire), s: `en transcripción · ${rangoLabel}` },
+              { k: "En el chat", v: compact(statsPeriodo.chat), s: "la sala hablando" },
+              { k: "Programas", v: String(statsPeriodo.programas), s: "lo nombraron" },
+              { k: "Canales", v: String(statsPeriodo.canales), s: "cobertura" },
+            ].map((kpi) => (
+              <div key={kpi.k} className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wide text-slate-400">{kpi.k}</p>
+                <p className="text-[18px] font-bold tabular-nums text-slate-800">{kpi.v}</p>
+                <p className="text-[10.5px] text-slate-400">{kpi.s}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------
+            QUÉ SE DICE: citas reales que explican el número de arriba, no
+            solo un porcentaje. Responde "con qué tono se habla de esta
+            persona", con evidencia (clip / mensaje de chat) por cada una. -- */}
+        <section id="que-se-dice" className="mt-10 scroll-mt-6">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+                Qué se dice
+              </h2>
+              <p className="mt-1 max-w-xl text-[12px] text-slate-400">
+                Una cita al aire por programa donde apareció, con qué tono, ordenada por
+                audiencia en vivo — del mismo período elegido arriba ({rangoLabel}). No es el
+                listado completo — eso está en{" "}
+                <a href="#detalle-menciones" className="font-medium hover:underline" style={{ color: BRAND }}>
+                  Todo lo que se dijo
+                </a>
+                . El chat solo se muestra si el canal tiene sala capturada (Luzu, por ejemplo, no).
               </p>
             </div>
             <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
-              {(
-                [
-                  { id: "todo" as const, label: "Todo" },
-                  { id: "aire" as const, label: "Al aire" },
-                  { id: "chat" as const, label: "Chat" },
-                ] as const
-              ).map((t) => (
+              {(["todas", "neg"] as const).map((t) => (
                 <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setImagenTab(t.id)}
+                  key={t}
+                  onClick={() => {
+                    setTab(t);
+                    setFeedShow(6);
+                  }}
                   className={`rounded-md px-3 py-1 ${
-                    imagenTab === t.id
+                    tab === t
                       ? "bg-slate-900 text-white"
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
-              {RANGO_OPTS.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => setRango(r.id)}
-                  className={`rounded-md px-3 py-1 ${
-                    rango === r.id
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  {r.label}
+                  {t === "todas" ? "Todas" : "Imagen negativa"}
                 </button>
               ))}
             </div>
           </div>
 
-          {tendencia && (
-            <div className="mb-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] text-slate-600">
-              <span className="font-semibold text-slate-800">vs. el día anterior · </span>
-              <span className="tabular-nums">
-                {compact(tendencia.prev.total)} → {compact(tendencia.ultimo.total)} menciones
-              </span>
-              <span className="text-slate-400"> · </span>
-              {tendencia.volDelta > 0 ? (
-                <span className="font-medium" style={{ color: BRAND }}>hablan más</span>
-              ) : tendencia.volDelta < 0 ? (
-                <span className="font-medium text-slate-600">hablan menos</span>
-              ) : (
-                <span className="text-slate-500">mismo volumen</span>
-              )}
-              <span className="text-slate-400"> · </span>
-              <span>
-                imagen negativa {tendencia.negPrev}% → {tendencia.negUlt}%
-              </span>
-              {tendencia.negUlt > tendencia.negPrev + 2 ? (
-                <span className="ml-1 font-medium text-red-600">(empeoró)</span>
-              ) : tendencia.negUlt < tendencia.negPrev - 2 ? (
-                <span className="ml-1 font-medium text-emerald-600">(mejoró)</span>
-              ) : (
-                <span className="ml-1 text-slate-400">(estable)</span>
-              )}
+          {feedVisible.length === 0 ? (
+            <p className="rounded-xl border border-slate-200 bg-white p-6 text-center text-[13px] text-slate-400">
+              Sin menciones negativas en el período.
+            </p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {feedVisible.map((c) => {
+                const s = SENT[c.sentiment];
+                const o = c.origen ? ORIGEN[c.origen] : null;
+                const conChat = (c.chat_ratio ?? 0) > 0 || (c.chat_msgs ?? 0) > 0;
+                return (
+                  <article
+                    key={c.video_id + c.t_seconds}
+                    className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[13px] font-semibold text-slate-800">{c.channel}</span>
+                      <span className={`rounded-full border px-2 py-0.5 text-[11px] ${s.cls}`}>
+                        {s.dot} {s.label}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[12px] text-slate-400 line-clamp-1">{c.program}</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {o && (
+                        <OrigenPill origen={o.origen} cls={o.cls} label={o.label} />
+                      )}
+                      {c.formato && (
+                        <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10.5px] text-slate-500">
+                          {c.formato}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-2 flex-1 text-[13.5px] italic leading-relaxed text-slate-700 line-clamp-3">
+                      &ldquo;{c.quote}&rdquo;
+                    </p>
+                    {c.chat_ex?.[0] && (
+                      <p className="mt-2 flex items-start gap-1.5 rounded-md bg-slate-50 px-2.5 py-1.5 text-[12px] text-slate-500">
+                        <IconChat className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <span>la sala: «{c.chat_ex[0]}»</span>
+                      </p>
+                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-slate-500">
+                      <span className="inline-flex items-center gap-1">
+                        <IconEye className="h-3.5 w-3.5" />
+                        <b className="tabular-nums text-slate-800">{compact(c.conc_at)}</b>
+                        <span className="text-slate-400">en vivo</span>
+                      </span>
+                      {conChat ? (
+                        <span className="inline-flex items-center gap-1">
+                          <IconChat className="h-3.5 w-3.5" />
+                          <b className="tabular-nums" style={{ color: BRAND }}>
+                            ×{c.chat_ratio}
+                          </b>
+                          <span className="text-slate-400">chat</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-slate-300">sin chat en este canal</span>
+                      )}
+                      <span>{fmtDay(c.date)} · {c.t_label}</span>
+                      <a
+                        href={c.yt_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="ml-auto inline-flex items-center gap-1 font-medium hover:underline"
+                        style={{ color: BRAND }}
+                      >
+                        <IconPlay className="h-3.5 w-3.5" />
+                        {c.clip_label || "clip"}
+                      </a>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
 
-          {porDia.length > 0 ? (
-            <div className="mb-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Cómo viene
-              </h3>
-              <p className="mt-1 text-[12px] text-slate-500">
-                Barras = cuánto se habló cada día · franja de color = imagen ese día
-              </p>
-              <div className="mt-5 flex h-48 gap-1.5">
-                {porDia.map((d) => {
-                  const volPct = d.total / maxDiaVol;
-                  return (
-                    <div
-                      key={d.day}
-                      className="flex min-w-0 flex-1 flex-col h-full"
-                      title={`${fmtDay(d.day)}: ${d.total} menciones · ${pctImagen(d, "neg")}% neg · ${pctImagen(d, "pos")}% pos`}
-                    >
-                      <span className="shrink-0 text-center text-[10px] tabular-nums text-slate-400">
-                        {compact(d.total)}
-                      </span>
-                      <div className="flex min-h-0 flex-1 items-end pt-1">
-                        <div
-                          className="w-full rounded-t"
-                          style={{
-                            height: `${Math.max(volPct * 100, d.total > 0 ? 6 : 0)}%`,
-                            minHeight: d.total > 0 ? 4 : 0,
-                            background: `linear-gradient(to top, ${BRAND}, #f0a44e)`,
-                          }}
-                        />
-                      </div>
-                      <div className="mt-1 shrink-0">
-                        <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-100">
-                          {d.total > 0 ? (
-                            <>
-                              <div
-                                className="bg-red-500"
-                                style={{ width: `${(d.neg / d.total) * 100}%` }}
-                              />
-                              <div
-                                className="bg-slate-400"
-                                style={{ width: `${(d.neu / d.total) * 100}%` }}
-                              />
-                              <div
-                                className="bg-emerald-500"
-                                style={{ width: `${(d.pos / d.total) * 100}%` }}
-                              />
-                            </>
-                          ) : null}
-                        </div>
-                      </div>
-                      <span className="shrink-0 pt-1 text-center text-[9px] text-slate-400">
-                        {fmtDay(d.day)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+          {feed.length > feedShow && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={() => setFeedShow((n) => n + 6)}
+                className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-[13px] font-medium text-slate-700 hover:border-slate-400"
+              >
+                Ver más programas ({feed.length - feedShow} restantes)
+              </button>
+              <a
+                href="#detalle-menciones"
+                className="text-[13px] font-medium hover:underline"
+                style={{ color: BRAND }}
+              >
+                Ir al detalle completo →
+              </a>
             </div>
-          ) : null}
-
-          <ImagenThermo
-            title="Hoy en el período"
-            sub={imagenMeta[imagenTab].sub}
-            note={imagenMeta[imagenTab].note}
-            s={imagenActual}
-            baseLabel={imagenMeta[imagenTab].baseLabel}
-          />
+          )}
         </section>
 
-        {/* dónde más se habló · con qué imagen (por canal, conglomerado) */}
+        {/* ---------------------------------------------------------------
+            DÓNDE SE HABLA MÁS: por canal, con qué tono. Cada canal se abre
+            para ver las citas reales que arman ese número (trazabilidad). -- */}
         {porCanal.length > 0 && (
-          <section className="mt-4">
+          <section className="mt-10">
             <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-              Dónde más se habló · con qué imagen
+              Dónde se habla más
             </h2>
             <p className="mt-1 text-[12px] text-slate-400">
               {imagenTab === "todo"
@@ -1744,41 +2146,287 @@ export default function PalcoPage() {
                 : imagenTab === "aire"
                   ? "Por canal · solo lo dicho al aire"
                   : "Por canal · solo el chat de la audiencia"}
+              {" · "}
+              {rangoLabel} · tocá un canal para ver las citas
             </p>
             <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="space-y-3">
                 {porCanal.map((c) => {
                   const dom = imagenDominante(c);
+                  const abierto = canalAbierto === c.channel;
+                  const citas = (mencionesPorCanalMap.get(c.channel) ?? [])
+                    .slice()
+                    .sort((a, b) => (b.conc_at ?? 0) - (a.conc_at ?? 0))
+                    .slice(0, 3);
                   return (
-                    <div key={c.channel} className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="w-28 shrink-0 truncate text-[12px] font-medium text-slate-700">
-                        {c.channel}
-                      </span>
-                      <div className="h-3 w-20 shrink-0 overflow-hidden rounded bg-slate-100 sm:w-28">
-                        <div
-                          className="h-full rounded"
-                          style={{
-                            width: `${(c.total / maxCanal) * 100}%`,
-                            backgroundColor: BRAND,
-                          }}
-                        />
-                      </div>
-                      <span className="w-10 shrink-0 text-right text-[12px] tabular-nums text-slate-500">
-                        {compact(c.total)}
-                      </span>
-                      <MiniImagenBar s={c} />
-                      {dom && (
-                        <span
-                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${SENT[dom].cls}`}
-                        >
-                          {SENT[dom].dot} {dom === "neg" ? "negativa" : dom === "pos" ? "positiva" : "neutra"}
+                    <div key={c.channel} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                      <button
+                        type="button"
+                        onClick={() => setCanalAbierto(abierto ? null : c.channel)}
+                        className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-left hover:opacity-80"
+                      >
+                        <span className="w-28 shrink-0 truncate text-[12px] font-medium text-slate-700">
+                          {c.channel}
                         </span>
+                        <div className="h-3 w-20 shrink-0 overflow-hidden rounded bg-slate-100 sm:w-28">
+                          <div
+                            className="h-full rounded"
+                            style={{
+                              width: `${(c.total / maxCanal) * 100}%`,
+                              backgroundColor: BRAND,
+                            }}
+                          />
+                        </div>
+                        <span className="w-10 shrink-0 text-right text-[12px] tabular-nums text-slate-500">
+                          {compact(c.total)}
+                        </span>
+                        <MiniImagenBar s={c} />
+                        {dom && (
+                          <span
+                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${SENT[dom].cls}`}
+                          >
+                            {SENT[dom].dot} {dom === "neg" ? "negativa" : dom === "pos" ? "positiva" : "neutra"}
+                          </span>
+                        )}
+                        <span className="ml-auto shrink-0 text-[11px] text-slate-400">
+                          {abierto ? "ocultar citas ▲" : "ver citas ▼"}
+                        </span>
+                      </button>
+                      {abierto && (
+                        <div className="mt-2 space-y-2 rounded-lg bg-slate-50 p-3">
+                          {citas.length === 0 ? (
+                            <p className="text-[12px] text-slate-400">
+                              Sin citas textuales para este canal en el período.
+                            </p>
+                          ) : (
+                            citas.map((m, i) => {
+                              const s = m.sentiment ? SENT[m.sentiment] : null;
+                              const esChat = m.origen === "chat";
+                              return (
+                                <p
+                                  key={m.video_id + m.origen + m.t_seconds + i}
+                                  className="text-[12.5px] leading-relaxed text-slate-700"
+                                >
+                                  <span className={esChat ? "" : "italic"}>
+                                    {esChat ? m.text : <>&ldquo;{m.quote}&rdquo;</>}
+                                  </span>
+                                  <span className="ml-2 text-slate-400">
+                                    {m.program} · {fmtDay(m.date)} · {m.t_label}
+                                  </span>
+                                  {s && (
+                                    <span className={`ml-2 rounded-full border px-1.5 py-0.5 text-[10px] ${s.cls}`}>
+                                      {s.dot} {s.label}
+                                    </span>
+                                  )}
+                                  {!esChat && (
+                                    <a
+                                      href={m.yt_url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="ml-2 font-medium hover:underline"
+                                      style={{ color: BRAND }}
+                                    >
+                                      ver clip
+                                    </a>
+                                  )}
+                                </p>
+                              );
+                            })
+                          )}
+                        </div>
                       )}
                     </div>
                   );
                 })}
               </div>
             </div>
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------
+            Contexto secundario: cómo estoy vs. el rubro / mi competencia, y
+            cruces con otras entidades. Responden otra pregunta ("cómo estoy
+            vs. otros"), no "qué pasó con esta persona" — quedan más abajo. */}
+        {!isDemo && (
+          <section className="mt-12 border-t border-slate-200 pt-8">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+                  Comparación
+                </h2>
+                <p className="mt-1 text-[12px] text-slate-400">
+                  {compView === "rubro"
+                    ? `Cuánto se habla de cada ${R.type.toLowerCase()} y con qué imagen (rojo = negativa · verde = positiva)`
+                    : "Cuánto se habla de cada uno y con qué imagen (rojo = negativa · verde = positiva)"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
+                  <button
+                    type="button"
+                    onClick={() => setCompView("rubro")}
+                    className={`rounded-md px-3 py-1 ${
+                      compView === "rubro" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Todo el rubro
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCompView("fija")}
+                    className={`rounded-md px-3 py-1 ${
+                      compView === "fija" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Mi competencia
+                  </button>
+                </div>
+                {compView === "fija" && (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/onboarding?edit=1&paso=competencia")}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600 hover:border-slate-400"
+                  >
+                    Editar competencia
+                  </button>
+                )}
+              </div>
+            </div>
+            {compView === "rubro" && comparativaRubro.totalRubro > 1 && (
+              <p className="mb-3 text-[13px] text-slate-600">
+                Estás en el puesto <b className="tabular-nums">{comparativaRubro.posicion}</b> de{" "}
+                <b className="tabular-nums">{comparativaRubro.totalRubro}</b> en volumen de
+                menciones dentro de {R.type.toLowerCase()}. Se muestran vos y los 7 con más
+                volumen del rubro.
+              </p>
+            )}
+            {filasActivas.length > 1 && imagenRanking && (
+              <div className="mb-3 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Mejor imagen
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-[15px] font-semibold text-slate-800">
+                      {imagenRanking.mejor.nombre}
+                    </span>
+                    <span className="text-[12px] text-slate-400">
+                      · {imagenRanking.mejor.posPct}% positiva
+                    </span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                    Peor imagen
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <span className="text-[15px] font-semibold text-slate-800">
+                      {imagenRanking.peor.nombre}
+                    </span>
+                    <span className="text-[12px] text-slate-400">
+                      · {imagenRanking.peor.negPct}% negativa
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {filasActivas.length > 1 ? (
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wide text-slate-400">
+                      <th className="px-4 py-3 font-semibold">Nombre</th>
+                      <th className="px-4 py-3 font-semibold" title="Cuánto se habla de cada uno: menciones totales y qué parte de la charla del set comparado se lleva.">
+                        Se habla de
+                      </th>
+                      <th className="px-4 py-3 font-semibold" title="Cómo se habla de cada uno: rojo = negativo, gris = neutro, verde = positivo (base = sus propias menciones).">
+                        Imagen
+                      </th>
+                      <th className="hidden px-4 py-3 font-semibold sm:table-cell">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filasActivas.map((f) => (
+                      <tr
+                        key={f.slug}
+                        className={`border-b border-slate-50 last:border-0 ${
+                          f.esVos ? "bg-[#fbebd6]/40" : ""
+                        }`}
+                      >
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSlug(f.slug);
+                              setTab("todas");
+                            }}
+                            className={`text-left font-semibold hover:underline ${
+                              f.esVos ? "" : "text-slate-800"
+                            }`}
+                            style={f.esVos ? { color: BRAND } : undefined}
+                          >
+                            {f.nombre}
+                          </button>
+                          {f.esVos && (
+                            <span className="ml-2 text-[10px] font-medium uppercase text-slate-400">
+                              vos
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="tabular-nums font-medium text-slate-800">
+                            {compact(f.menciones)}
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            {f.sovPct}% de la charla
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex h-2 w-28 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full bg-red-500" style={{ width: `${f.negPct}%` }} />
+                            <div className="h-full bg-slate-300" style={{ width: `${f.neuPct}%` }} />
+                            <div className="h-full bg-emerald-500" style={{ width: `${f.posPct}%` }} />
+                          </div>
+                          <div className={`mt-1 text-[12px] font-medium ${f.verdictoCls}`}>
+                            {f.verdicto}
+                          </div>
+                        </td>
+                        <td className="hidden px-4 py-3 sm:table-cell">
+                          {f.crisis ? (
+                            <span className="text-[12px] font-medium text-red-600">🚨 crisis</span>
+                          ) : (
+                            <span className="text-[12px] text-slate-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : compView === "rubro" ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center">
+                <p className="text-[14px] text-slate-600">
+                  Todavía no hay más nombres con radar activo en {R.type.toLowerCase()} para
+                  comparar. En cuanto sumemos más entidades del rubro, aparecen acá solas.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center">
+                <p className="text-[14px] text-slate-600">
+                  Elegí un rival fijo para comparar volumen e imagen en el streaming.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push("/onboarding?edit=1&paso=competencia")}
+                  className="mt-3 rounded-lg px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90"
+                  style={{ backgroundColor: BRAND }}
+                >
+                  Elegir competencia
+                </button>
+              </div>
+            )}
           </section>
         )}
 
@@ -1913,137 +2561,6 @@ export default function PalcoPage() {
             </div>
           </section>
         )}
-
-        {/* destacados: una cita por programa (resumen), no es el detalle completo */}
-        <section className="mt-8">
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-                Destacados por programa
-              </h2>
-              <p className="mt-1 max-w-xl text-[12px] text-slate-400">
-                Una cita al aire por programa donde apareció, ordenada por audiencia en vivo.
-                No es el listado completo — eso está en{" "}
-                <a href="#detalle-menciones" className="font-medium hover:underline" style={{ color: BRAND }}>
-                  Todo lo que se dijo
-                </a>
-                . El chat solo se muestra si el canal tiene sala capturada (Luzu, por ejemplo, no).
-              </p>
-            </div>
-            <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-0.5 text-[12px]">
-              {(["todas", "neg"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => {
-                    setTab(t);
-                    setFeedShow(6);
-                  }}
-                  className={`rounded-md px-3 py-1 ${
-                    tab === t
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  {t === "todas" ? "Todas" : "Imagen negativa"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {feedVisible.length === 0 ? (
-            <p className="rounded-xl border border-slate-200 bg-white p-6 text-center text-[13px] text-slate-400">
-              Sin menciones negativas en el período.
-            </p>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {feedVisible.map((c) => {
-                const s = SENT[c.sentiment];
-                const o = c.origen ? ORIGEN[c.origen] : null;
-                const conChat = (c.chat_ratio ?? 0) > 0 || (c.chat_msgs ?? 0) > 0;
-                return (
-                  <article
-                    key={c.video_id + c.t_seconds}
-                    className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-slate-800">{c.channel}</span>
-                      <span className={`rounded-full border px-2 py-0.5 text-[11px] ${s.cls}`}>
-                        {s.dot} {s.label}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[12px] text-slate-400 line-clamp-1">{c.program}</p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {o && (
-                        <OrigenPill origen={o.origen} cls={o.cls} label={o.label} />
-                      )}
-                      {c.formato && (
-                        <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10.5px] text-slate-500">
-                          {c.formato}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-2 flex-1 text-[13.5px] italic leading-relaxed text-slate-700 line-clamp-3">
-                      &ldquo;{c.quote}&rdquo;
-                    </p>
-                    {c.chat_ex?.[0] && (
-                      <p className="mt-2 flex items-start gap-1.5 rounded-md bg-slate-50 px-2.5 py-1.5 text-[12px] text-slate-500">
-                        <IconChat className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                        <span>la sala: «{c.chat_ex[0]}»</span>
-                      </p>
-                    )}
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-slate-500">
-                      <span className="inline-flex items-center gap-1">
-                        <IconEye className="h-3.5 w-3.5" />
-                        <b className="tabular-nums text-slate-800">{compact(c.conc_at)}</b>
-                        <span className="text-slate-400">en vivo</span>
-                      </span>
-                      {conChat ? (
-                        <span className="inline-flex items-center gap-1">
-                          <IconChat className="h-3.5 w-3.5" />
-                          <b className="tabular-nums" style={{ color: BRAND }}>
-                            ×{c.chat_ratio}
-                          </b>
-                          <span className="text-slate-400">chat</span>
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-slate-300">sin chat en este canal</span>
-                      )}
-                      <span>{fmtDay(c.date)} · {c.t_label}</span>
-                      <a
-                        href={c.yt_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-auto inline-flex items-center gap-1 font-medium hover:underline"
-                        style={{ color: BRAND }}
-                      >
-                        <IconPlay className="h-3.5 w-3.5" />
-                        {c.clip_label || "clip"}
-                      </a>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-
-          {feed.length > feedShow && (
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick={() => setFeedShow((n) => n + 6)}
-                className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-[13px] font-medium text-slate-700 hover:border-slate-400"
-              >
-                Ver más programas ({feed.length - feedShow} restantes)
-              </button>
-              <a
-                href="#detalle-menciones"
-                className="text-[13px] font-medium hover:underline"
-                style={{ color: BRAND }}
-              >
-                Ir al detalle completo →
-              </a>
-            </div>
-          )}
-        </section>
 
         {/* TODO lo que se dijo — línea de tiempo completa (aire + chat), nuevo→viejo */}
         <section id="detalle-menciones" className="mt-8 scroll-mt-6">
