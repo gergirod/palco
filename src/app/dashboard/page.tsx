@@ -130,6 +130,14 @@ type Data = {
  *  el pipeline lo calcule y lo escriba en el dataset (live_since). */
 const LIVE_SINCE_DEFAULT = "20260623";
 
+/** Piso de menciones (dentro de la ventana elegida) para entrar al ranking de
+ *  imagen del Top del catálogo — evita que una entidad con 1-2 menciones
+ *  "gane" con un 100% que no es representativo de nada. */
+const MIN_MENCIONES_IMAGEN = 20;
+/** Ventanas que ofrece el Top del catálogo: 24 h / semana / mes (sin "48 h" ni
+ *  "máximo" — ese panel es sobre actividad reciente, no histórico completo). */
+const TOP_RANGO_IDS: Rango[] = ["24h", "7d", "30d"];
+
 const BUNDLED = bundled as unknown as Data;
 
 type CatalogCurated = { slug: string; name: string; type: string; alias: string[] };
@@ -495,6 +503,15 @@ export default function PalcoPage() {
   // abre a pedido. Por default va colapsado: con una sola entidad no tiene
   // sentido mostrarlo, y con varias alcanza con los chips para cambiar rápido.
   const [buscarAbierto, setBuscarAbierto] = useState(false);
+  // Top del catálogo: colapsado por default (vidriera de todo streaming
+  // argentino trackeado, no solo la watchlist). Ventana propia (no comparte
+  // "rango" con la sección Imagen de la entidad enfocada) porque es un panel
+  // aparte, a nivel catálogo.
+  const [topCatalogoAbierto, setTopCatalogoAbierto] = useState(false);
+  const [topCatalogoTab, setTopCatalogoTab] = useState<
+    "menciones" | "positiva" | "negativa"
+  >("menciones");
+  const [topRango, setTopRango] = useState<Rango>("24h");
   const [tab, setTab] = useState<"todas" | "neg">("todas");
   const [logOrigen, setLogOrigen] = useState<"todas" | "aire" | "chat">("todas");
   const [logRango, setLogRango] = useState<Rango>("7d");
@@ -599,6 +616,50 @@ export default function PalcoPage() {
   }, []);
 
   const R = D.radars[slug] ?? D.radars[D.default];
+
+  // Top del catálogo completo: quién más se habla y quién tiene mejor/peor
+  // imagen en TODO streaming argentino trackeado (no solo la watchlist del
+  // usuario) — misma ventana temporal que el resto del tablero (24 h / semana
+  // / mes), acumulado dentro de esa ventana, no histórico de toda la vida.
+  // Piso de MIN_MENCIONES_IMAGEN en la ventana elegida para que una entidad
+  // con 2 menciones (las 2 positivas) no gane "100% positivo" sin decir nada.
+  const topCatalogo = useMemo(() => {
+    const liveSince = D.live_since || LIVE_SINCE_DEFAULT;
+    const filas = D.index.map((r) => {
+      const radar = D.radars[r.slug];
+      const menc = mencionesEnRango(radar?.menciones ?? [], topRango, liveSince);
+      let neg = 0;
+      let neu = 0;
+      let pos = 0;
+      for (const m of menc) {
+        if (m.sentiment === "neg") neg++;
+        else if (m.sentiment === "pos") pos++;
+        else neu++;
+      }
+      const total = neg + neu + pos || 1;
+      const negPct = Math.round((neg / total) * 100);
+      const posPct = Math.round((pos / total) * 100);
+      return {
+        slug: r.slug,
+        name: r.name,
+        type: r.type,
+        mentions: menc.length,
+        negPct,
+        posPct,
+        net: posPct - negPct,
+      };
+    });
+    const conMenciones = filas.filter((f) => f.mentions > 0);
+    const menciones = [...conMenciones]
+      .sort((a, b) => b.mentions - a.mentions)
+      .slice(0, 20);
+    const elegiblesImagen = conMenciones.filter(
+      (f) => f.mentions >= MIN_MENCIONES_IMAGEN
+    );
+    const positiva = [...elegiblesImagen].sort((a, b) => b.net - a.net).slice(0, 20);
+    const negativa = [...elegiblesImagen].sort((a, b) => a.net - b.net).slice(0, 20);
+    return { menciones, positiva, negativa };
+  }, [D, topRango]);
 
   // Catálogo base: si hay watchlist del onboarding, se limita a esas entidades.
   const baseIndex = useMemo(
@@ -1466,6 +1527,116 @@ export default function PalcoPage() {
       </Sheet>
 
       <div className="mx-auto max-w-[1100px] px-5 py-8">
+        {/* Top del catálogo: colapsado por default, arriba de todo. Vidriera
+            de TODO streaming argentino trackeado (no solo tu watchlist):
+            quién más se habla y quién tiene mejor/peor imagen, acumulado en
+            la ventana elegida (24 h / semana / mes). */}
+        <section className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <button
+            type="button"
+            onClick={() => setTopCatalogoAbierto((v) => !v)}
+            className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
+          >
+            <div>
+              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+                Top del catálogo
+              </h2>
+              <p className="mt-0.5 text-[12px] text-slate-400">
+                Todo streaming argentino que trackeamos ({D.index.length} entidades) — no solo lo que seguís
+              </p>
+            </div>
+            <span className="shrink-0 text-[13px] font-medium text-slate-500">
+              {topCatalogoAbierto ? "Ocultar ▲" : "Ver ▼"}
+            </span>
+          </button>
+
+          {topCatalogoAbierto && (
+            <div className="border-t border-slate-200 px-4 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {/* tabs: qué ranking */}
+                <div className="flex gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[13px]">
+                  {(
+                    [
+                      { id: "menciones", label: "Más mencionados" },
+                      { id: "positiva", label: "Mejor imagen" },
+                      { id: "negativa", label: "Peor imagen" },
+                    ] as const
+                  ).map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTopCatalogoTab(t.id)}
+                      className={`rounded-md px-3 py-1.5 font-medium ${
+                        topCatalogoTab === t.id
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                {/* ventana: 24 h / semana / mes */}
+                <div className="flex gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[13px]">
+                  {TOP_RANGO_IDS.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setTopRango(id)}
+                      className={`rounded-md px-3 py-1.5 font-medium ${
+                        topRango === id
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      {RANGO_OPTS.find((r) => r.id === id)?.label ?? id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <ol className="mt-3 divide-y divide-slate-100">
+                {topCatalogo[topCatalogoTab].map((r, i) => (
+                  <li key={r.slug} className="flex items-center justify-between gap-3 py-2">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="w-5 shrink-0 text-right text-[12px] tabular-nums text-slate-400">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold text-slate-800">
+                          {r.name}
+                        </p>
+                        <p className="text-[11px] text-slate-400">{r.type}</p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right text-[12px]">
+                      {topCatalogoTab === "menciones" ? (
+                        <span className="font-semibold tabular-nums text-slate-700">
+                          {compact(r.mentions)} menc.
+                        </span>
+                      ) : (
+                        <span
+                          className={`font-semibold tabular-nums ${
+                            topCatalogoTab === "positiva" ? "text-emerald-600" : "text-red-600"
+                          }`}
+                        >
+                          {topCatalogoTab === "positiva" ? r.posPct : r.negPct}%{" "}
+                          {topCatalogoTab === "positiva" ? "positivo" : "negativo"}
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              {topCatalogo[topCatalogoTab].length === 0 && (
+                <p className="mt-3 text-center text-[12px] text-slate-400">
+                  Todavía no hay suficientes menciones en esta ventana para armar el ranking.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+
         {/* panel de alertas */}
         {alertas.length > 0 && (
           <section className="mb-5 rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
