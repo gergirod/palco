@@ -71,6 +71,9 @@ export default function Landing() {
             {APP_NAME}<span className="text-signal-bright">.</span>
           </Link>
           <nav className="flex items-center gap-3 sm:gap-2">
+            <Link href="/explorar" className="text-sm font-medium text-muted hidden sm:inline-flex">
+              Explorar gratis
+            </Link>
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
               Ingresar
             </Link>
@@ -221,9 +224,14 @@ export default function Landing() {
             {APP_NAME}<span className="text-signal-bright">.</span>
           </span>
           <span>Monitoreo del streaming en vivo · Argentina</span>
-          <Link href="/login" className="text-signal font-medium">
-            Ingresar
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/explorar" className="text-signal font-medium">
+              Explorar gratis
+            </Link>
+            <Link href="/login" className="text-signal font-medium">
+              Ingresar
+            </Link>
+          </div>
         </div>
       </footer>
     </main>
