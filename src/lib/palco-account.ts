@@ -21,6 +21,10 @@ export type AvisosConfig = {
   solo_negativo: boolean;
   frecuencia: "al-toque" | "diario" | "semanal";
   email_contacto?: string;
+  /** Avisar cuando alguno de tus seguidos entra al Top 10 del Pulso (ranking
+   *  de menciones del catálogo). Lo evalúa palco_alerts.py junto al resto de
+   *  reglas — este campo solo guarda la preferencia del cliente. */
+  avisa_top_pulso?: boolean;
 };
 
 export type AccountStatus = "pending" | "trial" | "active" | "blocked";

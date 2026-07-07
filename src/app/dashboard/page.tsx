@@ -8,6 +8,7 @@ import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
 import Sheet from "@/components/Sheet";
 import { matchesQuery } from "@/lib/palco-watchlist";
+import { rankNombresHoy } from "@/lib/pulso";
 import { fetchDataset } from "@/lib/supabase";
 import { PaywallExpired } from "@/components/palco/PaywallExpired";
 import {
@@ -531,7 +532,11 @@ export default function PalcoPage() {
   const [sensibilidad, setSensibilidad] = useState<Sensibilidad>("equilibrado");
   const [soloNegativo, setSoloNegativo] = useState(false);
   const [frecuencia, setFrecuencia] = useState<Frecuencia>("diario");
+  const [avisaTopPulso, setAvisaTopPulso] = useState(false);
   const [email, setEmail] = useState("");
+  // Pulso (Top del catálogo, mejorado): qué fila está expandida mostrando el
+  // "minuto exacto" (audiencia en vivo + reacción de chat de una mención real).
+  const [pulsoExpandido, setPulsoExpandido] = useState<string | null>(null);
   const [cruceShow, setCruceShow] = useState<Record<string, number>>({});
   // Canal abierto en "Dónde se habla más": al hacer click se despliegan las
   // citas reales que arman ese número (trazabilidad número → fuente).
@@ -584,6 +589,7 @@ export default function PalcoPage() {
         if (a.sensibilidad) setSensibilidad(a.sensibilidad);
         setSoloNegativo(!!a.solo_negativo);
         if (a.frecuencia) setFrecuencia(a.frecuencia);
+        setAvisaTopPulso(!!a.avisa_top_pulso);
         setEmail(a.email_contacto || acc.email || "");
         setAccountReady(true);
         return;
@@ -662,6 +668,15 @@ export default function PalcoPage() {
     return { menciones, positiva, negativa };
   }, [D, topRango]);
 
+  // Movimiento "hoy vs ayer" por nombre (independiente de la ventana del Top),
+  // para la flecha del Pulso — mismo criterio que /pulso público.
+  const hoyAyerMap = useMemo(() => {
+    const rows = rankNombresHoy(D.radars as any, Object.keys(D.radars).length || 1);
+    const map = new Map<string, { hoy: number; ayer: number | null }>();
+    for (const r of rows) map.set(r.slug, { hoy: r.hoy, ayer: r.ayer });
+    return map;
+  }, [D]);
+
   // Catálogo base: si hay watchlist del onboarding, se limita a esas entidades.
   const baseIndex = useMemo(
     () => (watch.length ? D.index.filter((r) => watch.includes(r.slug)) : D.index),
@@ -737,6 +752,7 @@ export default function PalcoPage() {
           sensibilidad,
           solo_negativo: soloNegativo,
           frecuencia,
+          avisa_top_pulso: avisaTopPulso,
           email_contacto: email.trim(),
         },
       });
@@ -1468,6 +1484,35 @@ export default function PalcoPage() {
                     />
                   </span>
                 </button>
+
+                <button
+                  onClick={() => setAvisaTopPulso((v) => !v)}
+                  className={`mt-2 flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition ${
+                    avisaTopPulso
+                      ? "border-signal bg-signal-soft ring-2 ring-signal-ring"
+                      : "border-slate-200 bg-white hover:border-slate-400"
+                  }`}
+                >
+                  <div>
+                    <p className="text-[14px] font-semibold">Entrada al Top 10 del Pulso</p>
+                    <p className="mt-0.5 text-[12px] text-slate-500">
+                      Avisame si alguno de mis seguidos entra al Top 10 de más mencionados del
+                      catálogo.
+                    </p>
+                  </div>
+                  <span
+                    className={`ml-2 flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
+                      avisaTopPulso ? "" : "bg-slate-200"
+                    }`}
+                    style={avisaTopPulso ? { backgroundColor: BRAND } : undefined}
+                  >
+                    <span
+                      className={`h-5 w-5 rounded-full bg-white shadow transition ${
+                        avisaTopPulso ? "translate-x-5" : ""
+                      }`}
+                    />
+                  </span>
+                </button>
               </div>
 
               {/* cómo */}
@@ -1540,10 +1585,12 @@ export default function PalcoPage() {
           >
             <div>
               <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-                Top del catálogo
+                Pulso · Top del catálogo
               </h2>
               <p className="mt-0.5 text-[12px] text-slate-400">
-                Todo streaming argentino que trackeamos ({D.index.length} entidades) — no solo lo que seguís
+                Todo streaming argentino que trackeamos ({D.index.length} entidades), con tus
+                seguidos marcados con ★ y su posición. Sin tope de días — acá ves todo el
+                historial, no los 14 días de la muestra gratis.
               </p>
             </div>
             <span className="shrink-0 text-[13px] font-medium text-slate-500">
@@ -1597,37 +1644,104 @@ export default function PalcoPage() {
               </div>
 
               <ol className="mt-3 divide-y divide-slate-100">
-                {topCatalogo[topCatalogoTab].map((r, i) => (
-                  <li key={r.slug} className="flex items-center justify-between gap-3 py-2">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="w-5 shrink-0 text-right text-[12px] tabular-nums text-slate-400">
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-slate-800">
-                          {r.name}
-                        </p>
-                        <p className="text-[11px] text-slate-400">{r.type}</p>
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-right text-[12px]">
-                      {topCatalogoTab === "menciones" ? (
-                        <span className="font-semibold tabular-nums text-slate-700">
-                          {compact(r.mentions)} menc.
-                        </span>
-                      ) : (
-                        <span
-                          className={`font-semibold tabular-nums ${
-                            topCatalogoTab === "positiva" ? "text-emerald-600" : "text-red-600"
-                          }`}
-                        >
-                          {topCatalogoTab === "positiva" ? r.posPct : r.negPct}%{" "}
-                          {topCatalogoTab === "positiva" ? "positivo" : "negativo"}
-                        </span>
+                {topCatalogo[topCatalogoTab].map((r, i) => {
+                  const esTuyo = watch.includes(r.slug);
+                  const mov = hoyAyerMap.get(r.slug);
+                  const diff = mov && mov.ayer != null ? mov.hoy - mov.ayer : null;
+                  const abierto = pulsoExpandido === r.slug;
+                  const momento = D.radars[r.slug]?.crisis ?? D.radars[r.slug]?.feed?.[0] ?? null;
+                  return (
+                    <li key={r.slug}>
+                      <button
+                        type="button"
+                        onClick={() => setPulsoExpandido(abierto ? null : r.slug)}
+                        className={`flex w-full items-center justify-between gap-3 rounded-lg py-2 pl-1.5 pr-2 text-left transition ${
+                          esTuyo ? "bg-signal-soft/60" : "hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="w-5 shrink-0 text-right text-[12px] tabular-nums text-slate-400">
+                            {i + 1}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="flex items-center gap-1.5 truncate text-[13px] font-semibold text-slate-800">
+                              {esTuyo && <span style={{ color: BRAND }}>★</span>}
+                              {r.name}
+                            </p>
+                            <p className="text-[11px] text-slate-400">{r.type}</p>
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2 text-right text-[12px]">
+                          {topCatalogoTab === "menciones" && diff != null && diff !== 0 && (
+                            <span className={diff > 0 ? "text-emerald-600" : "text-red-500"}>
+                              {diff > 0 ? "▲" : "▼"}
+                              {Math.abs(diff)} hoy
+                            </span>
+                          )}
+                          {topCatalogoTab === "menciones" ? (
+                            <span className="font-semibold tabular-nums text-slate-700">
+                              {compact(r.mentions)} menc.
+                            </span>
+                          ) : (
+                            <span
+                              className={`font-semibold tabular-nums ${
+                                topCatalogoTab === "positiva" ? "text-emerald-600" : "text-red-600"
+                              }`}
+                            >
+                              {topCatalogoTab === "positiva" ? r.posPct : r.negPct}%{" "}
+                              {topCatalogoTab === "positiva" ? "positivo" : "negativo"}
+                            </span>
+                          )}
+                          <span className="text-slate-300">{abierto ? "▲" : "▼"}</span>
+                        </div>
+                      </button>
+
+                      {abierto && (
+                        <div className="mb-2 ml-8 mr-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                          {momento ? (
+                            <>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                                <span className="font-medium text-slate-700">
+                                  {momento.channel} · {momento.program}
+                                </span>
+                                <span>{fmtDay(momento.date)} · 🕐 {momento.t_label}</span>
+                                {momento.conc_at != null && (
+                                  <span className="inline-flex items-center gap-1">
+                                    <IconEye className="h-3.5 w-3.5" />
+                                    {compact(momento.conc_at)} en vivo
+                                  </span>
+                                )}
+                                {momento.chat_ratio > 0 && (
+                                  <span className="inline-flex items-center gap-1">
+                                    <IconChat className="h-3.5 w-3.5" />
+                                    ×{momento.chat_ratio} chat
+                                  </span>
+                                )}
+                              </div>
+                              <p className="mt-2 text-[13px] leading-relaxed text-slate-700">
+                                &laquo;{momento.quote}&raquo;
+                              </p>
+                              <a
+                                href={momento.yt_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium"
+                                style={{ color: BRAND }}
+                              >
+                                {momento.clip_label || "Ver el minuto exacto"} →
+                              </a>
+                            </>
+                          ) : (
+                            <p className="text-[12px] text-slate-400">
+                              Todavía no guardamos una mención puntual con audiencia para este
+                              nombre en esta ventana.
+                            </p>
+                          )}
+                        </div>
                       )}
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ol>
               {topCatalogo[topCatalogoTab].length === 0 && (
                 <p className="mt-3 text-center text-[12px] text-slate-400">
