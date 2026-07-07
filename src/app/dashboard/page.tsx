@@ -406,10 +406,11 @@ function imagenBreakdownRadar(radar: Radar): {
   verdicto: string;
   cls: string;
 } {
+  const sent = radar.sentiment ?? { neg: 0, neu: 0, pos: 0 };
   const sc = radar.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 };
-  const neg = radar.sentiment.neg + sc.neg;
-  const neu = radar.sentiment.neu + sc.neu;
-  const pos = radar.sentiment.pos + sc.pos;
+  const neg = sent.neg + sc.neg;
+  const neu = sent.neu + sc.neu;
+  const pos = sent.pos + sc.pos;
   const total = neg + neu + pos || 1;
   const negPct = Math.round((neg / total) * 100);
   const posPct = Math.round((pos / total) * 100);

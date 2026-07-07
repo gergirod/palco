@@ -5,6 +5,13 @@ import { APP_NAME } from "@/config/app";
 /** Cifra real del catálogo (palco_entities → catalog_summary.candidates_count). */
 const CANDIDATOS_COUNT: number = (bundled as any)?.catalog_summary?.candidates_count ?? 0;
 
+/** Chips del hero: los nombres más mencionados del índice real (palco_entities → index),
+ *  ya vienen ordenados por menciones desc. Ahorran el paso de escribir en /explorar. */
+const HERO_CHIPS: string[] = ((bundled as any)?.index ?? [])
+  .slice(0, 8)
+  .map((r: any) => r.name)
+  .filter(Boolean);
+
 const CANALES = [
   "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana Play", "Neura",
   "Vorterix", "Border", "Cronista", "Ahora Play", "Aura", "Cenital", "Carajo",
@@ -23,7 +30,7 @@ const EJEMPLO = {
 };
 
 /** Planes que mostramos en la landing SIN precio: el precio se conversa.
- *  El alta real es por prueba gratis: /login → onboarding → panel. */
+ *  Entrada real: Probalo gratis → /explorar (sin cuenta) → converte a /login. */
 const PLANES = [
   {
     nombre: "Individual",
@@ -71,16 +78,13 @@ export default function Landing() {
             {APP_NAME}<span className="text-signal-bright">.</span>
           </Link>
           <nav className="flex items-center gap-3 sm:gap-2">
-            <Link href="/explorar" className="text-sm font-medium text-muted hidden sm:inline-flex">
-              Explorar gratis
-            </Link>
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
               Ingresar
             </Link>
             <Link href="/login" className="text-sm font-medium text-muted sm:hidden">
               Ingresar
             </Link>
-            <Link href="/login" className="btn-signal">
+            <Link href="/explorar" className="btn-signal">
               Probalo gratis
             </Link>
           </nav>
@@ -110,11 +114,32 @@ export default function Landing() {
                 argentino, en vivo, todos los días.
               </p>
             )}
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/login" className="btn-signal">
-                Probalo gratis
-              </Link>
-            </div>
+            {/* buscador rápido: entra directo a la ficha en /explorar, sin escribir dos veces.
+                Form GET nativo — sigue siendo un server component, sin JS extra. */}
+            <form action="/explorar" method="GET" className="mt-7 flex flex-wrap gap-2">
+              <input
+                type="text"
+                name="q"
+                placeholder="Buscá un nombre: Milei, Messi, Adorni…"
+                className="flex-1 min-w-[220px] rounded-full border border-line bg-white px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-signal-ring"
+              />
+              <button type="submit" className="btn-signal">
+                Buscar gratis
+              </button>
+            </form>
+            {HERO_CHIPS.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {HERO_CHIPS.map((name) => (
+                  <Link
+                    key={name}
+                    href={`/explorar?q=${encodeURIComponent(name)}`}
+                    className="rounded-full border border-line bg-white px-3 py-1.5 text-xs hover:bg-signal-soft transition"
+                  >
+                    {name}
+                  </Link>
+                ))}
+              </div>
+            )}
             <p className="mt-5 text-sm text-muted">
               Hoy escuchamos: {CANALES.join(" · ")}.
             </p>
@@ -201,7 +226,7 @@ export default function Landing() {
           ))}
         </div>
         <p className="mt-6 text-center text-sm text-muted">
-          ¿No sabés cuál te sirve? <Link href="/login" className="text-signal font-medium">Probalo gratis</Link> y lo vemos juntos.
+          ¿No sabés cuál te sirve? <Link href="/explorar" className="text-signal font-medium">Probalo gratis</Link> y lo vemos juntos.
         </p>
       </section>
 
@@ -211,7 +236,7 @@ export default function Landing() {
           Ya se está hablando de lo que te importa en el streaming. La pregunta es si te estás enterando.
         </h2>
         <div className="mt-7">
-          <Link href="/login" className="btn-signal">
+          <Link href="/explorar" className="btn-signal">
             Probalo gratis
           </Link>
         </div>
@@ -225,9 +250,6 @@ export default function Landing() {
           </span>
           <span>Monitoreo del streaming en vivo · Argentina</span>
           <div className="flex items-center gap-4">
-            <Link href="/explorar" className="text-signal font-medium">
-              Explorar gratis
-            </Link>
             <Link href="/login" className="text-signal font-medium">
               Ingresar
             </Link>

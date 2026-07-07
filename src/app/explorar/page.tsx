@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import bundledEntities from "@/data/palco_entities.json";
 import bundledCatalog from "@/data/palco_catalog.json";
 import { fetchDatasets } from "@/lib/supabase";
@@ -90,7 +91,8 @@ const KIND_LABEL: Record<string, string> = {
   mixto: "Persona o marca",
 };
 
-export default function Explorar() {
+function ExplorarInner() {
+  const searchParams = useSearchParams();
   const [entities, setEntities] = useState<EntitiesData>(bundledEntities as unknown as EntitiesData);
   const [catalog, setCatalog] = useState<CatalogData>(bundledCatalog as unknown as CatalogData);
   const [query, setQuery] = useState("");
@@ -153,6 +155,25 @@ export default function Explorar() {
   }, [query, explorables]);
 
   const chips = useMemo(() => explorables.slice(0, 30), [explorables]);
+
+  // Deep link desde la landing (?q=nombre): saltea el paso de escribir de nuevo
+  // y abre la ficha directo, igual que si el visitante hubiera tocado un chip.
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (!q || !q.trim()) return;
+    const candidatos = explorables.filter((row) => matchesQuery(q, row.name, row.aliasExtra));
+    if (candidatos.length === 0) {
+      setQuery(q);
+      return;
+    }
+    const needle = q.trim().toLowerCase();
+    const exacto = candidatos.find((row) => row.name.trim().toLowerCase() === needle);
+    const best = exacto ?? candidatos[0];
+    setSelectedSlug(best.slug);
+    setQuery(best.name);
+    // Solo al llegar con un ?q= nuevo — no queremos re-disparar en cada cambio de `explorables`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const selected = selectedSlug ? explorables.find((r) => r.slug === selectedSlug) : null;
   const radar = selected?.full ? entities.radars?.[selected.slug] : null;
@@ -427,5 +448,13 @@ export default function Explorar() {
         </div>
       </footer>
     </main>
+  );
+}
+
+export default function Explorar() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted">Cargando…</div>}>
+      <ExplorarInner />
+    </Suspense>
   );
 }
