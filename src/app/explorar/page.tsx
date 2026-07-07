@@ -24,11 +24,15 @@ type Radar = {
   type: string;
   watchlist_display?: { nombre: string; alias: string[] };
   watchlist?: string[];
-  totals: { transcript_mentions: number; channels: number };
+  totals: { transcript_mentions: number; chat_mentions?: number; channels: number };
   share_of_voice: { channel: string; mentions: number; pct: number }[];
   by_day: { day: string; mentions: number }[];
   feed: FeedCard[];
 };
+/** Cuántas citas y días mostramos gratis en la ficha pública.
+ *  El resto (audiencia en vivo + reacción del chat) sigue del lado de Palco. */
+const FREE_QUOTES = 3;
+const FREE_DAYS = 14;
 type IndexRow = { slug: string; name: string; type: string; mentions: number; channels: number };
 type EntitiesData = { index: IndexRow[]; radars: Record<string, Radar> };
 
@@ -187,6 +191,9 @@ function ExplorarInner() {
             {APP_NAME}<span className="text-signal-bright">.</span>
           </Link>
           <nav className="flex items-center gap-3">
+            <Link href="/pulso" className="text-sm font-medium text-muted hover:text-ink hidden sm:inline-flex">
+              Pulso
+            </Link>
             <Link href="/login" className="btn-signal">
               Probalo gratis
             </Link>
@@ -204,10 +211,11 @@ function ExplorarInner() {
         </h1>
         <p className="mt-4 text-lg text-muted max-w-2xl">
           Esto es una muestra gratis, sin registrarte. {catalog.curated_count ?? entities.index?.length ?? 0}{" "}
-          nombres ya tienen ficha completa (volumen, canales y una cita real); el resto del
-          catálogo por ahora solo muestra cuánto se lo mencionó — la ficha completa se arma
-          cuando lo sumás a una watchlist en Palco. El minuto exacto, la audiencia en vivo y
-          la reacción del chat quedan siempre del lado de Palco.
+          nombres ya tienen ficha completa: volumen, tendencia diaria, desglose por todos los
+          canales y varias citas reales; el resto del catálogo por ahora solo muestra cuánto se
+          lo mencionó — la ficha completa se arma cuando lo sumás a una watchlist en Palco. El
+          minuto exacto, la audiencia en vivo y la reacción del chat quedan siempre del lado de
+          Palco.
         </p>
 
         <div className="mt-8 max-w-xl">
@@ -293,16 +301,29 @@ function ExplorarInner() {
                 <p className="font-display text-3xl font-semibold tracking-tight text-signal">
                   {radar.totals.transcript_mentions.toLocaleString("es-AR")}
                 </p>
-                <p className="text-xs text-muted">menciones en {radar.totals.channels} canales</p>
+                <p className="text-xs text-muted">
+                  menciones al aire · {radar.totals.channels} canales · acumulado desde que
+                  empezamos a escuchar
+                </p>
+                {typeof radar.totals.chat_mentions === "number" && (
+                  <p className="mt-1 text-xs text-muted">
+                    + {radar.totals.chat_mentions.toLocaleString("es-AR")} menciones en el chat
+                    (acumulado, no en vivo)
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="mt-8 grid md:grid-cols-2 gap-8">
               <div>
-                <p className="text-sm font-semibold mb-3">Últimos días con datos</p>
-                <div className="space-y-1.5">
-                  {radar.by_day.slice(-7).map((d) => {
-                    const max = Math.max(...radar.by_day.slice(-7).map((x) => x.mentions), 1);
+                <p className="text-sm font-semibold">Tendencia diaria</p>
+                <p className="text-xs text-muted mb-3">
+                  Por día, todos los canales sumados. Solo habla al aire, no incluye chat.
+                </p>
+                <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                  {radar.by_day.slice(-FREE_DAYS).map((d) => {
+                    const dias = radar.by_day.slice(-FREE_DAYS);
+                    const max = Math.max(...dias.map((x) => x.mentions), 1);
                     return (
                       <div key={d.day} className="flex items-center gap-3 text-xs">
                         <span className="w-10 text-muted">{fechaCorta(d.day)}</span>
@@ -317,36 +338,52 @@ function ExplorarInner() {
                     );
                   })}
                 </div>
+                {radar.by_day.length > FREE_DAYS && (
+                  <p className="mt-2 text-xs text-muted">
+                    Mostrando los últimos {FREE_DAYS} días (hay {radar.by_day.length} en total).
+                    Con cuenta ves todo el historial, y se actualiza solo — esto es una foto, no
+                    en vivo.
+                  </p>
+                )}
               </div>
 
               <div>
-                <p className="text-sm font-semibold mb-3">Dónde más se habló</p>
-                <ul className="space-y-2">
-                  {radar.share_of_voice.slice(0, 3).map((c) => (
+                <p className="text-sm font-semibold">
+                  Dónde más se habló ({radar.share_of_voice.length} canales)
+                </p>
+                <p className="text-xs text-muted mb-3">
+                  Acumulado de todo el período mostrado, no por día.
+                </p>
+                <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {radar.share_of_voice.map((c) => (
                     <li key={c.channel} className="flex items-center justify-between text-sm">
                       <span>{c.channel}</span>
                       <span className="text-muted">{c.pct}%</span>
                     </li>
                   ))}
                 </ul>
-                {radar.share_of_voice.length > 3 && (
-                  <p className="mt-2 text-xs text-muted">
-                    +{radar.share_of_voice.length - 3} canales más en Palco.
-                  </p>
-                )}
               </div>
             </div>
 
-            {radar.feed?.[0] && (
+            {radar.feed?.length > 0 && (
               <div className="mt-8">
-                <p className="text-sm font-semibold mb-2">Una mención real</p>
-                <div className="border-l-2 border-line pl-4">
-                  <p className="text-sm leading-relaxed">&laquo;{radar.feed[0].quote}&raquo;</p>
-                  <p className="mt-2 text-xs text-muted">
-                    {radar.feed[0].channel} · {radar.feed[0].program} · {fechaCorta(radar.feed[0].date)}
-                    {" · "}
-                    {SENT_LABEL[radar.feed[0].sentiment]}
-                  </p>
+                <p className="text-sm font-semibold">
+                  Menciones reales{radar.feed.length > 1 ? ` (${Math.min(radar.feed.length, FREE_QUOTES)})` : ""}
+                </p>
+                <p className="text-xs text-muted mb-2">
+                  Ejemplos puntuales de lo que se dijo al aire, con canal, programa y fecha.
+                </p>
+                <div className="space-y-4">
+                  {radar.feed.slice(0, FREE_QUOTES).map((f, i) => (
+                    <div key={i} className="border-l-2 border-line pl-4">
+                      <p className="text-sm leading-relaxed">&laquo;{f.quote}&raquo;</p>
+                      <p className="mt-2 text-xs text-muted">
+                        {f.channel} · {f.program} · {fechaCorta(f.date)}
+                        {" · "}
+                        {SENT_LABEL[f.sentiment]}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import bundled from "@/data/palco_entities.json";
+import bundledRadar from "@/data/radar.json";
 import { APP_NAME } from "@/config/app";
+import { rankNombresAcumulado, rankPulsoPolitico, type RadarTema } from "@/lib/pulso";
 
 /** Cifra real del catálogo (palco_entities → catalog_summary.candidates_count). */
 const CANDIDATOS_COUNT: number = (bundled as any)?.catalog_summary?.candidates_count ?? 0;
@@ -11,6 +13,11 @@ const HERO_CHIPS: string[] = ((bundled as any)?.index ?? [])
   .slice(0, 8)
   .map((r: any) => r.name)
   .filter(Boolean);
+
+/** Teaser del Pulso en la landing: el nombre más mencionado hoy y el tema
+ *  político/económico con más puntaje ahora — mismos datos que /pulso. */
+const PULSO_TOP_NOMBRE = rankNombresAcumulado((bundled as any)?.radars ?? {}, 1)[0];
+const PULSO_TOP_TEMA = rankPulsoPolitico((bundledRadar as unknown as RadarTema[]) ?? [], 1)[0];
 
 const CANALES = [
   "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana Play", "Neura",
@@ -78,6 +85,9 @@ export default function Landing() {
             {APP_NAME}<span className="text-signal-bright">.</span>
           </Link>
           <nav className="flex items-center gap-3 sm:gap-2">
+            <Link href="/pulso" className="text-sm font-medium text-muted hover:text-ink hidden sm:inline-flex">
+              Pulso
+            </Link>
             <Link href="/login" className="btn-ghost hidden sm:inline-flex">
               Ingresar
             </Link>
@@ -170,6 +180,41 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* teaser: Pulso */}
+      {(PULSO_TOP_NOMBRE || PULSO_TOP_TEMA) && (
+        <section className="mx-auto w-full max-w-6xl px-6 pb-14">
+          <Link
+            href="/pulso"
+            className="card group flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 hover:border-signal-line transition"
+          >
+            <span className="pulso-live-dot inline-block h-2 w-2 shrink-0 rounded-full bg-up" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-ink">
+                Pulso: el ranking en vivo (con delay) de qué se habla más
+              </p>
+              <p className="mt-0.5 text-sm text-muted">
+                {PULSO_TOP_NOMBRE && (
+                  <>
+                    Ahora mismo, el más mencionado es{" "}
+                    <span className="font-medium text-signal">{PULSO_TOP_NOMBRE.entity}</span>
+                    {PULSO_TOP_TEMA && " · "}
+                  </>
+                )}
+                {PULSO_TOP_TEMA && (
+                  <>
+                    en política y economía, el tema que más pesa es{" "}
+                    <span className="font-medium text-signal capitalize">{PULSO_TOP_TEMA.tema}</span>
+                  </>
+                )}
+              </p>
+            </div>
+            <span className="shrink-0 text-sm font-medium text-signal group-hover:underline">
+              Ver el pulso completo →
+            </span>
+          </Link>
+        </section>
+      )}
 
       {/* tres puntos — corto */}
       <section className="border-y border-line bg-surface">
