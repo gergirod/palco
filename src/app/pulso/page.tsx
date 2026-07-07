@@ -15,6 +15,13 @@ import {
   type PulsoTemaRow,
 } from "@/lib/pulso";
 import { APP_NAME } from "@/config/app";
+import {
+  useLiveDeltas,
+  useFlipRows,
+  AnimatedNumber,
+  LiveDeltaBadge,
+  PulsoHeartbeat,
+} from "./pulso-fx";
 
 /* ---------- tipos locales del bundle ---------- */
 type RadarFicha = {
@@ -97,6 +104,19 @@ export default function PulsoPage() {
   const maxAcumulado = Math.max(1, ...nombresAcumulado.map((r) => r.acumulado));
   const maxScore = Math.max(1, ...temasPolitica.map((r) => r.score));
 
+  /* wow effect: insignias en vivo (poll vs poll anterior) + reordenamiento animado.
+     Todo sale de comparar el snapshot actual contra el anterior, ya en memoria. */
+  const flashesHoy = useLiveDeltas(nombresHoy, (r) => r.slug, (r) => r.hoy);
+  const flashesAcumulado = useLiveDeltas(nombresAcumulado, (r) => r.slug, (r) => r.acumulado);
+  const flashesPolitica = useLiveDeltas(temasPolitica, (r) => r.tema, (r) => r.score);
+  const flipHoy = useFlipRows();
+  const flipAcumulado = useFlipRows();
+  const flipPolitica = useFlipRows();
+
+  /* intensidad del "latido" — proxy decorativo de actividad, no una métrica exacta. */
+  const actividadHoy = nombresHoy.reduce((acc, r) => acc + r.hoy, 0);
+  const intensidad = Math.min(1, actividadHoy / 200);
+
   return (
     <main className="min-h-screen flex flex-col">
       {/* nav */}
@@ -136,6 +156,8 @@ export default function PulsoPage() {
           <span>· actualizado {haceCuanto(lastUpdate)}</span>
         </div>
 
+        <PulsoHeartbeat intensidad={intensidad} className="mt-3 max-w-xs" />
+
         {/* switcher */}
         <div className="mt-7 inline-flex rounded-full border border-line bg-white p-1 text-sm">
           <button
@@ -172,6 +194,7 @@ export default function PulsoPage() {
                 return (
                   <li
                     key={r.slug}
+                    ref={flipHoy(r.slug)}
                     className="pulso-row"
                     style={{ animationDelay: `${i * 45}ms` }}
                   >
@@ -188,7 +211,7 @@ export default function PulsoPage() {
                             {r.entity}
                           </span>
                           <span className="shrink-0 text-xs text-muted">
-                            {r.hoy.toLocaleString("es-AR")}
+                            <AnimatedNumber value={r.hoy} />
                             {diff != null && diff !== 0 && (
                               <span className={diff > 0 ? "ml-1 text-up" : "ml-1 text-crisis"}>
                                 {diff > 0 ? "▲" : "▼"}
@@ -196,6 +219,7 @@ export default function PulsoPage() {
                               </span>
                             )}
                             {diff == null && <span className="ml-1 text-signal">nuevo</span>}
+                            <LiveDeltaBadge delta={flashesHoy.get(r.slug)} />
                           </span>
                         </div>
                         <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
@@ -226,6 +250,7 @@ export default function PulsoPage() {
               {nombresAcumulado.map((r, i) => (
                 <li
                   key={r.slug}
+                  ref={flipAcumulado(r.slug)}
                   className="pulso-row"
                   style={{ animationDelay: `${i * 35}ms` }}
                 >
@@ -242,7 +267,8 @@ export default function PulsoPage() {
                           {r.entity}
                         </span>
                         <span className="shrink-0 text-xs text-muted">
-                          {r.acumulado.toLocaleString("es-AR")}
+                          <AnimatedNumber value={r.acumulado} />
+                          <LiveDeltaBadge delta={flashesAcumulado.get(r.slug)} />
                         </span>
                       </div>
                       <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
@@ -275,6 +301,7 @@ export default function PulsoPage() {
               {temasPolitica.map((r, i) => (
                 <li
                   key={r.tema}
+                  ref={flipPolitica(r.tema)}
                   className="pulso-row"
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
@@ -291,7 +318,10 @@ export default function PulsoPage() {
                               en alza
                             </span>
                           )}
-                          <span>{r.menciones.toLocaleString("es-AR")} menciones</span>
+                          <span>
+                            <AnimatedNumber value={r.menciones} /> menciones
+                            <LiveDeltaBadge delta={flashesPolitica.get(r.tema)} />
+                          </span>
                         </span>
                       </div>
                       <div className="mt-1.5 h-1.5 w-full rounded-full bg-surface overflow-hidden">

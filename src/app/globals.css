@@ -79,6 +79,57 @@ body {
   animation: pulso-ping-soft 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+/* Pulso wow effect: insignia +N/▲/▼ que aparece y se desvanece sola cuando el
+   poll trae un cambio real (no una comparación día-contra-día). */
+@keyframes pulso-flash-life {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(2px);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.15) translateY(0);
+  }
+  25% {
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.pulso-flash {
+  display: inline-block;
+  animation: pulso-flash-life 3.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Pulso wow effect: línea tipo ECG que "late" — decorativa, ligada al nombre. */
+.pulso-ecg {
+  width: 100%;
+  height: 28px;
+  overflow: hidden;
+  color: var(--signal);
+  opacity: 0.55;
+}
+.pulso-ecg-svg {
+  width: 200%;
+  height: 100%;
+  animation: pulso-ecg-scroll var(--pulso-ecg-duration, 2s) linear infinite;
+}
+.pulso-ecg-path {
+  stroke: currentColor;
+}
+@keyframes pulso-ecg-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @layer components {
   .card {
     @apply bg-white border border-line rounded-2xl shadow-card;
