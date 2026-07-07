@@ -10,6 +10,13 @@ import Sheet from "@/components/Sheet";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { rankNombresHoy } from "@/lib/pulso";
 import { fetchDataset } from "@/lib/supabase";
+import {
+  useLiveDeltas,
+  useFlipRows,
+  AnimatedNumber,
+  LiveDeltaBadge,
+  PulsoHeartbeat,
+} from "../pulso/pulso-fx";
 import { PaywallExpired } from "@/components/palco/PaywallExpired";
 import {
   loadPalcoAccount,
@@ -130,6 +137,11 @@ type Data = {
  *  viejo (sin audiencia), que no cuenta como imagen en vivo. Fallback hasta que
  *  el pipeline lo calcule y lo escriba en el dataset (live_since). */
 const LIVE_SINCE_DEFAULT = "20260623";
+
+/** Poll a Supabase para el dataset de entidades — mismo intervalo que /pulso,
+ *  para que las animaciones de Pulso (badge de delta, FLIP, count-up) tengan
+ *  poll-contra-poll con qué compararse en vez de quedarse mudas. */
+const PULSO_REFRESH_MS = 45_000;
 
 /** Piso de menciones (dentro de la ventana elegida) para entrar al ranking de
  *  imagen del Top del catálogo — evita que una entidad con 1-2 menciones
@@ -610,15 +622,23 @@ export default function PalcoPage() {
   }, [slug]);
 
   // Trae la última versión del dataset desde Supabase (fallback: el bundle).
+  // Poll cada 45s (mismo intervalo que /pulso) para que el wow effect de Pulso
+  // (badges de delta, FLIP, count-up) tenga poll-contra-poll con qué compararse.
   useEffect(() => {
     let alive = true;
-    fetchDataset<Data>("palco_entities")
-      .then((remote) => {
+    async function poll() {
+      try {
+        const remote = await fetchDataset<Data>("palco_entities");
         if (alive && remote?.radars && remote?.index?.length) setD(remote);
-      })
-      .catch(() => {});
+      } catch {
+        // sin conexión / sin env: nos quedamos con lo que ya tengamos.
+      }
+    }
+    poll();
+    const id = setInterval(poll, PULSO_REFRESH_MS);
     return () => {
       alive = false;
+      clearInterval(id);
     };
   }, []);
 
@@ -676,6 +696,29 @@ export default function PalcoPage() {
     for (const r of rows) map.set(r.slug, { hoy: r.hoy, ayer: r.ayer });
     return map;
   }, [D]);
+
+  // Wow effect de Pulso (mismo pulso-fx.tsx que /pulso público): insignia de
+  // delta poll-contra-poll + reordenamiento FLIP animado, uno por pestaña del
+  // Top del catálogo (menciones / mejor imagen / peor imagen).
+  const flashesMenciones = useLiveDeltas(topCatalogo.menciones, (r) => r.slug, (r) => r.mentions);
+  const flashesPositiva = useLiveDeltas(topCatalogo.positiva, (r) => r.slug, (r) => r.posPct);
+  const flashesNegativa = useLiveDeltas(topCatalogo.negativa, (r) => r.slug, (r) => r.negPct);
+  const flipMenciones = useFlipRows();
+  const flipPositiva = useFlipRows();
+  const flipNegativa = useFlipRows();
+  const flashesTopCatalogo =
+    topCatalogoTab === "menciones"
+      ? flashesMenciones
+      : topCatalogoTab === "positiva"
+        ? flashesPositiva
+        : flashesNegativa;
+  const flipTopCatalogo =
+    topCatalogoTab === "menciones" ? flipMenciones : topCatalogoTab === "positiva" ? flipPositiva : flipNegativa;
+  // Intensidad del "latido" (decorativo): actividad de menciones en la ventana elegida.
+  const intensidadTopCatalogo = Math.min(
+    1,
+    topCatalogo.menciones.reduce((acc, r) => acc + r.mentions, 0) / 500
+  );
 
   // Catálogo base: si hay watchlist del onboarding, se limita a esas entidades.
   const baseIndex = useMemo(
@@ -1600,6 +1643,7 @@ export default function PalcoPage() {
 
           {topCatalogoAbierto && (
             <div className="border-t border-slate-200 px-4 py-4">
+              <PulsoHeartbeat intensidad={intensidadTopCatalogo} className="mb-3 max-w-xs" />
               <div className="flex flex-wrap items-center justify-between gap-2">
                 {/* tabs: qué ranking */}
                 <div className="flex gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[13px]">
@@ -1651,7 +1695,7 @@ export default function PalcoPage() {
                   const abierto = pulsoExpandido === r.slug;
                   const momento = D.radars[r.slug]?.crisis ?? D.radars[r.slug]?.feed?.[0] ?? null;
                   return (
-                    <li key={r.slug}>
+                    <li key={r.slug} ref={flipTopCatalogo(r.slug)}>
                       <button
                         type="button"
                         onClick={() => setPulsoExpandido(abierto ? null : r.slug)}
@@ -1680,7 +1724,7 @@ export default function PalcoPage() {
                           )}
                           {topCatalogoTab === "menciones" ? (
                             <span className="font-semibold tabular-nums text-slate-700">
-                              {compact(r.mentions)} menc.
+                              <AnimatedNumber value={r.mentions} format={compact} /> menc.
                             </span>
                           ) : (
                             <span
@@ -1688,10 +1732,11 @@ export default function PalcoPage() {
                                 topCatalogoTab === "positiva" ? "text-emerald-600" : "text-red-600"
                               }`}
                             >
-                              {topCatalogoTab === "positiva" ? r.posPct : r.negPct}%{" "}
+                              <AnimatedNumber value={topCatalogoTab === "positiva" ? r.posPct : r.negPct} />%{" "}
                               {topCatalogoTab === "positiva" ? "positivo" : "negativo"}
                             </span>
                           )}
+                          <LiveDeltaBadge delta={flashesTopCatalogo.get(r.slug)} />
                           <span className="text-slate-300">{abierto ? "▲" : "▼"}</span>
                         </div>
                       </button>

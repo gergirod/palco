@@ -117,8 +117,18 @@ export function useFlipRows() {
   };
 }
 
-/** Número que cuenta hasta el valor nuevo (ease-out, ~700ms) en vez de saltar. */
-export function AnimatedNumber({ value, className }: { value: number; className?: string }) {
+/** Número que cuenta hasta el valor nuevo (ease-out, ~700ms) en vez de saltar.
+ *  `format` opcional para reusar el mismo count-up con formatos distintos
+ *  (ej. compact() del dashboard en vez del toLocaleString por default). */
+export function AnimatedNumber({
+  value,
+  className,
+  format,
+}: {
+  value: number;
+  className?: string;
+  format?: (n: number) => string;
+}) {
   const [display, setDisplay] = useState(value);
   const prevRef = useRef(value);
   const rafRef = useRef<number | null>(null);
@@ -146,7 +156,7 @@ export function AnimatedNumber({ value, className }: { value: number; className?
     };
   }, [value]);
 
-  return <span className={className}>{display.toLocaleString("es-AR")}</span>;
+  return <span className={className}>{format ? format(display) : display.toLocaleString("es-AR")}</span>;
 }
 
 /** Insignia +N / ▲N / ▼N que aparece y se desvanece sola. */
