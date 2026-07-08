@@ -1,40 +1,16 @@
 import Link from "next/link";
 import bundled from "@/data/palco_entities.json";
-import bundledRadar from "@/data/radar.json";
 import { APP_NAME } from "@/config/app";
-import { rankNombresAcumulado, rankPulsoPolitico, type RadarTema } from "@/lib/pulso";
+import { LandingLive } from "./landing-live";
 
 /** Cifra real del catálogo (palco_entities → catalog_summary.candidates_count). */
 const CANDIDATOS_COUNT: number = (bundled as any)?.catalog_summary?.candidates_count ?? 0;
-
-/** Chips del hero: los nombres más mencionados del índice real (palco_entities → index),
- *  ya vienen ordenados por menciones desc. Ahorran el paso de escribir en /explorar. */
-const HERO_CHIPS: string[] = ((bundled as any)?.index ?? [])
-  .slice(0, 8)
-  .map((r: any) => r.name)
-  .filter(Boolean);
-
-/** Teaser del Pulso en la landing: el nombre más mencionado hoy y el tema
- *  político/económico con más puntaje ahora — mismos datos que /pulso. */
-const PULSO_TOP_NOMBRE = rankNombresAcumulado((bundled as any)?.radars ?? {}, 1)[0];
-const PULSO_TOP_TEMA = rankPulsoPolitico((bundledRadar as unknown as RadarTema[]) ?? [], 1)[0];
 
 const CANALES = [
   "Olga", "Luzu", "Bondi", "Blender", "Gelatina", "Urbana Play", "Neura",
   "Vorterix", "Border", "Cronista", "Ahora Play", "Aura", "Cenital", "Carajo",
   "El Destape", "Futurock", "Bravo TV", "Carnaval",
 ];
-
-/** Mención real de Lionel Messi (palco_entities → lionel-messi → feed[0]). */
-const EJEMPLO = {
-  slug: "lionel-messi",
-  nombre: "Lionel Messi",
-  canal: "Luzu",
-  programa: "Nadie dice nada",
-  audiencia: "238k",
-  fecha: "23/06",
-  cita: "…una figura de Messi muy típica de Argentina. Para mí es Julián.",
-};
 
 /** Planes que mostramos en la landing SIN precio: el precio se conversa.
  *  Entrada real: Probalo gratis → /explorar (sin cuenta) → converte a /login. */
@@ -101,120 +77,32 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* hero — se explica solo: categoría + analogía + qué hace */}
-      <section className="mx-auto w-full max-w-6xl px-6 pt-14 pb-10 md:pt-20">
-        <div className="grid md:grid-cols-2 gap-10 items-center">
-          {/* texto */}
-          <div>
-            <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] sm:leading-[1.08]">
-              Enterate cuándo, cómo y dónde se habla de las{" "}
-              <span className="text-signal">personas y empresas</span> que te importan.
-            </h1>
-            <p className="mt-5 text-lg text-ink font-medium">
-              {APP_NAME} escucha {CANALES.length} canales del streaming en vivo argentino.
-            </p>
-            <p className="mt-3 text-lg text-muted">
-              Vos cargás los perfiles. {APP_NAME} te avisa el mismo día en qué programa se
-              habló, qué se dijo y con qué tono — y si conviene prender una alarma.
-            </p>
-            {CANDIDATOS_COUNT > 0 && (
-              <p className="mt-3 text-sm font-medium text-signal">
-                {CANDIDATOS_COUNT} personas y empresas ya identificadas en el streaming
-                argentino, en vivo, todos los días.
-              </p>
-            )}
-            {/* buscador rápido: entra directo a la ficha en /explorar, sin escribir dos veces.
-                Form GET nativo — sigue siendo un server component, sin JS extra. */}
-            <form action="/explorar" method="GET" className="mt-7 flex flex-wrap gap-2">
-              <input
-                type="text"
-                name="q"
-                placeholder="Buscá un nombre: Milei, Messi, Adorni…"
-                className="flex-1 min-w-[220px] rounded-full border border-line bg-white px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-signal-ring"
-              />
-              <button type="submit" className="btn-signal">
-                Buscar gratis
-              </button>
-            </form>
-            {HERO_CHIPS.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {HERO_CHIPS.map((name) => (
-                  <Link
-                    key={name}
-                    href={`/explorar?q=${encodeURIComponent(name)}`}
-                    className="rounded-full border border-line bg-white px-3 py-1.5 text-xs hover:bg-signal-soft transition"
-                  >
-                    {name}
-                  </Link>
-                ))}
-              </div>
-            )}
-            <p className="mt-5 text-sm text-muted">
-              Hoy escuchamos: {CANALES.join(" · ")}.
-            </p>
-          </div>
-
-          {/* ejemplo real — Lionel Messi */}
-          <div className="card p-6 md:justify-self-end w-full max-w-sm">
-            <div className="flex items-center justify-between text-xs">
-              <span className="inline-flex items-center gap-2 font-medium text-signal">
-                <span className="inline-block h-2 w-2 rounded-full bg-signal-bright" />
-                <span>Mención detectada</span>
-              </span>
-              <span className="text-muted">{EJEMPLO.fecha}</span>
-            </div>
-            <p className="mt-4 font-display text-lg font-semibold tracking-tight">{EJEMPLO.nombre}</p>
-            <p className="mt-1 text-sm font-medium">
-              {EJEMPLO.canal} · {EJEMPLO.programa}
-            </p>
-            <p className="text-xs text-muted">{EJEMPLO.audiencia} mirando en ese momento</p>
-            <p className="mt-4 border-l-2 border-line pl-3 text-sm leading-relaxed">
-              &laquo;{EJEMPLO.cita}&raquo;
-            </p>
-            <div className="mt-4">
-              <span className="rounded-full bg-signal-soft px-2.5 py-1 text-xs font-medium text-signal">
-                Tono: neutro
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* teaser: Pulso */}
-      {(PULSO_TOP_NOMBRE || PULSO_TOP_TEMA) && (
-        <section className="mx-auto w-full max-w-6xl px-6 pb-14">
-          <Link
-            href="/pulso"
-            className="card group flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 hover:border-signal-line transition"
-          >
-            <span className="pulso-live-dot inline-block h-2 w-2 shrink-0 rounded-full bg-up" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-ink">
-                Pulso: el ranking en vivo (con delay) de qué se habla más
-              </p>
-              <p className="mt-0.5 text-sm text-muted">
-                {PULSO_TOP_NOMBRE && (
-                  <>
-                    Ahora mismo, el más mencionado es{" "}
-                    <span className="font-medium text-signal">{PULSO_TOP_NOMBRE.entity}</span>
-                    {PULSO_TOP_TEMA && " · "}
-                  </>
-                )}
-                {PULSO_TOP_TEMA && (
-                  <>
-                    en política y economía, el tema que más pesa es{" "}
-                    <span className="font-medium text-signal capitalize">{PULSO_TOP_TEMA.tema}</span>
-                  </>
-                )}
-              </p>
-            </div>
-            <span className="shrink-0 text-sm font-medium text-signal group-hover:underline">
-              Ver el pulso completo →
-            </span>
-          </Link>
-        </section>
-      )}
+      {/* hero — se explica solo (texto) + Pulso en vivo (ticker + buscador + ficha inline),
+          unificado en un solo componente (@/app/landing-live) para que Palco y Pulso dejen
+          de sentirse como dos productos separados. */}
+      <LandingLive>
+        <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] sm:leading-[1.08]">
+          Enterate cuándo, cómo y dónde se habla de las{" "}
+          <span className="text-signal">personas y empresas</span> que te importan.
+        </h1>
+        <p className="mt-5 text-lg text-ink font-medium">
+          {APP_NAME} escucha {CANALES.length} canales del streaming en vivo argentino.
+        </p>
+        <p className="mt-3 text-lg text-muted">
+          Vos cargás los perfiles. {APP_NAME} te avisa el mismo día en qué programa se
+          habló, qué se dijo y con qué tono — y si conviene prender una alarma.
+        </p>
+        {CANDIDATOS_COUNT > 0 && (
+          <p className="mt-3 text-sm font-medium text-signal">
+            {CANDIDATOS_COUNT} personas y empresas ya identificadas en el streaming
+            argentino, en vivo, todos los días.
+          </p>
+        )}
+        <p className="mt-5 text-sm text-muted">
+          Hoy escuchamos: {CANALES.join(" · ")}.
+        </p>
+      </LandingLive>
 
       {/* tres puntos — corto */}
       <section className="border-y border-line bg-surface">

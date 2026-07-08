@@ -8,92 +8,13 @@ import bundledCatalog from "@/data/palco_catalog.json";
 import { fetchDatasets } from "@/lib/supabase";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { APP_NAME } from "@/config/app";
-import { whatsappPagoUrl } from "@/config/trial";
-
-/* ---------- tipos ---------- */
-type FeedCard = {
-  channel: string;
-  program: string;
-  date: string;
-  quote: string;
-  sentiment: "neg" | "neu" | "pos";
-};
-type Radar = {
-  slug: string;
-  entity: string;
-  type: string;
-  watchlist_display?: { nombre: string; alias: string[] };
-  watchlist?: string[];
-  totals: { transcript_mentions: number; chat_mentions?: number; channels: number };
-  share_of_voice: { channel: string; mentions: number; pct: number }[];
-  by_day: { day: string; mentions: number }[];
-  feed: FeedCard[];
-};
-/** Cuántas citas y días mostramos gratis en la ficha pública.
- *  El resto (audiencia en vivo + reacción del chat) sigue del lado de Palco. */
-const FREE_QUOTES = 3;
-const FREE_DAYS = 14;
-type IndexRow = { slug: string; name: string; type: string; mentions: number; channels: number };
-type EntitiesData = { index: IndexRow[]; radars: Record<string, Radar> };
-
-type CuratedRow = { slug: string; name: string; type: string; alias?: string[] };
-type CandidateRow = {
-  slug_guess: string;
-  canonical_guess: string;
-  forms?: string[];
-  kind: string;
-  mentions: number;
-  programs: number;
-  channels: number;
-  first_seen: string;
-  last_seen: string;
-};
-type CatalogData = {
-  curated: CuratedRow[];
-  candidates: CandidateRow[];
-  candidates_count: number;
-  curated_count: number;
-};
-
-/** Fila unificada del índice explorable: fusiona los 15 con ficha completa
- *  (palco_entities.radars) con el resto del catálogo (palco_catalog.candidates),
- *  que solo tiene volumen — sin citas ni desglose por canal todavía. */
-type Explorable = {
-  slug: string;
-  name: string;
-  kind: string;
-  mentions: number;
-  aliasExtra: string[];
-  full: boolean;
-  programs?: number;
-  channels?: number;
-  first_seen?: string;
-  last_seen?: string;
-};
-
-/* ---------- helpers ---------- */
-function fechaCorta(yyyymmdd?: string): string {
-  if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd ?? "";
-  return `${yyyymmdd.slice(6, 8)}/${yyyymmdd.slice(4, 6)}`;
-}
-
-function aliasDe(radar?: Radar): string[] {
-  if (!radar) return [];
-  if (radar.watchlist_display?.alias) return radar.watchlist_display.alias;
-  return (radar.watchlist ?? []).slice(1);
-}
-
-const SENT_LABEL: Record<FeedCard["sentiment"], string> = {
-  neg: "Tono negativo",
-  neu: "Tono neutro",
-  pos: "Tono positivo",
-};
-
-const KIND_LABEL: Record<string, string> = {
-  persona: "Persona",
-  empresa: "Empresa / marca",
-  mixto: "Persona o marca",
-};
+import { EntityFicha } from "@/components/entity-ficha";
+import {
+  type EntitiesData,
+  type CatalogData,
+  type Explorable,
+  buildExplorables,
+} from "@/lib/explorables";
 
 function ExplorarInner() {
   const searchParams = useSearchParams();
@@ -115,40 +36,12 @@ function ExplorarInner() {
   }, []);
 
   /** Índice unificado: primero los 15 con ficha completa, después el resto
-   *  del catálogo (deduplicado por slug, por si algún candidato ya fue promovido). */
-  const explorables = useMemo<Explorable[]>(() => {
-    const full: Explorable[] = (entities.index ?? []).map((row) => ({
-      slug: row.slug,
-      name: row.name,
-      kind: row.type,
-      mentions: row.mentions,
-      aliasExtra: aliasDe(entities.radars?.[row.slug]),
-      full: true,
-    }));
-    const fullSlugs = new Set(full.map((r) => r.slug));
-    const fullNames = new Set(full.map((r) => r.name.trim().toLowerCase()));
-
-    const liviano: Explorable[] = (catalog.candidates ?? [])
-      .filter(
-        (c) =>
-          !fullSlugs.has(c.slug_guess) &&
-          !fullNames.has(c.canonical_guess.trim().toLowerCase())
-      )
-      .map((c) => ({
-        slug: c.slug_guess,
-        name: c.canonical_guess,
-        kind: KIND_LABEL[c.kind] ?? c.kind,
-        mentions: c.mentions,
-        aliasExtra: (c.forms ?? []).slice(1),
-        full: false,
-        programs: c.programs,
-        channels: c.channels,
-        first_seen: c.first_seen,
-        last_seen: c.last_seen,
-      }));
-
-    return [...full, ...liviano].sort((a, b) => b.mentions - a.mentions);
-  }, [entities, catalog]);
+   *  del catálogo (deduplicado por slug, por si algún candidato ya fue promovido).
+   *  Lógica compartida con la landing en @/lib/explorables. */
+  const explorables = useMemo<Explorable[]>(
+    () => buildExplorables(entities, catalog),
+    [entities, catalog]
+  );
 
   const totalIdentificados =
     (catalog.curated_count || entities.index?.length || 0) + (catalog.candidates_count || 0);
@@ -286,190 +179,10 @@ function ExplorarInner() {
         )}
       </section>
 
-      {/* resultado: ficha completa (15 curados) */}
-      {selected && radar && (
+      {/* resultado: ficha compartida con la landing (@/components/entity-ficha) */}
+      {selected && (
         <section className="mx-auto w-full max-w-6xl px-6 pb-16">
-          <div className="card p-6 md:p-8">
-            <div className="flex items-start justify-between flex-wrap gap-3">
-              <div>
-                <p className="eyebrow">{radar.type}</p>
-                <h2 className="font-display text-2xl font-semibold tracking-tight mt-1">
-                  {radar.entity}
-                </h2>
-              </div>
-              <div className="text-right">
-                <p className="font-display text-3xl font-semibold tracking-tight text-signal">
-                  {radar.totals.transcript_mentions.toLocaleString("es-AR")}
-                </p>
-                <p className="text-xs text-muted">
-                  menciones al aire · {radar.totals.channels} canales · acumulado desde que
-                  empezamos a escuchar
-                </p>
-                {typeof radar.totals.chat_mentions === "number" && (
-                  <p className="mt-1 text-xs text-muted">
-                    + {radar.totals.chat_mentions.toLocaleString("es-AR")} menciones en el chat
-                    (acumulado, no en vivo)
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-8 grid md:grid-cols-2 gap-8">
-              <div>
-                <p className="text-sm font-semibold">Tendencia diaria</p>
-                <p className="text-xs text-muted mb-3">
-                  Por día, todos los canales sumados. Solo habla al aire, no incluye chat.
-                </p>
-                <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-                  {radar.by_day.slice(-FREE_DAYS).map((d) => {
-                    const dias = radar.by_day.slice(-FREE_DAYS);
-                    const max = Math.max(...dias.map((x) => x.mentions), 1);
-                    return (
-                      <div key={d.day} className="flex items-center gap-3 text-xs">
-                        <span className="w-10 text-muted">{fechaCorta(d.day)}</span>
-                        <div className="flex-1 h-2 rounded-full bg-surface overflow-hidden">
-                          <div
-                            className="h-full bg-signal-bright rounded-full"
-                            style={{ width: `${Math.max((d.mentions / max) * 100, 4)}%` }}
-                          />
-                        </div>
-                        <span className="w-8 text-right font-medium">{d.mentions}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                {radar.by_day.length > FREE_DAYS && (
-                  <p className="mt-2 text-xs text-muted">
-                    Mostrando los últimos {FREE_DAYS} días (hay {radar.by_day.length} en total).
-                    Con cuenta ves todo el historial, y se actualiza solo — esto es una foto, no
-                    en vivo.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold">
-                  Dónde más se habló ({radar.share_of_voice.length} canales)
-                </p>
-                <p className="text-xs text-muted mb-3">
-                  Acumulado de todo el período mostrado, no por día.
-                </p>
-                <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                  {radar.share_of_voice.map((c) => (
-                    <li key={c.channel} className="flex items-center justify-between text-sm">
-                      <span>{c.channel}</span>
-                      <span className="text-muted">{c.pct}%</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {radar.feed?.length > 0 && (
-              <div className="mt-8">
-                <p className="text-sm font-semibold">
-                  Menciones reales{radar.feed.length > 1 ? ` (${Math.min(radar.feed.length, FREE_QUOTES)})` : ""}
-                </p>
-                <p className="text-xs text-muted mb-2">
-                  Ejemplos puntuales de lo que se dijo al aire, con canal, programa y fecha.
-                </p>
-                <div className="space-y-4">
-                  {radar.feed.slice(0, FREE_QUOTES).map((f, i) => (
-                    <div key={i} className="border-l-2 border-line pl-4">
-                      <p className="text-sm leading-relaxed">&laquo;{f.quote}&raquo;</p>
-                      <p className="mt-2 text-xs text-muted">
-                        {f.channel} · {f.program} · {fechaCorta(f.date)}
-                        {" · "}
-                        {SENT_LABEL[f.sentiment]}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-8 rounded-xl border border-dashed border-signal-line bg-signal-soft/50 p-5">
-              <p className="text-sm font-medium">
-                🔒 Cuánta gente estaba mirando en ese momento y cómo reaccionó el chat — eso
-                es lo que hace a Palco distinto, y solo se ve con cuenta.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link href="/login" className="btn-signal">
-                  Probalo gratis
-                </Link>
-                <a href={whatsappPagoUrl()} className="btn-ghost">
-                  Hablar por WhatsApp
-                </a>
-              </div>
-            </div>
-
-            <p className="mt-6 text-xs text-muted">
-              Muestra del corpus ya capturado por {APP_NAME}. No es en vivo ni se actualiza
-              minuto a minuto en esta vista pública — para eso está el tablero de Palco.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* resultado: candidato del catálogo, todavía sin ficha completa */}
-      {selected && !radar && (
-        <section className="mx-auto w-full max-w-6xl px-6 pb-16">
-          <div className="card p-6 md:p-8">
-            <div className="flex items-start justify-between flex-wrap gap-3">
-              <div>
-                <p className="eyebrow">{selected.kind}</p>
-                <h2 className="font-display text-2xl font-semibold tracking-tight mt-1">
-                  {selected.name}
-                </h2>
-              </div>
-              <div className="text-right">
-                <p className="font-display text-3xl font-semibold tracking-tight text-signal">
-                  {selected.mentions.toLocaleString("es-AR")}
-                </p>
-                <p className="text-xs text-muted">
-                  menciones{selected.channels ? ` en ${selected.channels} canales` : ""}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-              {selected.programs != null && (
-                <div>
-                  <p className="text-muted text-xs">Programas</p>
-                  <p className="font-semibold">{selected.programs}</p>
-                </div>
-              )}
-              {selected.first_seen && (
-                <div>
-                  <p className="text-muted text-xs">Primera vez visto</p>
-                  <p className="font-semibold">{fechaCorta(selected.first_seen)}</p>
-                </div>
-              )}
-              {selected.last_seen && (
-                <div>
-                  <p className="text-muted text-xs">Última vez visto</p>
-                  <p className="font-semibold">{fechaCorta(selected.last_seen)}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-8 rounded-xl border border-dashed border-signal-line bg-signal-soft/50 p-5">
-              <p className="text-sm font-medium">
-                Este nombre está identificado en el corpus pero todavía no tiene ficha
-                completa (citas, desglose por canal, tono). Eso se arma automático apenas lo
-                sumás a una watchlist en Palco — junto con audiencia en vivo y reacción del
-                chat.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link href="/login" className="btn-signal">
-                  Sumarlo a mi watchlist
-                </Link>
-                <a href={whatsappPagoUrl()} className="btn-ghost">
-                  Hablar por WhatsApp
-                </a>
-              </div>
-            </div>
-          </div>
+          <EntityFicha selected={selected} radar={radar ?? null} />
         </section>
       )}
 
