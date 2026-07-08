@@ -49,7 +49,7 @@ export function EntityFicha({ selected, radar }: { selected: Explorable; radar: 
               Por día, todos los canales sumados. Solo habla al aire, no incluye chat.
             </p>
             <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-              {radar.by_day.slice(-FREE_DAYS).map((d) => {
+              {[...radar.by_day.slice(-FREE_DAYS)].reverse().map((d) => {
                 const dias = radar.by_day.slice(-FREE_DAYS);
                 const max = Math.max(...dias.map((x) => x.mentions), 1);
                 return (

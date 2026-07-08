@@ -658,14 +658,29 @@ export default function PalcoPage() {
       let neg = 0;
       let neu = 0;
       let pos = 0;
+      let aire = 0;
+      let chat = 0;
+      const porCanal = new Map<string, number>();
       for (const m of menc) {
         if (m.sentiment === "neg") neg++;
         else if (m.sentiment === "pos") pos++;
         else neu++;
+        if (m.origen === "chat") chat++;
+        else aire++;
+        if (m.channel) porCanal.set(m.channel, (porCanal.get(m.channel) ?? 0) + 1);
       }
       const total = neg + neu + pos || 1;
       const negPct = Math.round((neg / total) * 100);
       const posPct = Math.round((pos / total) * 100);
+      const neuPct = Math.max(0, 100 - negPct - posPct);
+      let topCanal: string | null = null;
+      let topCanalN = 0;
+      for (const [canal, n] of porCanal) {
+        if (n > topCanalN) {
+          topCanal = canal;
+          topCanalN = n;
+        }
+      }
       return {
         slug: r.slug,
         name: r.name,
@@ -673,6 +688,10 @@ export default function PalcoPage() {
         mentions: menc.length,
         negPct,
         posPct,
+        neuPct,
+        aire,
+        chat,
+        topCanal,
         net: posPct - negPct,
       };
     });
@@ -1713,6 +1732,15 @@ export default function PalcoPage() {
                               {r.name}
                             </p>
                             <p className="text-[11px] text-slate-400">{r.type}</p>
+                            {topCatalogoTab === "menciones" && (
+                              <div className="mt-1 flex items-center gap-2">
+                                <span className="shrink-0 text-[11px] text-slate-400">
+                                  {r.topCanal && <span className="truncate">{r.topCanal} · </span>}
+                                  {r.aire} aire · {r.chat} chat
+                                </span>
+                                <MiniImagenBar s={{ neg: r.negPct, neu: r.neuPct, pos: r.posPct }} />
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex shrink-0 items-center gap-2 text-right text-[12px]">

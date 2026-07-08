@@ -15,7 +15,7 @@ import bundledEntitiesRaw from "@/data/palco_entities.json";
 import bundledCatalogRaw from "@/data/palco_catalog.json";
 import { fetchDatasets } from "@/lib/supabase";
 import { matchesQuery } from "@/lib/palco-watchlist";
-import { rankNombresHoy, type NombreHoyRow } from "@/lib/pulso";
+import { rankNombresHoy, TONO_LABEL, type NombreHoyRow } from "@/lib/pulso";
 import { EntityFicha } from "@/components/entity-ficha";
 import {
   type EntitiesData,
@@ -177,6 +177,25 @@ export function LandingLive({ children }: { children: ReactNode }) {
                             <LiveDeltaBadge delta={flashesHoy.get(r.slug)} />
                           </span>
                         </div>
+                        {(r.topCanal || r.tono.dominante) && (
+                          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
+                            {r.topCanal && <span className="truncate">{r.topCanal}</span>}
+                            {r.topCanal && r.tono.dominante && <span>·</span>}
+                            {r.tono.dominante && (
+                              <span
+                                className={
+                                  r.tono.dominante === "pos"
+                                    ? "text-up"
+                                    : r.tono.dominante === "neg"
+                                      ? "text-crisis"
+                                      : "text-muted"
+                                }
+                              >
+                                tono {TONO_LABEL[r.tono.dominante]}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <div className="mt-1.5 h-1.5 w-full rounded-full bg-surface overflow-hidden">
                           <div
                             className="pulso-bar h-full rounded-full bg-signal-bright"

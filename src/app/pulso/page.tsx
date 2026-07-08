@@ -9,6 +9,7 @@ import {
   rankNombresHoy,
   rankNombresAcumulado,
   rankPulsoPolitico,
+  TONO_LABEL,
   type RadarTema,
   type NombreHoyRow,
   type NombreAcumuladoRow,
@@ -28,7 +29,8 @@ type RadarFicha = {
   entity: string;
   type: string;
   totals: { transcript_mentions: number; chat_mentions?: number; channels: number };
-  by_day: { day: string; mentions: number }[];
+  share_of_voice?: { channel: string; mentions: number; pct: number }[];
+  by_day: { day: string; mentions: number; neg?: number; neu?: number; pos?: number }[];
 };
 type EntitiesData = { radars: Record<string, RadarFicha> };
 
@@ -37,6 +39,33 @@ const bundledRadar = bundledRadarRaw as unknown as RadarTema[];
 
 const REFRESH_MS = 45_000;
 type Vista = "nombres" | "politica";
+
+/** Línea chica bajo el nombre: canal donde más se lo mencionó + tono
+ *  predominante (aire + chat, acumulado en la ventana que le pasemos). */
+function CanalYTono({
+  topCanal,
+  dominante,
+}: {
+  topCanal: string | null;
+  dominante: "neg" | "neu" | "pos" | null;
+}) {
+  if (!topCanal && !dominante) return null;
+  return (
+    <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-muted">
+      {topCanal && <span className="truncate">{topCanal}</span>}
+      {topCanal && dominante && <span>·</span>}
+      {dominante && (
+        <span
+          className={
+            dominante === "pos" ? "text-up" : dominante === "neg" ? "text-crisis" : "text-muted"
+          }
+        >
+          tono {TONO_LABEL[dominante]}
+        </span>
+      )}
+    </p>
+  );
+}
 
 function haceCuanto(d: Date | null): string {
   if (!d) return "cargando…";
@@ -222,6 +251,7 @@ export default function PulsoPage() {
                             <LiveDeltaBadge delta={flashesHoy.get(r.slug)} />
                           </span>
                         </div>
+                        <CanalYTono topCanal={r.topCanal} dominante={r.tono.dominante} />
                         <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
                           <div
                             className="pulso-bar h-full rounded-full bg-signal-bright"
@@ -267,10 +297,16 @@ export default function PulsoPage() {
                           {r.entity}
                         </span>
                         <span className="shrink-0 text-xs text-muted">
-                          <AnimatedNumber value={r.acumulado} />
+                          <AnimatedNumber value={r.acumulado} /> aire
+                          {r.chatAcumulado > 0 && (
+                            <span className="ml-1">
+                              + <AnimatedNumber value={r.chatAcumulado} /> chat
+                            </span>
+                          )}
                           <LiveDeltaBadge delta={flashesAcumulado.get(r.slug)} />
                         </span>
                       </div>
+                      <CanalYTono topCanal={r.topCanal} dominante={r.tono.dominante} />
                       <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
                         <div
                           className="pulso-bar h-full rounded-full bg-signal"
