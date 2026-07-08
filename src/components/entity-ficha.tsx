@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { APP_NAME } from "@/config/app";
-import { whatsappPagoUrl } from "@/config/trial";
+import { mailtoPagoUrl } from "@/config/trial";
 import {
   type Explorable,
   type Radar,
@@ -125,8 +125,8 @@ export function EntityFicha({ selected, radar }: { selected: Explorable; radar: 
             <Link href="/login" className="btn-signal">
               Probalo gratis
             </Link>
-            <a href={whatsappPagoUrl()} className="btn-ghost">
-              Hablar por WhatsApp
+            <a href={mailtoPagoUrl()} className="btn-ghost">
+              Escribinos por mail
             </a>
           </div>
         </div>
@@ -190,8 +190,8 @@ export function EntityFicha({ selected, radar }: { selected: Explorable; radar: 
           <Link href="/login" className="btn-signal">
             Sumarlo a mi watchlist
           </Link>
-          <a href={whatsappPagoUrl()} className="btn-ghost">
-            Hablar por WhatsApp
+          <a href={mailtoPagoUrl()} className="btn-ghost">
+            Escribinos por mail
           </a>
         </div>
       </div>

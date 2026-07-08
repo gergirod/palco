@@ -19,6 +19,11 @@ import {
 } from "../pulso/pulso-fx";
 import { PaywallExpired } from "@/components/palco/PaywallExpired";
 import {
+  EntityConstellation,
+  type ConstelacionNodo,
+  type ConstelacionEdge,
+} from "@/components/palco/EntityConstellation";
+import {
   loadPalcoAccount,
   savePalcoAccount,
   isPalcoAccountConfigured,
@@ -27,7 +32,7 @@ import {
   type TrialState,
 } from "@/lib/palco-account";
 import { APP_NAME } from "@/config/app";
-import { TRIAL_DIAS, PAGO, whatsappPagoUrl } from "@/config/trial";
+import { TRIAL_DIAS, PAGO, mailtoPagoUrl } from "@/config/trial";
 
 /* ---------- tipos ---------- */
 type Card = {
@@ -1326,6 +1331,28 @@ export default function PalcoPage() {
       .slice(0, 4);
   }, [D, slug]);
 
+  // Constelación: tu watchlist + tus rivales cargados, con los cruces reales
+  // (D.comenciones) como aristas — mismo dato que "Cruces · nombrados juntos
+  // al aire" de más abajo, pero de toda la cuenta a la vez, no entidad por
+  // entidad. Nada inventado: si dos nombres no comparten programa, no hay línea.
+  const constelacion = useMemo(() => {
+    const rivalSlugs = Object.values(compByEntity);
+    const slugs = Array.from(new Set([...watch, ...rivalSlugs]));
+    const propios = new Set(watch);
+    const nodos: ConstelacionNodo[] = slugs
+      .map((s) => {
+        const row = D.index.find((r) => r.slug === s);
+        if (!row) return null;
+        return { slug: s, nombre: row.name, mentions: row.mentions, propio: propios.has(s) };
+      })
+      .filter((n): n is ConstelacionNodo => n !== null);
+    const idSet = new Set(nodos.map((n) => n.slug));
+    const edges: ConstelacionEdge[] = ((D as Data).comenciones ?? [])
+      .filter((p) => idSet.has(p.par[0]) && idSet.has(p.par[1]))
+      .map((p) => ({ source: p.par[0], target: p.par[1], cruces: p.cruces_total }));
+    return { nodos, edges };
+  }, [D, watch, compByEntity]);
+
   if (!accountReady) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9]">
@@ -1348,23 +1375,21 @@ export default function PalcoPage() {
             </div>
             <h1 className="mt-4 text-2xl font-bold">Tu cuenta está pausada</h1>
             <p className="mt-2 text-[15px] leading-relaxed text-slate-600">
-              Escribinos y la reactivamos en el momento.
+              Escribinos y la reactivamos.
             </p>
             <div className="mt-6 flex flex-col gap-2.5">
               <a
-                href={whatsappPagoUrl(email)}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={mailtoPagoUrl(email)}
                 className="rounded-lg px-6 py-3 text-[15px] font-semibold text-white hover:opacity-90"
                 style={{ backgroundColor: BRAND }}
               >
-                Escribir por WhatsApp
+                Escribir por mail
               </a>
               <a
                 href={`mailto:${PAGO.email}?subject=${encodeURIComponent(`${APP_NAME} - reactivar cuenta`)}`}
                 className="text-[13px] font-medium text-slate-500 hover:text-slate-800"
               >
-                o escribinos a {PAGO.email}
+                o escribinos directo a {PAGO.email}
               </a>
             </div>
           </div>
@@ -1394,12 +1419,10 @@ export default function PalcoPage() {
           <div className="flex items-center gap-2 sm:gap-3 text-[13px]">
             {trial?.kind === "trial" ? (
               <a
-                href={whatsappPagoUrl(email)}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={mailtoPagoUrl(email)}
                 className="rounded-full border border-signal-line bg-signal-soft px-3 py-1 font-medium hover:opacity-90"
                 style={{ color: BRAND }}
-                title="Activar mi plan"
+                title="Escribinos para seguir después de la prueba"
               >
                 Prueba
                 {trial.diasRestantes > 0
@@ -1635,6 +1658,29 @@ export default function PalcoPage() {
       </Sheet>
 
       <div className="mx-auto max-w-[1100px] px-5 py-8">
+        {/* Constelación: tu watchlist + rivales, con los cruces reales del aire
+            como conexiones. Solo tiene sentido con ≥2 nodos (si seguís 1 solo
+            nombre sin rival cargado, no hay nada que conectar). */}
+        {constelacion.nodos.length > 1 && (
+          <section className="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+              Constelación · quién se nombra con quién
+            </h2>
+            <p className="mt-0.5 text-[12px] text-slate-400">
+              Tus seguidos (ámbar) y tus rivales cargados (gris), conectados cuando el
+              streaming los nombró juntos en el mismo programa.
+            </p>
+            <div className="mt-3">
+              <EntityConstellation
+                nodos={constelacion.nodos}
+                edges={constelacion.edges}
+                activeSlug={slug}
+                onSelect={setSlug}
+              />
+            </div>
+          </section>
+        )}
+
         {/* Top del catálogo: colapsado por default, arriba de todo. Vidriera
             de TODO streaming argentino trackeado (no solo tu watchlist):
             quién más se habla y quién tiene mejor/peor imagen, acumulado en

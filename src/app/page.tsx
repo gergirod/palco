@@ -1,6 +1,7 @@
 import Link from "next/link";
 import bundled from "@/data/palco_entities.json";
 import { APP_NAME } from "@/config/app";
+import { mailtoPagoUrl } from "@/config/trial";
 import { LandingLive } from "./landing-live";
 
 /** Cifra real del catálogo (palco_entities → catalog_summary.candidates_count). */
@@ -152,9 +153,9 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Link href="/login" className="btn-ghost mt-6 justify-center">
-                Consultanos
-              </Link>
+              <a href={mailtoPagoUrl()} className="btn-ghost mt-6 justify-center">
+                Consultanos por mail
+              </a>
             </div>
           ))}
         </div>

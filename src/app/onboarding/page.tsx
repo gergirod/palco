@@ -619,7 +619,11 @@ export default function OnboardingPage() {
       router.push("/login");
       return;
     }
-    const saved = await savePalcoAccount(pending, { startTrial: !isEdit });
+    // No auto-arranca la prueba: la cuenta nueva queda "pending" y German la
+    // activa a mano por mail (venta a equipos de campaña, no self-serve). En
+    // modo edición no tocamos status/trial_ends_at existentes. Ver
+    // src/config/trial.ts y PaywallExpired.tsx.
+    const saved = await savePalcoAccount(pending, { isNewAccount: !isEdit });
     setEntrarLoading(false);
     if (!saved.ok) {
       window.alert(saved.error ?? "No se pudo guardar tu cuenta.");
@@ -1428,7 +1432,8 @@ export default function OnboardingPage() {
             </div>
 
             <p className="mt-6 text-center text-[12px] text-slate-400">
-              Tu prueba gratis de <b>{TRIAL_DIAS} días</b> arranca cuando abras el panel.
+              Te escribimos para activar tu prueba gratis de <b>{TRIAL_DIAS} días</b> —
+              no arranca sola, la confirmamos con vos primero.
             </p>
 
             <OnboardingStepFooter
@@ -1438,7 +1443,7 @@ export default function OnboardingPage() {
                 entrarLoading
                   ? "Guardando…"
                   : authEnabled
-                    ? `Empezar prueba gratis · ${TRIAL_DIAS} días →`
+                    ? "Confirmar y que me activen →"
                     : "Ver mi tablero →"
               }
               onNext={() => void entrar()}

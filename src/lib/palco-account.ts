@@ -116,7 +116,13 @@ export function clearPendingAccount() {
 }
 
 export type SavePalcoAccountOpts = {
-  /** Al terminar onboarding: plan Pro + prueba de TRIAL_DIAS días. */
+  /** true si es un alta nueva (onboarding, no edición de una cuenta existente).
+   *  Ya no auto-arranca la prueba (venta a campañas por mail, no self-serve):
+   *  una cuenta nueva siempre entra "pending" — vos la activás a mano en
+   *  Supabase (status='trial' o 'active') después de la conversación. */
+  isNewAccount?: boolean;
+  /** Excepción manual: forzar el arranque de la prueba en el momento del alta
+   *  (no se usa desde el onboarding hoy, pero queda por si activás así). */
   startTrial?: boolean;
 };
 
@@ -145,6 +151,12 @@ export async function savePalcoAccount(
   if (opts?.startTrial) {
     row.status = "trial";
     row.trial_ends_at = new Date(Date.now() + TRIAL_DIAS * MS_DIA).toISOString();
+  } else if (opts?.isNewAccount) {
+    // Alta nueva sin activación automática: queda pending hasta que la
+    // actives a mano. Se setean explícito para pisar el default de la
+    // columna en la DB (que hoy es 'trial').
+    row.status = "pending";
+    row.trial_ends_at = null;
   }
 
   const { error } = await sb.from("palco_accounts").upsert(row, { onConflict: "user_id" });
