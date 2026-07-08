@@ -1,16 +1,19 @@
 "use client";
 
-/** Ecualizador 3D del catálogo: una barra por canal, altura = menciones reales
- *  acumuladas en ese canal (share_of_voice de todas las entidades del índice
- *  público). No es decoración con números al voleo — cada barra es un dato
- *  real que ya vive en palco_entities.json, solo que nunca lo mostramos así.
+/** Terreno wireframe interactivo: una malla que ondula sola (nunca se queda
+ *  quieta) y cuyo relieve real está anclado a datos reales — la altura de
+ *  cada columna sigue las menciones acumuladas de un canal (share_of_voice
+ *  de todo el catálogo). Se arrastra con el mouse para rotar (OrbitControls).
  *
- *  Three.js crudo (no react-force-graph-3d: acá no hay grafo, es geometría
- *  simple) — mismo patrón de carga que EntityConstellation: dynamic import
- *  con ssr:false lo hace quien nos importa, este archivo asume WebGL presente. */
+ *  Reemplaza al primer intento (barras rígidas 3D) que salió con la cámara
+ *  mal encuadrada — acá el tamaño real del contenedor se mide con
+ *  ResizeObserver (no solo "resize" de window) y se re-mide un frame después
+ *  del mount, así nunca queda con un aspect ratio roto por un layout que
+ *  todavía no había asentado. */
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 export type CanalBarra = { label: string; mentions: number };
 
@@ -19,13 +22,15 @@ type Props = {
   className?: string;
 };
 
-const BRAND = 0xb45309;
-const BRAND_BRIGHT = 0xfbbf24;
+const COLD = new THREE.Color("#1e2a3a"); // valle: casi sin menciones
+const HOT = new THREE.Color("#fbbf24"); // pico: canal más nombrado
+
+const SEG_PER_CHANNEL = 5;
+const DEPTH_SEGMENTS = 22;
+const PLANE_DEPTH = 7;
 
 export function ChannelPulse3D({ canales, className }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  // Guardamos los valores actuales en un ref para que el loop de animación
-  // (que vive fuera de React) siempre lea el último dato sin recrear la escena.
   const dataRef = useRef<CanalBarra[]>(canales);
   dataRef.current = canales;
 
@@ -33,133 +38,182 @@ export function ChannelPulse3D({ canales, className }: Props) {
     const mount = mountRef.current;
     if (!mount) return;
 
-    const width = mount.clientWidth;
-    const height = mount.clientHeight;
-
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 5.5, 11);
-    camera.lookAt(0, 1.5, 0);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 6.5, 9.5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     mount.appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const key = new THREE.PointLight(0xffedd5, 1.2, 30);
-    key.position.set(4, 8, 6);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.5;
+    controls.minPolarAngle = Math.PI / 5;
+    controls.maxPolarAngle = Math.PI / 2.3;
+    controls.target.set(0, 0.3, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const key = new THREE.PointLight(0xffedd5, 1, 30);
+    key.position.set(4, 7, 5);
     scene.add(key);
-    const rim = new THREE.PointLight(BRAND_BRIGHT, 0.8, 30);
-    rim.position.set(-6, 3, -4);
-    scene.add(rim);
 
-    const n = Math.max(1, dataRef.current.length);
-    const spacing = 1.05;
-    const startX = -((n - 1) * spacing) / 2;
+    // --- geometría: se reconstruye si cambia la cantidad de canales ---
+    let planeWidth = 12;
+    let widthSegments = SEG_PER_CHANNEL * 4;
+    let geometry: THREE.PlaneGeometry | null = null;
+    let mesh: THREE.Mesh | null = null;
+    let wireMesh: THREE.LineSegments | null = null;
 
-    const bars: THREE.Mesh[] = [];
-    const targetHeights: number[] = new Array(n).fill(0.05);
-    const currentHeights: number[] = new Array(n).fill(0.05);
-
-    for (let i = 0; i < n; i++) {
-      const geo = new THREE.BoxGeometry(0.62, 1, 0.62);
-      const mat = new THREE.MeshStandardMaterial({
-        color: BRAND,
-        emissive: BRAND,
-        emissiveIntensity: 0.25,
-        roughness: 0.35,
-        metalness: 0.15,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(startX + i * spacing, 0.025, 0);
-      scene.add(mesh);
-      bars.push(mesh);
+    function alturaCanal(u: number, heights: number[]): number {
+      // u en [0, n-1]: interpola suave entre el canal i y el i+1.
+      const n = heights.length;
+      if (n === 0) return 0;
+      if (n === 1) return heights[0];
+      const i = Math.max(0, Math.min(n - 2, Math.floor(u)));
+      const frac = u - i;
+      const smooth = frac * frac * (3 - 2 * frac); // smoothstep
+      return heights[i] + (heights[i + 1] - heights[i]) * smooth;
     }
 
-    // Piso sutil para que las barras no floten en el vacío.
-    const floorGeo = new THREE.PlaneGeometry(40, 40);
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x0b0f14, roughness: 1 });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.001;
-    scene.add(floor);
+    function buildGeometry() {
+      const data = dataRef.current;
+      const n = Math.max(2, data.length);
+      widthSegments = SEG_PER_CHANNEL * (n - 1);
+      planeWidth = Math.max(8, (n - 1) * 1.3);
 
-    function recomputeTargets() {
+      if (mesh) scene.remove(mesh);
+      if (wireMesh) scene.remove(wireMesh);
+      geometry?.dispose();
+
+      geometry = new THREE.PlaneGeometry(planeWidth, PLANE_DEPTH, widthSegments, DEPTH_SEGMENTS);
+      const colors = new Float32Array(geometry.attributes.position.count * 3);
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+      const mat = new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.16,
+        side: THREE.DoubleSide,
+      });
+      mesh = new THREE.Mesh(geometry, mat);
+      mesh.rotation.x = -Math.PI / 2;
+      scene.add(mesh);
+
+      const wireGeo = new THREE.WireframeGeometry(geometry);
+      const wireMat = new THREE.LineBasicMaterial({ color: 0xb45309, transparent: true, opacity: 0.65 });
+      wireMesh = new THREE.LineSegments(wireGeo, wireMat);
+      wireMesh.rotation.x = -Math.PI / 2;
+      scene.add(wireMesh);
+    }
+    buildGeometry();
+
+    let wireframeFrame = 0;
+    function updateVertices(t: number) {
+      if (!geometry) return;
       const data = dataRef.current;
       const max = Math.max(1, ...data.map((c) => c.mentions));
-      for (let i = 0; i < bars.length; i++) {
-        const val = data[i]?.mentions ?? 0;
-        targetHeights[i] = 0.15 + (val / max) * 3.4;
+      const heights = data.map((c) => 0.25 + (c.mentions / max) * 2.6);
+      const n = Math.max(2, data.length);
+
+      const pos = geometry.attributes.position as THREE.BufferAttribute;
+      const col = geometry.attributes.color as THREE.BufferAttribute;
+      const cols = widthSegments + 1;
+      const rows = DEPTH_SEGMENTS + 1;
+
+      for (let idx = 0; idx < pos.count; idx++) {
+        const colI = idx % cols;
+        const rowI = Math.floor(idx / cols);
+        const u = (colI / widthSegments) * (n - 1);
+        const v = rowI / DEPTH_SEGMENTS; // 0..1 a lo largo de la profundidad
+
+        const base = alturaCanal(u, heights);
+        const norm = base / 2.85;
+
+        // ondas vivas: viajan en profundidad y a lo largo del tiempo, más
+        // marcadas donde hay más actividad real — nunca queda quieto.
+        const wave =
+          Math.sin(u * 1.1 + t * 0.9) * 0.14 +
+          Math.sin(v * 6 - t * 1.3) * 0.1 +
+          Math.sin((u + v * 3) * 0.7 + t * 0.5) * 0.08;
+
+        const z = base + wave * (0.35 + norm * 0.65);
+        pos.setZ(idx, z);
+
+        const heat = Math.max(0, Math.min(1, z / 2.85));
+        const c = COLD.clone().lerp(HOT, heat);
+        col.setXYZ(idx, c.r, c.g, c.b);
+      }
+      pos.needsUpdate = true;
+      col.needsUpdate = true;
+      geometry.computeVertexNormals();
+      // Regenerar el wireframe es la parte cara (recorre todas las aristas):
+      // alcanza con refrescarlo cada pocos frames, la malla sólida de abajo
+      // ya se mueve a 60fps y disimula el lag de las líneas.
+      wireframeFrame++;
+      if (wireMesh && wireframeFrame % 3 === 0) {
+        wireMesh.geometry.dispose();
+        wireMesh.geometry = new THREE.WireframeGeometry(geometry);
       }
     }
-    recomputeTargets();
+
+    // --- tamaño real del contenedor: ResizeObserver, no solo window.resize ---
+    function applySize() {
+      const w = mount.clientWidth;
+      const h = mount.clientHeight;
+      if (w < 2 || h < 2) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    }
+    // Un frame después del mount: garantiza que el layout final (flex/grid) ya asentó.
+    requestAnimationFrame(applySize);
+    const ro = new ResizeObserver(() => applySize());
+    ro.observe(mount);
 
     let raf = 0;
-    let t = 0;
-    let lastRecompute = 0;
-    function tick(now: number) {
+    let lastRebuild = dataRef.current.length;
+    function tick() {
       raf = requestAnimationFrame(tick);
-      t += 0.008;
-
-      // Reconsulta el dato real cada ~2s por si el poll de 45s trajo números nuevos.
-      if (now - lastRecompute > 2000) {
-        recomputeTargets();
-        lastRecompute = now;
+      const t = performance.now() / 1000;
+      if (dataRef.current.length !== lastRebuild) {
+        lastRebuild = dataRef.current.length;
+        buildGeometry();
       }
-
-      for (let i = 0; i < bars.length; i++) {
-        currentHeights[i] += (targetHeights[i] - currentHeights[i]) * 0.08;
-        const h = Math.max(0.05, currentHeights[i] + Math.sin(t * 2 + i) * 0.03);
-        bars[i].scale.y = h;
-        bars[i].position.y = h / 2;
-        const mat = bars[i].material as THREE.MeshStandardMaterial;
-        const heat = Math.min(1, currentHeights[i] / 3.4);
-        mat.emissiveIntensity = 0.2 + heat * 0.6;
-        mat.color.setHex(heat > 0.55 ? BRAND_BRIGHT : BRAND);
-        mat.emissive.setHex(heat > 0.55 ? BRAND_BRIGHT : BRAND);
-      }
-
-      camera.position.x = Math.sin(t * 0.15) * 2.2;
-      camera.lookAt(0, 1.4, 0);
-
+      updateVertices(t);
+      controls.update();
       renderer.render(scene, camera);
     }
     raf = requestAnimationFrame(tick);
 
-    function onResize() {
-      if (!mount) return;
-      const w = mount.clientWidth;
-      const h = mount.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    }
-    window.addEventListener("resize", onResize);
-
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-      bars.forEach((b) => {
-        b.geometry.dispose();
-        (b.material as THREE.Material).dispose();
-      });
-      floorGeo.dispose();
-      floorMat.dispose();
+      ro.disconnect();
+      controls.dispose();
+      geometry?.dispose();
+      wireMesh?.geometry.dispose();
+      (mesh?.material as THREE.Material | undefined)?.dispose();
+      (wireMesh?.material as THREE.Material | undefined)?.dispose();
       renderer.dispose();
       if (renderer.domElement.parentElement === mount) {
         mount.removeChild(renderer.domElement);
       }
     };
-    // Solo recreamos la escena si cambia la cantidad de canales (n); los valores
-    // se leen del ref en cada frame, así que no hace falta re-montar por poll.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canales.length]);
+  }, []);
 
   return (
     <div
       ref={mountRef}
-      className={`relative h-[260px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-[#0b0f14] sm:h-[300px] ${className ?? ""}`}
-    />
+      className={`relative h-[300px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-[#0b0f14] sm:h-[360px] ${className ?? ""}`}
+    >
+      <p className="pointer-events-none absolute bottom-2 left-3 text-[11px] text-slate-400">
+        Arrastrá para rotar · el relieve son las menciones reales por canal, todo el catálogo
+      </p>
+    </div>
   );
 }
