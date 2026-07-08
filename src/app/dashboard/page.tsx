@@ -19,11 +19,6 @@ import {
 } from "../pulso/pulso-fx";
 import { PaywallExpired } from "@/components/palco/PaywallExpired";
 import {
-  EntityConstellation,
-  type ConstelacionNodo,
-  type ConstelacionEdge,
-} from "@/components/palco/EntityConstellation";
-import {
   loadPalcoAccount,
   savePalcoAccount,
   isPalcoAccountConfigured,
@@ -1331,28 +1326,6 @@ export default function PalcoPage() {
       .slice(0, 4);
   }, [D, slug]);
 
-  // Constelación: tu watchlist + tus rivales cargados, con los cruces reales
-  // (D.comenciones) como aristas — mismo dato que "Cruces · nombrados juntos
-  // al aire" de más abajo, pero de toda la cuenta a la vez, no entidad por
-  // entidad. Nada inventado: si dos nombres no comparten programa, no hay línea.
-  const constelacion = useMemo(() => {
-    const rivalSlugs = Object.values(compByEntity);
-    const slugs = Array.from(new Set([...watch, ...rivalSlugs]));
-    const propios = new Set(watch);
-    const nodos: ConstelacionNodo[] = slugs
-      .map((s) => {
-        const row = D.index.find((r) => r.slug === s);
-        if (!row) return null;
-        return { slug: s, nombre: row.name, mentions: row.mentions, propio: propios.has(s) };
-      })
-      .filter((n): n is ConstelacionNodo => n !== null);
-    const idSet = new Set(nodos.map((n) => n.slug));
-    const edges: ConstelacionEdge[] = ((D as Data).comenciones ?? [])
-      .filter((p) => idSet.has(p.par[0]) && idSet.has(p.par[1]))
-      .map((p) => ({ source: p.par[0], target: p.par[1], cruces: p.cruces_total }));
-    return { nodos, edges };
-  }, [D, watch, compByEntity]);
-
   if (!accountReady) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#f6f7f9]">
@@ -1658,29 +1631,6 @@ export default function PalcoPage() {
       </Sheet>
 
       <div className="mx-auto max-w-[1100px] px-5 py-8">
-        {/* Constelación: tu watchlist + rivales, con los cruces reales del aire
-            como conexiones. Solo tiene sentido con ≥2 nodos (si seguís 1 solo
-            nombre sin rival cargado, no hay nada que conectar). */}
-        {constelacion.nodos.length > 1 && (
-          <section className="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
-              Constelación · quién se nombra con quién
-            </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
-              Tus seguidos (ámbar) y tus rivales cargados (gris), conectados cuando el
-              streaming los nombró juntos en el mismo programa.
-            </p>
-            <div className="mt-3">
-              <EntityConstellation
-                nodos={constelacion.nodos}
-                edges={constelacion.edges}
-                activeSlug={slug}
-                onSelect={setSlug}
-              />
-            </div>
-          </section>
-        )}
-
         {/* Top del catálogo: colapsado por default, arriba de todo. Vidriera
             de TODO streaming argentino trackeado (no solo tu watchlist):
             quién más se habla y quién tiene mejor/peor imagen, acumulado en

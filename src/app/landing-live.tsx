@@ -10,7 +10,6 @@
  *  se pasa como children para no perder ese SSR solo por vivir acá adentro. */
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import bundledEntitiesRaw from "@/data/palco_entities.json";
 import bundledCatalogRaw from "@/data/palco_catalog.json";
@@ -31,13 +30,6 @@ import {
   LiveDeltaBadge,
   PulsoHeartbeat,
 } from "@/app/pulso/pulso-fx";
-import type { CanalBarra } from "@/components/palco/ChannelPulse3D";
-
-// react-force-graph-3d y three tocan WebGL/window: sin ssr:false rompe el build.
-const ChannelPulse3D = dynamic(
-  () => import("@/components/palco/ChannelPulse3D").then((m) => m.ChannelPulse3D),
-  { ssr: false }
-);
 
 const bundledEntities = bundledEntitiesRaw as unknown as EntitiesData;
 const bundledCatalog = bundledCatalogRaw as unknown as CatalogData;
@@ -46,29 +38,6 @@ const REFRESH_MS = 45_000;
 const TOP_HOY = 7;
 const MAX_CHIPS = 8;
 const MAX_MATCHES = 8;
-
-/** El dato de share_of_voice viene con la capitalización que puso cada
- *  captura (a veces MAYÚSCULAS, a veces con el nombre completo del canal) —
- *  esto es solo prolijidad visual, no toca los números. */
-const CHANNEL_LABEL: Record<string, string> = {
-  GELATINA: "Gelatina",
-  OLGA: "Olga",
-  BLENDER: "Blender",
-  "AHORA PLAY": "Ahora Play",
-  "LUZU TV": "Luzu",
-  "A U R A": "Aura",
-  AZZ: "Azz",
-  BorderPeriodismo: "Border",
-  "Carnaval Stream": "Carnaval",
-  "Futurock FM": "Futurock",
-  "Neura Media": "Neura",
-  "El Cronista": "Cronista",
-  "Urbana Play 104.3 FM": "Urbana Play",
-  "Bondi Live": "Bondi",
-};
-function labelCanal(raw: string): string {
-  return CHANNEL_LABEL[raw] ?? raw;
-}
 
 function haceCuanto(d: Date | null): string {
   if (!d) return "cargando…";
@@ -128,23 +97,6 @@ export function LandingLive({ children }: { children: ReactNode }) {
   const maxHoy = Math.max(1, ...nombresHoy.map((r) => r.hoy));
   const actividad = nombresHoy.reduce((acc, r) => acc + r.hoy, 0);
   const intensidad = Math.min(1, actividad / 200);
-
-  /* Ecualizador de canales: menciones reales acumuladas por canal, sumando el
-     share_of_voice de todas las entidades del índice público. No es "hoy"
-     (el dataset no trae reparto por canal día a día, solo el total), pero es
-     100% real — el mismo número que ya mostramos en cada ficha, agregado. */
-  const pulsoCanales: CanalBarra[] = useMemo(() => {
-    const acc = new Map<string, number>();
-    for (const radar of Object.values(entities.radars ?? {})) {
-      for (const sv of radar.share_of_voice ?? []) {
-        const label = labelCanal(sv.channel);
-        acc.set(label, (acc.get(label) ?? 0) + sv.mentions);
-      }
-    }
-    return Array.from(acc.entries())
-      .map(([label, mentions]) => ({ label, mentions }))
-      .sort((a, b) => b.mentions - a.mentions);
-  }, [entities]);
 
   const chips = useMemo(() => explorables.slice(0, MAX_CHIPS), [explorables]);
   const matches = useMemo(() => {
@@ -267,16 +219,6 @@ export function LandingLive({ children }: { children: ReactNode }) {
             </Link>
           </div>
         </div>
-
-        {/* ecualizador 3D: un canal, una barra, altura = menciones reales acumuladas */}
-        {pulsoCanales.length > 2 && (
-          <div className="mt-8 xl:mt-10">
-            <p className="mb-2 text-xs text-muted">
-              Dónde se concentra la conversación — menciones reales por canal, todo el catálogo:
-            </p>
-            <ChannelPulse3D canales={pulsoCanales} />
-          </div>
-        )}
 
         {/* buscador + chips: no navega, la ficha aparece ahí mismo abajo */}
         <div className="mt-8 xl:mt-10 max-w-xl relative">
