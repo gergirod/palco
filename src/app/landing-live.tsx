@@ -35,7 +35,7 @@ const bundledEntities = bundledEntitiesRaw as unknown as EntitiesData;
 const bundledCatalog = bundledCatalogRaw as unknown as CatalogData;
 
 const REFRESH_MS = 45_000;
-const TOP_HOY = 5;
+const TOP_HOY = 7;
 const MAX_CHIPS = 8;
 const MAX_MATCHES = 8;
 
@@ -116,12 +116,12 @@ export function LandingLive({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <section className="mx-auto w-full max-w-6xl px-6 pt-14 pb-6 md:pt-20">
-        <div className="grid md:grid-cols-2 gap-10 items-start">
-          <div>{children}</div>
+      <section className="mx-auto w-full max-w-6xl xl:max-w-7xl px-6 pt-10 pb-6 md:pt-16 xl:pt-20">
+        <div className="grid md:grid-cols-2 gap-10 xl:gap-16 items-stretch">
+          <div className="flex flex-col justify-center">{children}</div>
 
           {/* ticker en vivo — reemplaza la card estática de ejemplo */}
-          <div className="card p-6 md:justify-self-end w-full max-w-sm">
+          <div className="card p-6 md:p-7 xl:p-8 w-full md:max-w-md md:justify-self-end flex flex-col">
             <div className="flex items-center justify-between text-xs">
               <span className="inline-flex items-center gap-2 font-medium text-signal">
                 <span className="pulso-live-dot inline-block h-2 w-2 rounded-full bg-up" />
@@ -130,27 +130,43 @@ export function LandingLive({ children }: { children: ReactNode }) {
               <span className="text-muted">actualizado {haceCuanto(lastUpdate)}</span>
             </div>
             <PulsoHeartbeat intensidad={intensidad} className="mt-3" />
-            <p className="mt-3 text-xs text-muted">
+
+            <div className="mt-4 flex items-baseline justify-between border-b border-line pb-4">
+              <div>
+                <p className="font-display text-2xl xl:text-3xl font-semibold tracking-tight">
+                  <AnimatedNumber value={actividad} />
+                </p>
+                <p className="text-xs text-muted">menciones hoy, todos los canales</p>
+              </div>
+              <div className="text-right">
+                <p className="font-display text-2xl xl:text-3xl font-semibold tracking-tight text-signal">
+                  {nombresHoy.length}
+                </p>
+                <p className="text-xs text-muted">nombres activos ahora</p>
+              </div>
+            </div>
+
+            <p className="mt-4 text-xs text-muted">
               Lo más mencionado hoy en el streaming argentino:
             </p>
-            <ol className="mt-2 space-y-2">
+            <ol className="mt-3 space-y-3 xl:space-y-3.5 flex-1">
               {nombresHoy.map((r, i) => {
                 const diff = r.ayer == null ? null : r.hoy - r.ayer;
                 return (
                   <li key={r.slug} ref={flipHoy(r.slug)} className="pulso-row">
                     <button
                       onClick={() => elegir(r.slug, r.entity)}
-                      className="w-full flex items-center gap-3 group text-left"
+                      className="w-full flex items-center gap-3 group text-left py-0.5"
                     >
-                      <span className="w-4 shrink-0 text-right font-display text-sm font-semibold text-muted">
+                      <span className="w-5 shrink-0 text-right font-display text-base font-semibold text-muted">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-2">
-                          <span className="truncate text-sm font-medium group-hover:text-signal">
+                          <span className="truncate text-sm xl:text-base font-medium group-hover:text-signal">
                             {r.entity}
                           </span>
-                          <span className="shrink-0 text-xs text-muted">
+                          <span className="shrink-0 text-sm text-muted">
                             <AnimatedNumber value={r.hoy} />
                             {diff != null && diff !== 0 && (
                               <span className={diff > 0 ? "ml-1 text-up" : "ml-1 text-crisis"}>
@@ -161,7 +177,7 @@ export function LandingLive({ children }: { children: ReactNode }) {
                             <LiveDeltaBadge delta={flashesHoy.get(r.slug)} />
                           </span>
                         </div>
-                        <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
+                        <div className="mt-1.5 h-1.5 w-full rounded-full bg-surface overflow-hidden">
                           <div
                             className="pulso-bar h-full rounded-full bg-signal-bright"
                             style={{ width: `${(r.hoy / maxHoy) * 100}%` }}
@@ -186,7 +202,7 @@ export function LandingLive({ children }: { children: ReactNode }) {
         </div>
 
         {/* buscador + chips: no navega, la ficha aparece ahí mismo abajo */}
-        <div className="mt-8 max-w-xl">
+        <div className="mt-8 xl:mt-10 max-w-xl relative">
           <input
             value={query}
             onChange={(e) => {
@@ -194,8 +210,20 @@ export function LandingLive({ children }: { children: ReactNode }) {
               setSelectedSlug(null);
             }}
             placeholder="Buscá un nombre: Milei, Messi, Adorni…"
-            className="w-full rounded-full border border-line bg-white px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-signal-ring"
+            className="w-full rounded-full border border-line bg-white px-5 py-3.5 pr-11 text-sm sm:text-base outline-none focus:ring-2 focus:ring-signal-ring"
           />
+          {(query.trim() || selectedSlug) && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setSelectedSlug(null);
+              }}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-full text-muted hover:bg-surface hover:text-ink"
+            >
+              ✕
+            </button>
+          )}
           {query.trim() && !selectedSlug && (
             <div className="mt-2 card divide-y divide-line overflow-hidden max-h-80 overflow-y-auto">
               {matches.length === 0 && (
@@ -212,7 +240,7 @@ export function LandingLive({ children }: { children: ReactNode }) {
                 <button
                   key={row.slug}
                   onClick={() => elegir(row.slug, row.name)}
-                  className="w-full text-left px-4 py-3 text-sm hover:bg-signal-soft flex items-center justify-between gap-3"
+                  className="w-full text-left px-4 py-3.5 text-sm hover:bg-signal-soft flex items-center justify-between gap-3"
                 >
                   <span className="font-medium">{row.name}</span>
                   <span className="text-xs text-muted">{row.kind}</span>
@@ -227,7 +255,7 @@ export function LandingLive({ children }: { children: ReactNode }) {
               <button
                 key={row.slug}
                 onClick={() => elegir(row.slug, row.name)}
-                className="rounded-full border border-line bg-white px-3 py-1.5 text-xs hover:bg-signal-soft transition"
+                className="rounded-full border border-line bg-white px-3.5 py-2 text-xs sm:text-sm hover:bg-signal-soft transition"
               >
                 {row.name}
               </button>
@@ -239,6 +267,15 @@ export function LandingLive({ children }: { children: ReactNode }) {
       {/* ficha inline: histórico + share of voice + citas, sin salir de la landing */}
       {selected && (
         <section className="mx-auto w-full max-w-6xl px-6 pb-14">
+          <button
+            onClick={() => {
+              setSelectedSlug(null);
+              setQuery("");
+            }}
+            className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-ink"
+          >
+            <span aria-hidden>✕</span> Cerrar y volver
+          </button>
           <EntityFicha selected={selected} radar={radar ?? null} />
         </section>
       )}

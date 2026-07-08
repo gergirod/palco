@@ -82,19 +82,19 @@ export default function Landing() {
           de sentirse como dos productos separados. */}
       <LandingLive>
         <p className="eyebrow mb-5">Monitoreo del streaming en vivo · Argentina</p>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] sm:leading-[1.08]">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-[1.1] sm:leading-[1.08]">
           Enterate cuándo, cómo y dónde se habla de las{" "}
           <span className="text-signal">personas y empresas</span> que te importan.
         </h1>
-        <p className="mt-5 text-lg text-ink font-medium">
+        <p className="mt-5 xl:mt-6 text-lg xl:text-xl text-ink font-medium">
           {APP_NAME} escucha {CANALES.length} canales del streaming en vivo argentino.
         </p>
-        <p className="mt-3 text-lg text-muted">
+        <p className="mt-3 text-lg xl:text-xl text-muted">
           Vos cargás los perfiles. {APP_NAME} te avisa el mismo día en qué programa se
           habló, qué se dijo y con qué tono — y si conviene prender una alarma.
         </p>
         {CANDIDATOS_COUNT > 0 && (
-          <p className="mt-3 text-sm font-medium text-signal">
+          <p className="mt-3 text-sm xl:text-base font-medium text-signal">
             {CANDIDATOS_COUNT} personas y empresas ya identificadas en el streaming
             argentino, en vivo, todos los días.
           </p>

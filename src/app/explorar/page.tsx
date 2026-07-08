@@ -111,7 +111,7 @@ function ExplorarInner() {
           Palco.
         </p>
 
-        <div className="mt-8 max-w-xl">
+        <div className="mt-8 max-w-xl relative">
           <input
             value={query}
             onChange={(e) => {
@@ -119,8 +119,20 @@ function ExplorarInner() {
               setSelectedSlug(null);
             }}
             placeholder="Escribí un nombre: Milei, Messi, Adorni, Movistar Arena…"
-            className="w-full rounded-full border border-line bg-white px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-signal-ring"
+            className="w-full rounded-full border border-line bg-white px-5 py-3 pr-11 text-sm outline-none focus:ring-2 focus:ring-signal-ring"
           />
+          {(query.trim() || selectedSlug) && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setSelectedSlug(null);
+              }}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-full text-muted hover:bg-surface hover:text-ink"
+            >
+              ✕
+            </button>
+          )}
           {query.trim() && !selectedSlug && (
             <div className="mt-2 card divide-y divide-line overflow-hidden max-h-96 overflow-y-auto">
               {matches.length === 0 && (
@@ -182,6 +194,15 @@ function ExplorarInner() {
       {/* resultado: ficha compartida con la landing (@/components/entity-ficha) */}
       {selected && (
         <section className="mx-auto w-full max-w-6xl px-6 pb-16">
+          <button
+            onClick={() => {
+              setSelectedSlug(null);
+              setQuery("");
+            }}
+            className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-ink"
+          >
+            <span aria-hidden>✕</span> Cerrar y volver
+          </button>
           <EntityFicha selected={selected} radar={radar ?? null} />
         </section>
       )}
