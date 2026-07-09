@@ -17,12 +17,14 @@ import { fetchDatasets } from "@/lib/supabase";
 import { matchesQuery } from "@/lib/palco-watchlist";
 import { rankNombresHoy, TONO_LABEL, type NombreHoyRow } from "@/lib/pulso";
 import { EntityFicha } from "@/components/entity-ficha";
+import { ToneTide } from "@/components/tone-tide";
 import {
   type EntitiesData,
   type CatalogData,
   type Explorable,
   buildExplorables,
 } from "@/lib/explorables";
+import { computeCatalogTide } from "@/lib/tone-tide";
 import {
   useLiveDeltas,
   useFlipRows,
@@ -92,6 +94,9 @@ export function LandingLive({ children }: { children: ReactNode }) {
     () => rankNombresHoy(entities.radars ?? {}, TOP_HOY),
     [entities]
   );
+  /* clima de fondo del hero: suma de tono real (no inventado) del día más
+     reciente de cada entidad del catálogo — ver @/lib/tone-tide. */
+  const tide = useMemo(() => computeCatalogTide(entities.radars ?? {}), [entities]);
   const flashesHoy = useLiveDeltas(nombresHoy, (r) => r.slug, (r) => r.hoy);
   const flipHoy = useFlipRows();
   const maxHoy = Math.max(1, ...nombresHoy.map((r) => r.hoy));
@@ -116,7 +121,8 @@ export function LandingLive({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <section className="mx-auto w-full max-w-6xl xl:max-w-7xl px-6 pt-10 pb-6 md:pt-16 xl:pt-20">
+      <section className="relative mx-auto w-full max-w-6xl xl:max-w-7xl px-6 pt-10 pb-6 md:pt-16 xl:pt-20">
+        <ToneTide tide={tide} className="-z-10" />
         <div className="grid md:grid-cols-2 gap-10 xl:gap-16 items-stretch">
           <div className="flex flex-col justify-center">{children}</div>
 

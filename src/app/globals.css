@@ -130,6 +130,28 @@ body {
   }
 }
 
+/* ToneTide: marea de tono del hero — respiración lentísima para que se sienta
+   viva sin competir con la copy (26s, easing suave, nunca brusca). */
+@keyframes tide-breathe {
+  0% {
+    transform: rotate(var(--tide-tilt, 0deg)) scale(1);
+  }
+  50% {
+    transform: rotate(calc(var(--tide-tilt, 0deg) * 1.3)) scale(1.018);
+  }
+  100% {
+    transform: rotate(var(--tide-tilt, 0deg)) scale(1);
+  }
+}
+.tide-breathe {
+  animation: tide-breathe 26s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tide-breathe {
+    animation: none;
+  }
+}
+
 @layer components {
   .card {
     @apply bg-white border border-line rounded-2xl shadow-card;

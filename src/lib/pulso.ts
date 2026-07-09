@@ -72,7 +72,7 @@ export const TONO_LABEL: Record<NonNullable<TonoResumen["dominante"]>, string> =
   neg: "negativo",
 };
 
-function resumirTono(dias: { neg?: number; neu?: number; pos?: number }[]): TonoResumen {
+export function resumirTono(dias: { neg?: number; neu?: number; pos?: number }[]): TonoResumen {
   let neg = 0;
   let neu = 0;
   let pos = 0;
