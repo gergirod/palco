@@ -22,7 +22,7 @@ export type Radar = {
   watchlist?: string[];
   totals: { transcript_mentions: number; chat_mentions?: number; channels: number };
   share_of_voice: { channel: string; mentions: number; pct: number }[];
-  by_day: { day: string; mentions: number }[];
+  by_day: { day: string; mentions: number; neg?: number; neu?: number; pos?: number }[];
   feed: FeedCard[];
 };
 

@@ -45,6 +45,11 @@ export const SIN_MAREA: CatalogTide = {
  *  proporcional a `muestra`, nunca un salto binario). */
 export const MUESTRA_MINIMA = 30;
 
+/** Forma mínima que necesita <ToneTide> — cualquier lectura de tono (la del
+ *  catálogo entero o la acumulada de una sola entidad en Explorar) sirve, es
+ *  el mismo componente y el mismo mapeo dato → forma en los dos casos. */
+export type TonoMarea = TonoResumen & { muestra: number };
+
 export function computeCatalogTide(radars: Record<string, RadarConDias>): CatalogTide {
   const ultimosDias: DiaConTono[] = [];
   let volumen = 0;

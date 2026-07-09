@@ -23,6 +23,9 @@ import {
   LiveDeltaBadge,
   PulsoHeartbeat,
 } from "./pulso-fx";
+import { PulsoDotField } from "@/components/pulso-dot-field";
+import { ToneTide } from "@/components/tone-tide";
+import { computeCatalogTide } from "@/lib/tone-tide";
 
 /* ---------- tipos locales del bundle ---------- */
 type RadarFicha = {
@@ -133,11 +136,17 @@ export default function PulsoPage() {
   const maxAcumulado = Math.max(1, ...nombresAcumulado.map((r) => r.acumulado));
   const maxScore = Math.max(1, ...temasPolitica.map((r) => r.score));
 
+  /* misma marea ambiental que ya usa la landing (computeCatalogTide), acá
+     detrás del ranking "Hoy" — mismo módulo, mismo significado de color,
+     nada nuevo que mantener por separado (regla de coherencia del spec). */
+  const tide = useMemo(() => computeCatalogTide(entities.radars ?? {}), [entities]);
+
   /* wow effect: insignias en vivo (poll vs poll anterior) + reordenamiento animado.
      Todo sale de comparar el snapshot actual contra el anterior, ya en memoria. */
   const flashesHoy = useLiveDeltas(nombresHoy, (r) => r.slug, (r) => r.hoy);
   const flashesAcumulado = useLiveDeltas(nombresAcumulado, (r) => r.slug, (r) => r.acumulado);
   const flashesPolitica = useLiveDeltas(temasPolitica, (r) => r.tema, (r) => r.score);
+  const flashSlugs = useMemo(() => new Set(flashesHoy.keys()), [flashesHoy]);
   const flipHoy = useFlipRows();
   const flipAcumulado = useFlipRows();
   const flipPolitica = useFlipRows();
@@ -167,7 +176,8 @@ export default function PulsoPage() {
       </header>
 
       {/* hero */}
-      <section className="mx-auto w-full max-w-6xl px-6 pt-14 pb-6">
+      <section className="relative mx-auto w-full max-w-6xl px-6 pt-14 pb-6">
+        <ToneTide tide={tide} maxOpacity={0.12} className="-z-10 rounded-xl" />
         <p className="eyebrow mb-4">Pulso · gratis, sin cuenta</p>
         <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] max-w-3xl">
           De qué se habla ahora mismo en el streaming argentino.
@@ -217,6 +227,19 @@ export default function PulsoPage() {
               El día más reciente con datos para cada nombre, contra el día anterior. La
               señal más &laquo;en vivo&raquo; que tenemos, aunque sea con delay.
             </p>
+            {nombresHoy.length > 0 && (
+              <div className="mb-4">
+                <PulsoDotField
+                  rows={nombresHoy.map((r) => ({
+                    slug: r.slug,
+                    entity: r.entity,
+                    mentions: r.hoy,
+                    tono: r.tono,
+                  }))}
+                  flashSlugs={flashSlugs}
+                />
+              </div>
+            )}
             <ol className="space-y-2.5">
               {nombresHoy.map((r, i) => {
                 const diff = r.ayer == null ? null : r.hoy - r.ayer;
@@ -252,11 +275,21 @@ export default function PulsoPage() {
                           </span>
                         </div>
                         <CanalYTono topCanal={r.topCanal} dominante={r.tono.dominante} />
-                        <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
+                        <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden flex">
                           <div
-                            className="pulso-bar h-full rounded-full bg-signal-bright"
+                            className="pulso-bar h-full rounded-full overflow-hidden flex"
                             style={{ width: mountKey ? `${(r.hoy / maxHoy) * 100}%` : "0%" }}
-                          />
+                          >
+                            {r.tono.dominante === null ? (
+                              <div className="h-full w-full bg-signal-bright" />
+                            ) : (
+                              <>
+                                <div className="h-full bg-crisis" style={{ width: `${r.tono.negPct}%` }} />
+                                <div className="h-full bg-muted/50" style={{ width: `${r.tono.neuPct}%` }} />
+                                <div className="h-full bg-up" style={{ width: `${r.tono.posPct}%` }} />
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -307,13 +340,23 @@ export default function PulsoPage() {
                         </span>
                       </div>
                       <CanalYTono topCanal={r.topCanal} dominante={r.tono.dominante} />
-                      <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden">
+                      <div className="mt-1 h-1.5 w-full rounded-full bg-surface overflow-hidden flex">
                         <div
-                          className="pulso-bar h-full rounded-full bg-signal"
+                          className="pulso-bar h-full rounded-full overflow-hidden flex"
                           style={{
                             width: mountKey ? `${(r.acumulado / maxAcumulado) * 100}%` : "0%",
                           }}
-                        />
+                        >
+                          {r.tono.dominante === null ? (
+                            <div className="h-full w-full bg-signal" />
+                          ) : (
+                            <>
+                              <div className="h-full bg-crisis" style={{ width: `${r.tono.negPct}%` }} />
+                              <div className="h-full bg-muted/50" style={{ width: `${r.tono.neuPct}%` }} />
+                              <div className="h-full bg-up" style={{ width: `${r.tono.posPct}%` }} />
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Link>

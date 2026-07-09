@@ -9,6 +9,7 @@ import {
   FREE_QUOTES,
   FREE_DAYS,
 } from "@/lib/explorables";
+import { EntityDotField } from "@/components/entity-dot-field";
 
 /** Ficha pública de una entidad (persona/marca/tema): completa si viene de
  *  palco_entities.radars (15+ curadas), liviana si es solo un candidato del
@@ -42,55 +43,37 @@ export function EntityFicha({ selected, radar }: { selected: Explorable; radar: 
           </div>
         </div>
 
-        <div className="mt-8 grid md:grid-cols-2 gap-8">
-          <div>
-            <p className="text-sm font-semibold">Tendencia diaria</p>
-            <p className="text-xs text-muted mb-3">
-              Por día, todos los canales sumados. Solo habla al aire, no incluye chat.
+        <div className="mt-8">
+          <p className="text-sm font-semibold">Tendencia diaria</p>
+          <p className="text-xs text-muted mb-3">
+            Por día, todos los canales sumados, con el tono real de cada jornada. Solo habla
+            al aire, no incluye chat.
+          </p>
+          <EntityDotField byDay={radar.by_day} ventanaDias={FREE_DAYS} />
+          {radar.by_day.length > FREE_DAYS && (
+            <p className="mt-2 text-xs text-muted">
+              Mostrando los últimos {FREE_DAYS} días (hay {radar.by_day.length} en total).
+              Con cuenta ves todo el historial, y se actualiza solo — esto es una foto, no
+              en vivo.
             </p>
-            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-              {[...radar.by_day.slice(-FREE_DAYS)].reverse().map((d) => {
-                const dias = radar.by_day.slice(-FREE_DAYS);
-                const max = Math.max(...dias.map((x) => x.mentions), 1);
-                return (
-                  <div key={d.day} className="flex items-center gap-3 text-xs">
-                    <span className="w-10 text-muted">{fechaCorta(d.day)}</span>
-                    <div className="flex-1 h-2 rounded-full bg-surface overflow-hidden">
-                      <div
-                        className="h-full bg-signal-bright rounded-full"
-                        style={{ width: `${Math.max((d.mentions / max) * 100, 4)}%` }}
-                      />
-                    </div>
-                    <span className="w-8 text-right font-medium">{d.mentions}</span>
-                  </div>
-                );
-              })}
-            </div>
-            {radar.by_day.length > FREE_DAYS && (
-              <p className="mt-2 text-xs text-muted">
-                Mostrando los últimos {FREE_DAYS} días (hay {radar.by_day.length} en total).
-                Con cuenta ves todo el historial, y se actualiza solo — esto es una foto, no
-                en vivo.
-              </p>
-            )}
-          </div>
+          )}
+        </div>
 
-          <div>
-            <p className="text-sm font-semibold">
-              Dónde más se habló ({radar.share_of_voice.length} canales)
-            </p>
-            <p className="text-xs text-muted mb-3">
-              Acumulado de todo el período mostrado, no por día.
-            </p>
-            <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {radar.share_of_voice.map((c) => (
-                <li key={c.channel} className="flex items-center justify-between text-sm">
-                  <span>{c.channel}</span>
-                  <span className="text-muted">{c.pct}%</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="mt-8">
+          <p className="text-sm font-semibold">
+            Dónde más se habló ({radar.share_of_voice.length} canales)
+          </p>
+          <p className="text-xs text-muted mb-3">
+            Acumulado de todo el período mostrado, no por día.
+          </p>
+          <ul className="columns-2 sm:columns-3 gap-x-6 [&>li]:mb-2">
+            {radar.share_of_voice.map((c) => (
+              <li key={c.channel} className="flex items-center justify-between text-sm break-inside-avoid">
+                <span>{c.channel}</span>
+                <span className="text-muted">{c.pct}%</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {radar.feed?.length > 0 && (

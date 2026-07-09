@@ -8,13 +8,13 @@
  *  reales; si no hay muestra suficiente, no hay marea (ver `muestra` abajo).
  *
  *  Sin interacción, sin texto, sin competir con la copy del hero: es puro
- *  clima de fondo, muy tenue (opacidad tope ~0.09). La única "lectura" posible
+ *  clima de fondo, tenue pero perceptible (opacidad tope ~0.22). La única "lectura" posible
  *  es sentir de reojo si el catálogo está mayormente verde o rojo hoy — no
  *  hace falta entenderlo para que el producto funcione, así que no necesita
  *  leyenda (si la necesitara, no estaría lista: ver SPEC-dataviz-3d-wow.md). */
 
-import { useMemo } from "react";
-import { MUESTRA_MINIMA, type CatalogTide } from "@/lib/tone-tide";
+import { useId, useMemo } from "react";
+import { MUESTRA_MINIMA, type TonoMarea } from "@/lib/tone-tide";
 
 const W = 1000;
 const H = 620;
@@ -45,39 +45,58 @@ function buildSeam(xPct: number) {
 export function ToneTide({
   tide,
   className,
+  maxOpacity = 0.22,
 }: {
-  tide: CatalogTide;
+  tide: TonoMarea;
   className?: string;
+  /** tope de opacidad de la marea — la landing usa el default (catálogo
+   *  entero, mucho volumen); una sola entidad en Explorar puede pedir menos
+   *  para no competir con las citas/números de al lado. */
+  maxOpacity?: number;
 }) {
+  const uid = useId();
   const geo = useMemo(() => {
     if (tide.muestra <= 0) return null;
 
-    // lean: -1 (todo negativo) .. +1 (todo positivo). Ignora neuPct a propósito
-    // — el neutro no tiene dirección, y en este catálogo domina casi siempre,
-    // así que si lo dejáramos pesar la marea sería invisible siempre.
+    // lean: -1 (todo negativo) .. +1 (todo positivo), para la costura y el
+    // tilt. Ignora neuPct a propósito — el neutro no tiene dirección.
     const lean = clamp((tide.posPct - tide.negPct) / 100, -1, 1);
 
-    // confianza: cuánta muestra real sostiene la lectura. Con poca muestra la
-    // marea se mantiene casi imperceptible en vez de mostrar un salto binario
-    // "hay dato / no hay dato".
-    const confianza = clamp(tide.muestra / (MUESTRA_MINIMA * 5), 0, 1);
+    // confianza: cuánta muestra real sostiene la lectura — satura rápido
+    // (con ~90 clasificaciones ya se muestra a intensidad plena), así que no
+    // se queda invisible por tener un catálogo grande y disperso.
+    const confianza = clamp(tide.muestra / (MUESTRA_MINIMA * 3), 0, 1);
 
-    const seamXPct = 50 - lean * 14; // quien domina "gana terreno" del otro lado
+    // presencia: cuánta marea hay en total (ambos colores juntos) — sube con
+    // la confianza, tope configurable para que se sienta pero no compita con
+    // el contenido de al lado.
+    const presencia = maxOpacity * confianza;
+
+    // reparto entre rojo/verde: proporcional a neg vs pos *entre sí* (no
+    // contra el neutro) — así el balance real entre lo negativo y lo positivo
+    // se ve claro aunque el catálogo sea mayormente neutro. Sin señal
+    // direccional (negPct=posPct=0), reparto parejo.
+    const coloreado = tide.negPct + tide.posPct;
+    const posShare = coloreado > 0 ? tide.posPct / coloreado : 0.5;
+    const negShare = 1 - posShare;
+
+    const seamXPct = 50 - lean * 20; // quien domina "gana terreno" del otro lado
     const seam = buildSeam(seamXPct);
-    const tiltDeg = clamp(lean * 2.2, -1.6, 1.6); // "cielo apenas inclinado"
+    const tiltDeg = clamp(lean * 3.5, -2.2, 2.2); // "cielo apenas inclinado"
 
-    const baseOpacity = 0.09 * confianza;
-    const negOpacity = baseOpacity * clamp(0.35 + Math.max(0, -lean) * 1.4, 0, 1);
-    const posOpacity = baseOpacity * clamp(0.35 + Math.max(0, lean) * 1.4, 0, 1);
+    const negOpacity = presencia * negShare;
+    const posOpacity = presencia * posShare;
 
     return { seam, tiltDeg, negOpacity, posOpacity, confianza };
-  }, [tide]);
+  }, [tide, maxOpacity]);
 
   if (!geo) return null;
 
   const { seam, tiltDeg, negOpacity, posOpacity } = geo;
   const leftFill = `${seam.d} L 0 ${H} L 0 0 Z`;
   const rightFill = `${seam.d} L ${W} ${H} L ${W} 0 Z`;
+  const negGradId = `tideNeg-${uid}`;
+  const posGradId = `tidePos-${uid}`;
 
   return (
     <div
@@ -90,11 +109,11 @@ export function ToneTide({
         className="h-full w-full"
       >
         <defs>
-          <linearGradient id="tideNeg" x1="0" y1="0" x2="1" y2="0.3">
+          <linearGradient id={negGradId} x1="0" y1="0" x2="1" y2="0.3">
             <stop offset="0%" stopColor="var(--crisis)" stopOpacity={negOpacity} />
             <stop offset="100%" stopColor="var(--crisis)" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id="tidePos" x1="1" y1="0" x2="0" y2="0.3">
+          <linearGradient id={posGradId} x1="1" y1="0" x2="0" y2="0.3">
             <stop offset="0%" stopColor="var(--up)" stopOpacity={posOpacity} />
             <stop offset="100%" stopColor="var(--up)" stopOpacity="0" />
           </linearGradient>
@@ -106,13 +125,13 @@ export function ToneTide({
             transformOrigin: `${W / 2}px ${H / 2}px`,
           }}
         >
-          <path d={leftFill} fill="url(#tideNeg)" />
-          <path d={rightFill} fill="url(#tidePos)" />
+          <path d={leftFill} fill={`url(#${negGradId})`} />
+          <path d={rightFill} fill={`url(#${posGradId})`} />
           <path
             d={seam.d}
             fill="none"
             stroke="var(--ink)"
-            strokeOpacity={0.05 * (geo.confianza ?? 0)}
+            strokeOpacity={0.12 * (geo.confianza ?? 0)}
             strokeWidth={1.5}
           />
         </g>

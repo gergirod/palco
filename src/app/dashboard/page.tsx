@@ -8,8 +8,9 @@ import catalogBundled from "@/data/palco_catalog.json";
 import { WatchlistTerms } from "@/components/palco/WatchlistTerms";
 import Sheet from "@/components/Sheet";
 import { matchesQuery } from "@/lib/palco-watchlist";
-import { rankNombresHoy } from "@/lib/pulso";
+import { rankNombresHoy, resumirTono, type TonoResumen } from "@/lib/pulso";
 import { fetchDataset } from "@/lib/supabase";
+import { PulsoDotField } from "@/components/pulso-dot-field";
 import {
   useLiveDeltas,
   useFlipRows,
@@ -28,6 +29,10 @@ import {
 } from "@/lib/palco-account";
 import { APP_NAME } from "@/config/app";
 import { TRIAL_DIAS, PAGO, mailtoPagoUrl } from "@/config/trial";
+
+/** Set vacío estable — para PulsoDotField donde una vista no tiene concepto
+ *  de "salto real" (ej. el ranking de canales, que es acumulado, no en vivo). */
+const EMPTY_FLASH_SLUGS = new Set<string>();
 
 /* ---------- tipos ---------- */
 type Card = {
@@ -442,6 +447,16 @@ function imagenBreakdownRadar(radar: Radar): {
 
 function mencionesRadar(radar: Radar): number {
   return radar.totals.transcript_mentions + radar.totals.chat_mentions;
+}
+
+/** Tono honesto (aire + chat) vía resumirTono — a diferencia de
+ *  imagenBreakdownRadar (que usa `|| 1` y por eso disfraza "sin clasificar"
+ *  como "100% neutro"), esto devuelve dominante=null cuando no hay dato real.
+ *  Para los campos de dots nuevos, que nunca deben inventar un tono. */
+function tonoRadar(radar: Radar): TonoResumen {
+  const sent = radar.sentiment ?? { neg: 0, neu: 0, pos: 0 };
+  const sc = radar.sentiment_chat ?? { neg: 0, neu: 0, pos: 0 };
+  return resumirTono([{ neg: sent.neg + sc.neg, neu: sent.neu + sc.neu, pos: sent.pos + sc.pos }]);
 }
 
 const ORIGEN: Record<string, { label: string; cls: string; origen: "hablado" | "ambos" | "chat" }> = {
@@ -1826,7 +1841,7 @@ export default function PalcoPage() {
           <section className="mb-5 rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-[13px] font-semibold uppercase tracking-wide text-red-600">
-                🚨 Alertas activas ({alertas.length})
+                Alertas activas ({alertas.length})
               </h2>
               <span className="text-[12px] text-slate-400">necesitan tu atención</span>
             </div>
@@ -2072,9 +2087,13 @@ export default function PalcoPage() {
 
         {/* alerta de crisis — lo más urgente, antes que cualquier otra lectura */}
         {R.crisis && (
-          <section className="mt-6">
+          <section className="relative mt-6">
+            <div
+              aria-hidden="true"
+              className="crisis-flood pointer-events-none absolute -inset-4 -z-10 rounded-[28px] bg-red-500/25 blur-2xl"
+            />
             <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-red-600">
-              🚨 Alerta de crisis
+              Alerta de crisis
             </h2>
             <div className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
               <div className="flex items-center justify-between bg-red-600 px-4 py-2 text-[12px] font-medium text-white">
@@ -2574,6 +2593,17 @@ export default function PalcoPage() {
               {" · "}
               {rangoLabel} · tocá un canal para ver las citas
             </p>
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <PulsoDotField
+                rows={porCanal.map((c) => ({
+                  slug: c.channel,
+                  entity: c.channel,
+                  mentions: c.total,
+                  tono: resumirTono([c]),
+                }))}
+                flashSlugs={EMPTY_FLASH_SLUGS}
+              />
+            </div>
             <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="space-y-3">
                 {porCanal.map((c) => {
@@ -2721,6 +2751,21 @@ export default function PalcoPage() {
                 )}
               </div>
             </div>
+            {filasActivas.length > 1 && (
+              <div className="mb-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <PulsoDotField
+                  rows={filasActivas.map((f) => ({
+                    slug: f.slug,
+                    entity: f.nombre,
+                    mentions: f.menciones,
+                    tono: tonoRadar(D.radars[f.slug]!),
+                  }))}
+                  flashSlugs={
+                    new Set(filasActivas.filter((f) => f.crisis).map((f) => f.slug))
+                  }
+                />
+              </div>
+            )}
             {compView === "rubro" && comparativaRubro.totalRubro > 1 && (
               <p className="mb-3 text-[13px] text-slate-600">
                 <b>{R.entity}</b> está en el puesto{" "}
